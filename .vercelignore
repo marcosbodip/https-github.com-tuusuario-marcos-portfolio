@@ -6,6 +6,8 @@ README.md
 DEPLOYMENT.md
 .env.example
 .gitignore
+OPEN_ADMIN.bat
+start-admin.ps1
 .checkpoints/
 server.log
 server-error.log

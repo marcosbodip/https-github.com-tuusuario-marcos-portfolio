@@ -3,9 +3,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $projectRoot
 
-if (-not $env:ADMIN_CODE) {
-  $env:ADMIN_CODE = "marcos-admin"
-}
+$env:ADMIN_CODE = "28122812"
 
 $env:AUTO_GIT_PUSH = "true"
 
