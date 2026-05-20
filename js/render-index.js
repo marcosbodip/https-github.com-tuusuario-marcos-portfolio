@@ -6,7 +6,7 @@ const indexEdgeAutoScroll = {
   speed: 0
 };
 const allIndexVideos = new Set();
-const visibleIndexVideos = new Map();
+const visibleIndexCards = new Map();
 let indexVideoSyncFrame = null;
 
 function isIndexLoaderActive() {
@@ -131,8 +131,8 @@ function resumeVisibleIndexVideos() {
   syncIndexVideoPlayback();
 }
 
-function getIndexVideoRatio(video) {
-  const rect = video.getBoundingClientRect();
+function getVisibleRatio(element) {
+  const rect = element.getBoundingClientRect();
   const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
   const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
   const area = rect.width * rect.height;
@@ -144,8 +144,8 @@ function getIndexVideoRatio(video) {
   return (visibleWidth * visibleHeight) / area;
 }
 
-function getIndexVideoScore(video, ratio) {
-  const rect = video.getBoundingClientRect();
+function getIndexCardScore(card, ratio) {
+  const rect = card.getBoundingClientRect();
   const center = rect.top + rect.height / 2;
   const centerDistance = Math.abs(center - window.innerHeight / 2) / window.innerHeight;
 
@@ -166,15 +166,15 @@ function syncIndexVideoPlayback() {
   const activeVideos = new Set();
 
   if (isTouchIndex) {
-    const candidates = Array.from(allIndexVideos)
-      .map((video) => [video, getIndexVideoRatio(video)])
-      .filter(([, ratio]) => ratio >= 0.16)
-      .sort((a, b) => getIndexVideoScore(b[0], b[1]) - getIndexVideoScore(a[0], a[1]));
+    const candidates = Array.from(visibleIndexCards)
+      .map(([card, video]) => [card, video, getVisibleRatio(card)])
+      .filter(([, , ratio]) => ratio >= 0.16)
+      .sort((a, b) => getIndexCardScore(b[0], b[2]) - getIndexCardScore(a[0], a[2]));
 
-    candidates.slice(0, 1).forEach(([video]) => activeVideos.add(video));
+    candidates.slice(0, 1).forEach(([, video]) => activeVideos.add(video));
   } else {
-    visibleIndexVideos.forEach((ratio, video) => {
-      if (ratio > 0.01) {
+    visibleIndexCards.forEach((video, card) => {
+      if (getVisibleRatio(card) > 0.01) {
         activeVideos.add(video);
       }
     });
@@ -215,40 +215,45 @@ function primeInitialIndexVideos() {
   scheduleIndexVideoSync();
 }
 
-const indexVideoObserver = "IntersectionObserver" in window
+const indexCardObserver = "IntersectionObserver" in window
   ? new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      const video = entry.target;
+      const card = entry.target;
+      const video = card.querySelector("video.project-media");
+
+      if (!video) {
+        return;
+      }
 
       if (entry.isIntersecting) {
-        visibleIndexVideos.set(video, entry.intersectionRatio);
+        visibleIndexCards.set(card, video);
         window.PORTFOLIO_MEDIA_LAZY?.load(video);
         scheduleIndexVideoSync();
         return;
       }
 
-      visibleIndexVideos.delete(video);
+      visibleIndexCards.delete(card);
       video.pause();
       scheduleIndexVideoSync();
     });
   }, {
-    rootMargin: "240px 0px",
-    threshold: 0.02
+    rootMargin: "120px 0px",
+    threshold: [0, 0.08, 0.16, 0.32, 0.5, 0.75]
   })
   : null;
 
-function observeIndexVideo(video) {
-  if (!video) {
+function observeIndexVideoCard(card, video) {
+  if (!card || !video) {
     return;
   }
 
-  if (!indexVideoObserver) {
-    visibleIndexVideos.set(video, 1);
+  if (!indexCardObserver) {
+    visibleIndexCards.set(card, video);
     scheduleIndexVideoSync();
     return;
   }
 
-  indexVideoObserver.observe(video);
+  indexCardObserver.observe(card);
   video.addEventListener("loadedmetadata", scheduleIndexVideoSync, { once: true });
   video.addEventListener("canplay", scheduleIndexVideoSync, { once: true });
 }
@@ -267,7 +272,8 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       const media = createMediaElement(
         project.media.cover,
         `assets/projects/${project.slug}`,
-        "project-media"
+        "project-media",
+        { deferObserve: true }
       );
 
       const resizeCard = () => resizeIndexCard(card);
@@ -297,7 +303,9 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       if (media.tagName === "VIDEO") {
         allIndexVideos.add(media);
-        observeIndexVideo(media);
+        observeIndexVideoCard(card, media);
+      } else {
+        window.PORTFOLIO_MEDIA_LAZY?.observe(media);
       }
     });
 

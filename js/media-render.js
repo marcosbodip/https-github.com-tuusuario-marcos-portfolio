@@ -129,7 +129,7 @@ const portfolioLazyMedia = (() => {
 
 window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;
 
-function createMediaElement(media, basePath, className = "") {
+function createMediaElement(media, basePath, className = "", options = {}) {
   const mediaPath = media.previewUrl || `${basePath}/${media.file}`;
 
   if (media.type === "video" || /\.(mp4|webm|mov)$/i.test(media.file)) {
@@ -140,7 +140,11 @@ function createMediaElement(media, basePath, className = "") {
     portfolioLazyMedia.prepareAutoplayVideo(video);
     video.preload = "none";
     video.setAttribute("aria-label", media.alt || "");
-    portfolioLazyMedia.observe(video);
+
+    if (!options.deferObserve) {
+      portfolioLazyMedia.observe(video);
+    }
+
     return video;
   }
 
@@ -155,7 +159,10 @@ function createMediaElement(media, basePath, className = "") {
     img.src = "data:image/gif;base64,R0lGODlhAQABAAAAACw=";
     img.dataset.src = mediaPath;
     img.dataset.lazyCarousel = "true";
-    portfolioLazyMedia.observe(img);
+
+    if (!options.deferObserve) {
+      portfolioLazyMedia.observe(img);
+    }
   } else {
     img.src = mediaPath;
   }
