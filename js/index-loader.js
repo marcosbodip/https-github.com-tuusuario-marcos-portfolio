@@ -11,6 +11,7 @@
 
   if (!loader || !shouldShow) {
     document.body.classList.remove("is-index-loading");
+    loader?.remove();
     window.PORTFOLIO_INDEX_LOADER = {
       register() {},
       ready() {}
@@ -55,6 +56,8 @@
 
     state.hidden = true;
     setProgress(1);
+    loader.setAttribute("aria-hidden", "true");
+    loader.style.pointerEvents = "none";
 
     try {
       sessionStorage.setItem(seenKey, "true");
