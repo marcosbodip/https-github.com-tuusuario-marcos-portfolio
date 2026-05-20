@@ -316,21 +316,25 @@
 
     if (width <= 640) {
       return {
-        maxVertexCount: 260000,
-        maxSurfaceCount: 320000,
+        maxVertexCount: 90000,
+        maxSurfaceCount: 120000,
         surfaceSamples: 1,
-        pointScale: 1.45,
-        alphaScale: 1.35
+        pointScale: 2.25,
+        alphaScale: 1.8,
+        computeCavities: false,
+        useTexture: false
       };
     }
 
     if (width <= 980) {
       return {
-        maxVertexCount: 420000,
-        maxSurfaceCount: 520000,
+        maxVertexCount: 220000,
+        maxSurfaceCount: 280000,
         surfaceSamples: 2,
-        pointScale: 1.18,
-        alphaScale: 1.16
+        pointScale: 1.45,
+        alphaScale: 1.35,
+        computeCavities: false,
+        useTexture: false
       };
     }
 
@@ -339,7 +343,9 @@
       maxSurfaceCount: 850000,
       surfaceSamples: 5,
       pointScale: 1,
-      alphaScale: 1
+      alphaScale: 1,
+      computeCavities: true,
+      useTexture: true
     };
   }
 
@@ -363,7 +369,9 @@
         const sourceNormals = primitive.attributes?.NORMAL !== undefined
           ? accessorToArray(glb, primitive.attributes.NORMAL).data
           : computeVertexNormals(sourcePositions.data, sourceIndices);
-        const sourceCavities = computeVertexCavities(sourcePositions.data, sourceIndices, sourceNormals);
+        const sourceCavities = pointBudget.computeCavities
+          ? computeVertexCavities(sourcePositions.data, sourceIndices, sourceNormals)
+          : new Float32Array(sourcePositions.count);
         const sourceUvs = primitive.attributes?.TEXCOORD_0 !== undefined
           ? accessorToArray(glb, primitive.attributes.TEXCOORD_0).data
           : null;
@@ -858,13 +866,15 @@
 
     draw();
 
-    createGlbTexture(glb)
-      .then((nextTexture) => {
-        texture = nextTexture;
-      })
-      .catch(() => {
-        hasTexture = false;
-      });
+    if (pointBudget.useTexture) {
+      createGlbTexture(glb)
+        .then((nextTexture) => {
+          texture = nextTexture;
+        })
+        .catch(() => {
+          hasTexture = false;
+        });
+    }
   }
 
   function updatePointer(event) {

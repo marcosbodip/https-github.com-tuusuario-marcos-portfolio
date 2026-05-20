@@ -2,12 +2,45 @@ const portfolioLazyMedia = (() => {
   const loadedMedia = new WeakSet();
   const visibleMedia = new WeakSet();
 
+  function prepareAutoplayVideo(video) {
+    video.autoplay = true;
+    video.defaultMuted = true;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.controls = false;
+    video.setAttribute("autoplay", "");
+    video.setAttribute("muted", "");
+    video.setAttribute("loop", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.removeAttribute("controls");
+  }
+
   function playVideo(video) {
+    prepareAutoplayVideo(video);
     const playAttempt = video.play();
 
     if (playAttempt && typeof playAttempt.catch === "function") {
       playAttempt.catch(() => {});
     }
+  }
+
+  function requestVideoAutoplay(video) {
+    playVideo(video);
+
+    if (video.readyState >= 2) {
+      return;
+    }
+
+    const playWhenReady = () => {
+      if (visibleMedia.has(video)) {
+        playVideo(video);
+      }
+    };
+
+    video.addEventListener("loadedmetadata", playWhenReady, { once: true });
+    video.addEventListener("canplay", playWhenReady, { once: true });
   }
 
   function load(media) {
@@ -26,7 +59,7 @@ const portfolioLazyMedia = (() => {
     media.load?.();
 
     if (media.tagName === "VIDEO" && media.dataset.lazyAutoplay === "true" && visibleMedia.has(media)) {
-      playVideo(media);
+      requestVideoAutoplay(media);
     }
 
     return media;
@@ -63,7 +96,7 @@ const portfolioLazyMedia = (() => {
           load(media);
 
           if (media.tagName === "VIDEO" && media.dataset.lazyAutoplay === "true") {
-            playVideo(media);
+            requestVideoAutoplay(media);
           }
 
           return;
@@ -94,7 +127,7 @@ const portfolioLazyMedia = (() => {
     observer.observe(media);
   }
 
-  return { load, observe };
+  return { load, observe, prepareAutoplayVideo };
 })();
 
 window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;
@@ -107,10 +140,7 @@ function createMediaElement(media, basePath, className = "") {
     video.className = className;
     video.dataset.src = mediaPath;
     video.dataset.lazyAutoplay = "true";
-    video.autoplay = true;
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
+    portfolioLazyMedia.prepareAutoplayVideo(video);
     video.preload = "none";
     video.setAttribute("aria-label", media.alt || "");
     portfolioLazyMedia.observe(video);
