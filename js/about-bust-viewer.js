@@ -861,8 +861,8 @@
     const deltaY = event.clientY - drag.lastY;
     drag.lastX = event.clientX;
     drag.lastY = event.clientY;
-    touchRotation.targetY += deltaX * 0.008;
-    touchRotation.targetX = clamp(touchRotation.targetX - deltaY * 0.006, -0.68, 0.62);
+    touchRotation.targetY = clamp(touchRotation.targetY + deltaX * 0.0046, -1.08, 1.08);
+    touchRotation.targetX = clamp(touchRotation.targetX - deltaY * 0.0038, -0.46, 0.48);
     updatePointer(event);
     event.preventDefault();
   }
