@@ -1,0 +1,8 @@
+.checkpoints/
+server.log
+server-error.log
+data/projects.backup.js
+data/projects.tmp.js
+node_modules/
+.DS_Store
+Thumbs.db

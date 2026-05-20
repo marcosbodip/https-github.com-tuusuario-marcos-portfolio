@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio Admin — Marcos Bodi</title>
+  <meta name="description" content="Local project editor for Marcos Bodi portfolio." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html">Projects</a>
+      <a href="project.html">Template</a>
+      <a href="about.html">About</a>
+      <a href="/__admin-logout">Logout</a>
+    </nav>
+  </header>
+
+  <main class="admin-page">
+    <section class="admin-panel">
+      <div class="admin-toolbar">
+        <label>
+          Project
+          <select id="projectSelect"></select>
+        </label>
+        <p class="admin-visibility-badge" id="visibilityBadge">Public</p>
+        <button type="button" id="newProjectButton">New project</button>
+        <button type="button" id="duplicateProjectButton">Duplicate</button>
+        <button type="button" id="toggleVisibilityButton">Hide</button>
+        <button type="button" id="deleteProjectButton">Delete</button>
+        <button type="button" id="saveButton">Save site</button>
+        <button type="button" id="copyButton">Copy JS</button>
+      </div>
+      <p class="admin-status" id="statusMessage" role="status"></p>
+
+      <form class="admin-form" id="projectForm">
+        <fieldset class="admin-index-order-field" id="indexOrderFieldset">
+          <legend class="admin-section-legend">
+            <span>Index Order</span>
+            <button type="button" class="admin-section-toggle" id="indexOrderToggle" aria-expanded="true" aria-controls="indexOrderBoard">Hide</button>
+          </legend>
+          <div class="admin-index-order" id="indexOrderBoard" aria-label="Homepage project order"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Core</legend>
+          <input name="hidden" type="hidden">
+          <label>Slug <input name="slug" required></label>
+          <label>Title <input name="title" required></label>
+          <label>Category <input name="category"></label>
+          <label>Summary <textarea name="summary" rows="3"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Project Info</legend>
+          <label>Role <input name="detailRole"></label>
+          <label>Type <input name="detailType"></label>
+          <label>Tools <input name="detailTools"></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Copy</legend>
+          <label>Concept paragraphs <textarea name="concept" rows="5" placeholder="One paragraph per line"></textarea></label>
+          <label class="admin-toggle-label">
+            <input name="teamEnabled" type="checkbox">
+            TEAM
+          </label>
+          <label id="teamField">TEAM <textarea name="credits" rows="7" placeholder="One team member per line"></textarea></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Media</legend>
+          <div class="admin-media-layout-controls">
+            <label>Composition
+              <select name="compositionPreset">
+                <option value="smart-grid">Smart grid</option>
+                <option value="feature-grid">Feature grid</option>
+                <option value="equal-grid">Equal grid</option>
+                <option value="poster-grid">Poster grid</option>
+                <option value="rows">Rows</option>
+                <option value="carousel">Carousel</option>
+                <option value="stack">Stack</option>
+              </select>
+            </label>
+          </div>
+          <input name="layout" type="hidden">
+          <label class="admin-file-import">Import media
+            <input id="mediaImport" type="file" accept="image/*,video/*" multiple>
+          </label>
+          <input name="coverFile" type="hidden">
+          <input name="mainFile" type="hidden">
+          <input name="mainRatio" type="hidden">
+          <input name="secondary" type="hidden">
+          <div class="admin-media-board" id="mediaBoard" aria-label="Project media order"></div>
+        </fieldset>
+      </form>
+    </section>
+
+    <section class="admin-preview">
+      <div class="admin-preview-header">
+        <div>
+          <p id="projectCount" class="admin-kicker">0 projects</p>
+          <h1 id="previewTitle">Project</h1>
+        </div>
+        <div class="admin-preview-actions" aria-label="Preview mode">
+          <button type="button" class="admin-preview-mode is-active" id="previewProjectButton" aria-pressed="true">Project</button>
+          <button type="button" class="admin-preview-mode" id="previewIndexButton" aria-pressed="false">Index</button>
+          <a class="admin-preview-open" id="previewLink" href="project.html">Open page</a>
+        </div>
+      </div>
+      <div class="admin-preview-viewport" id="previewViewport">
+        <iframe id="projectPreviewFrame" class="admin-project-frame" title="Project live preview"></iframe>
+      </div>
+      <details class="admin-code-details">
+        <summary>Generated projects.js</summary>
+        <pre id="outputCode"></pre>
+      </details>
+    </section>
+  </main>
+
+  <script src="data/projects.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
