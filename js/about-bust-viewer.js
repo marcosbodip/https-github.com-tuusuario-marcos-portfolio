@@ -308,7 +308,35 @@
     return accessorToArray(glb, accessorIndex).data;
   }
 
+  function getPointBudget() {
+    const width = window.innerWidth;
+    const dpr = window.devicePixelRatio || 1;
+
+    if (width <= 640 || dpr >= 2.6) {
+      return {
+        maxVertexCount: 180000,
+        maxSurfaceCount: 220000,
+        surfaceSamples: 1
+      };
+    }
+
+    if (width <= 980) {
+      return {
+        maxVertexCount: 300000,
+        maxSurfaceCount: 360000,
+        surfaceSamples: 2
+      };
+    }
+
+    return {
+      maxVertexCount: 720000,
+      maxSurfaceCount: 850000,
+      surfaceSamples: 5
+    };
+  }
+
   function buildPointCloud(glb) {
+    const pointBudget = getPointBudget();
     const positions = [];
     const normals = [];
     const uvs = [];
@@ -331,8 +359,7 @@
         const sourceUvs = primitive.attributes?.TEXCOORD_0 !== undefined
           ? accessorToArray(glb, primitive.attributes.TEXCOORD_0).data
           : null;
-        const maxVertexCount = 720000;
-        const vertexStep = Math.max(1, Math.ceil(sourcePositions.count / maxVertexCount));
+        const vertexStep = Math.max(1, Math.ceil(sourcePositions.count / pointBudget.maxVertexCount));
 
         for (let vertexIndex = 0; vertexIndex < sourcePositions.count; vertexIndex += vertexStep) {
           pushSourceVertex(positions, normals, uvs, cavities, sourcePositions.data, sourceNormals, sourceUvs, sourceCavities, vertexIndex);
@@ -343,9 +370,8 @@
         }
 
         const triangleCount = Math.floor(sourceIndices.length / 3);
-        const maxSurfaceCount = 850000;
-        const triangleStep = Math.max(1, Math.ceil(triangleCount / maxSurfaceCount));
-        const surfaceSamples = triangleStep === 1 ? 5 : 1;
+        const triangleStep = Math.max(1, Math.ceil(triangleCount / pointBudget.maxSurfaceCount));
+        const surfaceSamples = triangleStep === 1 ? pointBudget.surfaceSamples : 1;
 
         for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex += triangleStep) {
           const indexOffset = triangleIndex * 3;
