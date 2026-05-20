@@ -1173,7 +1173,7 @@ function buildProjectPreviewDocument(project) {
     </nav>
   </header>
   <main class="project-page" data-project-root></main>
-  <footer class="site-footer">
+  <footer class="site-footer project-footer">
     <a href="index.html" data-next-project-link>Next project →</a>
     <p>Marcos Bodi</p>
   </footer>
