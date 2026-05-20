@@ -532,8 +532,8 @@ window.PORTFOLIO_PROJECTS = [
       },
       "secondary": [
         {
-          "file": "linear-ezgif.com-video-to-gif-converter.gif",
-          "type": "image",
+          "file": "linear-ezgif.com-video-to-gif-converter_optimized.mp4",
+          "type": "video",
           "alt": "New Project linear ezgif.com video to gif converter",
           "ratio": "portrait"
         },
