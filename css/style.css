@@ -142,8 +142,8 @@ video {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 24px;
   padding: 22px var(--side-padding);
@@ -157,6 +157,7 @@ video {
   letter-spacing: 0.08em;
   font-weight: 700;
   display: inline-block;
+  justify-self: center;
   transform-origin: center;
   transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
@@ -171,6 +172,14 @@ video {
   display: flex;
   gap: clamp(14px, 3vw, 34px);
   font-size: 14px;
+}
+
+.main-nav-primary {
+  justify-self: start;
+}
+
+.main-nav-social {
+  justify-self: end;
 }
 
 .project-grid {
@@ -2698,12 +2707,15 @@ video {
 }
 
 @media (max-width: 860px) {
-  .site-header,
   .site-footer,
   .project-card-info,
   .project-cta {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .site-header {
+    gap: 16px;
   }
 
   .project-grid {

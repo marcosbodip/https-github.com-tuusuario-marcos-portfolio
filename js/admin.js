@@ -1164,9 +1164,11 @@ function buildProjectPreviewDocument(project) {
 </head>
 <body class="admin-preview-body">
   <header class="site-header">
-    <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
-    <nav class="main-nav" aria-label="Main navigation">
+    <nav class="main-nav main-nav-primary" aria-label="Primary navigation">
       <a href="about.html">About</a>
+    </nav>
+    <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
+    <nav class="main-nav main-nav-social" aria-label="Social navigation">
       <a href="https://www.instagram.com/bodimarcos/" target="_blank" rel="noreferrer">Instagram</a>
     </nav>
   </header>
@@ -1204,9 +1206,11 @@ function buildIndexPreviewDocument(project) {
 </head>
 <body class="admin-preview-body">
   <header class="site-header">
-    <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
-    <nav class="main-nav" aria-label="Main navigation">
+    <nav class="main-nav main-nav-primary" aria-label="Primary navigation">
       <a href="about.html">About</a>
+    </nav>
+    <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
+    <nav class="main-nav main-nav-social" aria-label="Social navigation">
       <a href="https://www.instagram.com/bodimarcos/" target="_blank" rel="noreferrer">Instagram</a>
     </nav>
   </header>
