@@ -1,5 +1,80 @@
 window.PORTFOLIO_PROJECTS = [
   {
+    "slug": "dron",
+    "title": "Dron Takeoff",
+    "category": "CGI / Simulation",
+    "summary": "A collaborative 3D animation piece exploring the takeoff of a drone through cinematic motion, detailed look development and sound-driven impact.",
+    "description": "A collaborative 3D animation piece exploring the takeoff of a drone through cinematic motion, detailed look development and sound-driven impact.",
+    "cardCategory": "CGI / Simulation",
+    "cardType": "cgi-simulation",
+    "layout": "contain",
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "CG Artist",
+      "Type": "Personal Project",
+      "Tools": "Embergen / Blender"
+    },
+    "concept": [
+      "Dron Takeoff is a collaborative 3D animation project built around a simple but powerful moment: the launch of a drone.",
+      "The piece focuses on transforming the takeoff into a more cinematic and designed sequence, using look development, movement and sound to give the object a stronger sense of weight, tension and presence.",
+      "Rather than presenting the drone as a purely technical asset, the animation treats it as the center of a short visual moment — precise, atmospheric and driven by the energy of liftoff."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Animation & Edit - Mihai Serban",
+      "SFX - Marcos Bodí",
+      "Sound Design - Deseedia"
+    ],
+    "media": {
+      "cover": {
+        "file": "still_01_4.1.3.png",
+        "type": "image",
+        "alt": "Dron Takeoff"
+      },
+      "main": {
+        "file": "DRON_V01.mp4",
+        "type": "video",
+        "ratio": "square",
+        "alt": "Dron Takeoff main media"
+      },
+      "secondary": [
+        {
+          "file": "SCREENSHOTS_MARCOS-ezgif.com-video-to-gif-converter.gif",
+          "type": "image",
+          "alt": "Dron Takeoff SCREENSHOTS MARCOS ezgif.com video to gif converter",
+          "ratio": "square"
+        },
+        {
+          "file": "GRANADA_v02.mp4",
+          "type": "video",
+          "alt": "Dron Takeoff GRANADA v02",
+          "ratio": "square"
+        },
+        {
+          "file": "still_01_4.1.1.png",
+          "type": "image",
+          "alt": "Dron Takeoff still 01 4.1.1",
+          "ratio": "square"
+        },
+        {
+          "file": "still_01_4.1.2.png",
+          "type": "image",
+          "alt": "Dron Takeoff still 01 4.1.2",
+          "ratio": "square"
+        },
+        {
+          "file": "still_01_4.1.4.png",
+          "type": "image",
+          "alt": "Dron Takeoff still 01 4.1.4",
+          "ratio": "square"
+        }
+      ]
+    }
+  },
+  {
     "slug": "meta-heart",
     "title": "Meta Heart",
     "category": "CGI / Simulation",
@@ -1011,81 +1086,6 @@ window.PORTFOLIO_PROJECTS = [
           "type": "video",
           "alt": "3D Space RnD shotventanica",
           "ratio": "portrait"
-        }
-      ]
-    }
-  },
-  {
-    "slug": "dron",
-    "title": "Dron Takeoff",
-    "category": "CGI / Simulation",
-    "summary": "A collaborative 3D animation piece exploring the takeoff of a drone through cinematic motion, detailed look development and sound-driven impact.",
-    "description": "A collaborative 3D animation piece exploring the takeoff of a drone through cinematic motion, detailed look development and sound-driven impact.",
-    "cardCategory": "CGI / Simulation",
-    "cardType": "cgi-simulation",
-    "layout": "contain",
-    "mediaLayout": {
-      "composition": "carousel"
-    },
-    "details": {
-      "Role": "CG Artist",
-      "Type": "Personal Project",
-      "Tools": "Embergen / Blender"
-    },
-    "concept": [
-      "Dron Takeoff is a collaborative 3D animation project built around a simple but powerful moment: the launch of a drone.",
-      "The piece focuses on transforming the takeoff into a more cinematic and designed sequence, using look development, movement and sound to give the object a stronger sense of weight, tension and presence.",
-      "Rather than presenting the drone as a purely technical asset, the animation treats it as the center of a short visual moment — precise, atmospheric and driven by the energy of liftoff."
-    ],
-    "teamEnabled": true,
-    "creditsTitle": "Team",
-    "credits": [
-      "Animation & Edit - Mihai Serban",
-      "SFX - Marcos Bodí",
-      "Sound Design - Deseedia"
-    ],
-    "media": {
-      "cover": {
-        "file": "still_01_4.1.3.png",
-        "type": "image",
-        "alt": "Dron Takeoff"
-      },
-      "main": {
-        "file": "DRON_V01.mp4",
-        "type": "video",
-        "ratio": "square",
-        "alt": "Dron Takeoff main media"
-      },
-      "secondary": [
-        {
-          "file": "SCREENSHOTS_MARCOS-ezgif.com-video-to-gif-converter.gif",
-          "type": "image",
-          "alt": "Dron Takeoff SCREENSHOTS MARCOS ezgif.com video to gif converter",
-          "ratio": "square"
-        },
-        {
-          "file": "GRANADA_v02.mp4",
-          "type": "video",
-          "alt": "Dron Takeoff GRANADA v02",
-          "ratio": "square"
-        },
-        {
-          "file": "still_01_4.1.1.png",
-          "type": "image",
-          "alt": "Dron Takeoff still 01 4.1.1",
-          "ratio": "square"
-        },
-        {
-          "file": "still_01_4.1.2.png",
-          "type": "image",
-          "alt": "Dron Takeoff still 01 4.1.2",
-          "ratio": "square"
-        },
-        {
-          "file": "still_01_4.1.4.png",
-          "type": "image",
-          "alt": "Dron Takeoff still 01 4.1.4",
-          "ratio": "square"
         }
       ]
     }
