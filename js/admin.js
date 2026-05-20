@@ -1167,7 +1167,6 @@ function buildProjectPreviewDocument(project) {
     <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
     <nav class="main-nav" aria-label="Main navigation">
       <a href="about.html">About</a>
-      <a href="#copy-email" data-copy-email="holabodimarcos@gmail.com">Contact</a>
       <a href="https://www.instagram.com/bodimarcos/" target="_blank" rel="noreferrer">Instagram</a>
     </nav>
   </header>
@@ -1208,7 +1207,6 @@ function buildIndexPreviewDocument(project) {
     <a class="logo" href="index.html" aria-label="Marcos Bodi home">MB</a>
     <nav class="main-nav" aria-label="Main navigation">
       <a href="about.html">About</a>
-      <a href="#copy-email" data-copy-email="holabodimarcos@gmail.com">Contact</a>
       <a href="https://www.instagram.com/bodimarcos/" target="_blank" rel="noreferrer">Instagram</a>
     </nav>
   </header>
