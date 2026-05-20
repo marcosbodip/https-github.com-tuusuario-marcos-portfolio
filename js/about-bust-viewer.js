@@ -7,7 +7,6 @@
 
   const shell = canvas.closest(".about-pointcloud-shell") || canvas;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const saveData = navigator.connection?.saveData;
   const source = canvas.dataset.src || "assets/about/marcos-bust.glb";
   const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ccff00";
   const accentRgb = getColorRgb(accent);
@@ -839,27 +838,9 @@
     }
   });
 
-  function scheduleInit() {
-    if (saveData || reduceMotion.matches) {
-      canvas.hidden = true;
-      return;
-    }
-
-    const start = () => {
-      init().catch((error) => {
-        console.error("About bust viewer failed:", error);
-        canvas.dataset.error = error.message || "unknown";
-        canvas.hidden = true;
-      });
-    };
-
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(start, { timeout: 1800 });
-      return;
-    }
-
-    window.setTimeout(start, 900);
-  }
-
-  scheduleInit();
+  init().catch((error) => {
+    console.error("About bust viewer failed:", error);
+    canvas.dataset.error = error.message || "unknown";
+    canvas.hidden = true;
+  });
 })();
