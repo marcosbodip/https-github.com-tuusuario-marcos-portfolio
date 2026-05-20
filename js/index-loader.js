@@ -1,17 +1,8 @@
 (() => {
   const loader = document.querySelector("[data-index-loader]");
-  const seenKey = "marcos_portfolio_index_loader_seen";
-  const shouldShow = (() => {
-    try {
-      return sessionStorage.getItem(seenKey) !== "true";
-    } catch {
-      return true;
-    }
-  })();
 
-  if (!loader || !shouldShow) {
+  if (!loader) {
     document.body.classList.remove("is-index-loading");
-    loader?.remove();
     window.PORTFOLIO_INDEX_LOADER = {
       register() {},
       ready() {}
@@ -58,10 +49,6 @@
     setProgress(1);
     loader.setAttribute("aria-hidden", "true");
     loader.style.pointerEvents = "none";
-
-    try {
-      sessionStorage.setItem(seenKey, "true");
-    } catch {}
 
     document.body.classList.remove("is-index-loading");
     document.body.classList.add("is-index-loaded");

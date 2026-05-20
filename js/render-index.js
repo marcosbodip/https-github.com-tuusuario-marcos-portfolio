@@ -109,8 +109,14 @@ function requestIndexVideoPlayback(video) {
   window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
 }
 
+function queueIndexVideoPlayback(video) {
+  requestIndexVideoPlayback(video);
+  window.requestAnimationFrame(() => requestIndexVideoPlayback(video));
+  window.setTimeout(() => requestIndexVideoPlayback(video), 500);
+}
+
 function resumeVisibleIndexVideos() {
-  visibleIndexVideos.forEach(requestIndexVideoPlayback);
+  visibleIndexVideos.forEach(queueIndexVideoPlayback);
 }
 
 function primeInitialIndexVideos() {
@@ -123,7 +129,7 @@ function primeInitialIndexVideos() {
 
     if (isNearViewport) {
       visibleIndexVideos.add(video);
-      requestIndexVideoPlayback(video);
+      queueIndexVideoPlayback(video);
     }
   });
 }
@@ -135,7 +141,7 @@ const indexVideoObserver = "IntersectionObserver" in window
 
       if (entry.isIntersecting) {
         visibleIndexVideos.add(video);
-        requestIndexVideoPlayback(video);
+        queueIndexVideoPlayback(video);
         return;
       }
 
@@ -155,7 +161,7 @@ function observeIndexVideo(video) {
 
   if (!indexVideoObserver) {
     visibleIndexVideos.add(video);
-    requestIndexVideoPlayback(video);
+    queueIndexVideoPlayback(video);
     return;
   }
 
@@ -169,7 +175,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
   window.PORTFOLIO_PROJECTS
     .filter((project) => !project.hidden)
-    .forEach((project) => {
+    .forEach((project, index) => {
       const card = document.createElement("a");
       card.className = "project-card";
       card.href = `project.html?project=${project.slug}`;
@@ -180,12 +186,10 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         `assets/projects/${project.slug}`,
         "project-media"
       );
-      window.PORTFOLIO_INDEX_LOADER?.register(media);
 
       const resizeCard = () => resizeIndexCard(card);
 
       if (media.tagName === "VIDEO") {
-        observeIndexVideo(media);
         media.addEventListener("loadedmetadata", resizeCard, { once: true });
       } else if (media.complete) {
         window.requestAnimationFrame(resizeCard);
@@ -205,6 +209,17 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       info.append(title, category);
       card.append(media, info);
       projectGrid.append(card);
+
+      window.PORTFOLIO_INDEX_LOADER?.register(media);
+
+      if (media.tagName === "VIDEO") {
+        observeIndexVideo(media);
+
+        if (index < (window.innerWidth <= 760 ? 3 : 6)) {
+          visibleIndexVideos.add(media);
+          queueIndexVideoPlayback(media);
+        }
+      }
     });
 
   resizeIndexGrid();
