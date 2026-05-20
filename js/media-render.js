@@ -98,11 +98,10 @@ function createMediaElement(media, basePath, className = "") {
 
   const img = document.createElement("img");
   img.className = className;
-  img.dataset.src = mediaPath;
+  img.src = mediaPath;
   img.alt = media.alt || "";
   img.loading = "lazy";
   img.decoding = "async";
-  portfolioLazyMedia.observe(img);
   return img;
 }
 
