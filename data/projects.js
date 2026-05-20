@@ -29,8 +29,8 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "heart.gif",
-        "type": "image",
+        "file": "cover_optimized.mp4",
+        "type": "video",
         "alt": "Meta Heart"
       },
       "main": {
@@ -196,8 +196,8 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "cover.gif",
-        "type": "image",
+        "file": "cover_optimized.mp4",
+        "type": "video",
         "alt": "DanideVito Furnitures"
       },
       "main": {
@@ -259,8 +259,8 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "Secuencia 01.gif",
-        "type": "image",
+        "file": "cover_optimized.mp4",
+        "type": "video",
         "alt": "Ambar Beer Motion"
       },
       "main": {
@@ -589,8 +589,8 @@ window.PORTFOLIO_PROJECTS = [
     "credits": [],
     "media": {
       "cover": {
-        "file": "cuervo_v01-ezgif.com-video-to-gif-converter.gif",
-        "type": "image",
+        "file": "cover_optimized.mp4",
+        "type": "video",
         "alt": "Glitchy Ravens"
       },
       "main": {
@@ -741,8 +741,8 @@ window.PORTFOLIO_PROJECTS = [
     "credits": [],
     "media": {
       "cover": {
-        "file": "mp4togifforlanding-ezgif.com-video-to-gif-converter.gif",
-        "type": "image",
+        "file": "cover_optimized.mp4",
+        "type": "video",
         "alt": "Louis Vuitton"
       },
       "main": {
@@ -983,8 +983,8 @@ window.PORTFOLIO_PROJECTS = [
     "credits": [],
     "media": {
       "cover": {
-        "file": "shottorbellino-ezgif.com-video-to-gif-converter.gif",
-        "type": "image",
+        "file": "cover_optimized.mp4",
+        "type": "video",
         "alt": "3D Space RnD"
       },
       "main": {
@@ -1046,7 +1046,7 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "still_01_4.1.3.png",
+        "file": "cover_optimized.jpg",
         "type": "image",
         "alt": "Dron Takeoff"
       },
