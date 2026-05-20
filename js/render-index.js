@@ -1,4 +1,76 @@
 const projectGrid = document.querySelector("[data-project-grid]");
+const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const indexEdgeAutoScroll = {
+  frame: null,
+  speed: 0
+};
+
+function stopIndexEdgeAutoScroll() {
+  indexEdgeAutoScroll.speed = 0;
+
+  if (indexEdgeAutoScroll.frame) {
+    cancelAnimationFrame(indexEdgeAutoScroll.frame);
+    indexEdgeAutoScroll.frame = null;
+  }
+}
+
+function getIndexEdgeAutoScrollSpeed(clientY) {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+  if (maxScroll <= 0) {
+    return 0;
+  }
+
+  const edgeSize = Math.min(240, Math.max(140, window.innerHeight * 0.24));
+  const maxSpeed = 30;
+
+  if (clientY < edgeSize) {
+    if (window.scrollY <= 0) {
+      return 0;
+    }
+
+    const intensity = 1 - clientY / edgeSize;
+    return -maxSpeed * Math.pow(intensity, 1.35);
+  }
+
+  if (clientY > window.innerHeight - edgeSize) {
+    if (window.scrollY >= maxScroll - 1) {
+      return 0;
+    }
+
+    const intensity = 1 - (window.innerHeight - clientY) / edgeSize;
+    return maxSpeed * Math.pow(intensity, 1.35);
+  }
+
+  return 0;
+}
+
+function stepIndexEdgeAutoScroll() {
+  if (!indexEdgeAutoScroll.speed) {
+    stopIndexEdgeAutoScroll();
+    return;
+  }
+
+  window.scrollBy(0, indexEdgeAutoScroll.speed);
+  indexEdgeAutoScroll.frame = requestAnimationFrame(stepIndexEdgeAutoScroll);
+}
+
+function updateIndexEdgeAutoScroll(event) {
+  if (!supportsIndexHover || !projectGrid) {
+    return;
+  }
+
+  indexEdgeAutoScroll.speed = getIndexEdgeAutoScrollSpeed(event.clientY);
+
+  if (!indexEdgeAutoScroll.speed) {
+    stopIndexEdgeAutoScroll();
+    return;
+  }
+
+  if (!indexEdgeAutoScroll.frame) {
+    indexEdgeAutoScroll.frame = requestAnimationFrame(stepIndexEdgeAutoScroll);
+  }
+}
 
 function resizeIndexCard(card) {
   if (!projectGrid || !card) {
@@ -71,4 +143,14 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   resizeIndexGrid();
   document.fonts?.ready.then(resizeIndexGrid);
   window.addEventListener("resize", resizeIndexGrid);
+
+  if (supportsIndexHover) {
+    window.addEventListener("pointermove", updateIndexEdgeAutoScroll);
+    window.addEventListener("blur", stopIndexEdgeAutoScroll);
+    window.addEventListener("mouseout", (event) => {
+      if (!event.relatedTarget) {
+        stopIndexEdgeAutoScroll();
+      }
+    });
+  }
 }
