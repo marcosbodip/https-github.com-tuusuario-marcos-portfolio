@@ -83,7 +83,7 @@ function classifyMediaItem(item) {
     } else {
       media.addEventListener("loadedmetadata", applyClass, { once: true });
     }
-  } else if (media.complete) {
+  } else if (media.complete && media.naturalWidth) {
     applyClass();
   } else {
     media.addEventListener("load", applyClass, { once: true });
@@ -307,6 +307,21 @@ function syncCarouselVideo(item, shouldPlay) {
   }
 }
 
+function syncCarouselLazyMedia(item, shouldLoad) {
+  if (!shouldLoad) {
+    return;
+  }
+
+  item.querySelectorAll("img[data-lazy-carousel='true']").forEach((image) => {
+    window.PORTFOLIO_MEDIA_LAZY?.load(image);
+  });
+}
+
+function syncCarouselMedia(item, shouldPlay) {
+  syncCarouselLazyMedia(item, shouldPlay);
+  syncCarouselVideo(item, shouldPlay);
+}
+
 function isCarouselItemHovered(item) {
   return supportsHover && (item.matches(":hover") || item.classList.contains("is-hovered"));
 }
@@ -327,7 +342,7 @@ function shouldCarouselItemPlay(item, carousel) {
 
 function syncCarouselPlayback(carousel) {
   getCarouselItems(carousel).forEach((item) => {
-    syncCarouselVideo(item, shouldCarouselItemPlay(item, carousel));
+    syncCarouselMedia(item, shouldCarouselItemPlay(item, carousel));
   });
 }
 

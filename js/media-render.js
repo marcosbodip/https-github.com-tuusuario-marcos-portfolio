@@ -32,14 +32,14 @@ const portfolioLazyMedia = (() => {
     return media;
   }
 
-  function shouldLoadCarouselVideo(media) {
-    if (media.tagName !== "VIDEO") {
-      return true;
-    }
-
+  function shouldLoadMedia(media) {
     const carousel = media.closest(".project-media-carousel");
 
     if (!carousel) {
+      return true;
+    }
+
+    if (media.tagName !== "VIDEO" && media.dataset.lazyCarousel !== "true") {
       return true;
     }
 
@@ -56,7 +56,7 @@ const portfolioLazyMedia = (() => {
         if (entry.isIntersecting) {
           visibleMedia.add(media);
 
-          if (!shouldLoadCarouselVideo(media)) {
+          if (!shouldLoadMedia(media)) {
             return;
           }
 
@@ -118,11 +118,21 @@ function createMediaElement(media, basePath, className = "") {
   }
 
   const img = document.createElement("img");
+  const isGif = /\.gif$/i.test(mediaPath);
   img.className = className;
-  img.src = mediaPath;
   img.alt = media.alt || "";
   img.loading = "lazy";
   img.decoding = "async";
+
+  if (isGif) {
+    img.src = "data:image/gif;base64,R0lGODlhAQABAAAAACw=";
+    img.dataset.src = mediaPath;
+    img.dataset.lazyCarousel = "true";
+    portfolioLazyMedia.observe(img);
+  } else {
+    img.src = mediaPath;
+  }
+
   return img;
 }
 
