@@ -104,8 +104,26 @@ function verifyAdminSession(token = "") {
 }
 
 function isAdminAuthenticated(request) {
+  if (process.env.LOCAL_ADMIN_BYPASS === "true" && isLocalRequest(request)) {
+    return true;
+  }
+
   const cookies = parseCookies(request.headers.cookie || "");
   return verifyAdminSession(cookies[adminCookieName]);
+}
+
+function isLocalRequest(request) {
+  const host = String(request.headers.host || "").split(":")[0].toLowerCase();
+  const remoteAddress = request.socket.remoteAddress || "";
+
+  return (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "::1" ||
+    remoteAddress === "127.0.0.1" ||
+    remoteAddress === "::1" ||
+    remoteAddress === "::ffff:127.0.0.1"
+  );
 }
 
 function getCookieSecurity(request) {
