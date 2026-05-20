@@ -113,6 +113,21 @@ function resumeVisibleIndexVideos() {
   visibleIndexVideos.forEach(requestIndexVideoPlayback);
 }
 
+function primeInitialIndexVideos() {
+  const videos = Array.from(projectGrid?.querySelectorAll("video.project-media") || []);
+  const preloadMargin = 260;
+
+  videos.forEach((video) => {
+    const rect = video.getBoundingClientRect();
+    const isNearViewport = rect.bottom >= -preloadMargin && rect.top <= window.innerHeight + preloadMargin;
+
+    if (isNearViewport) {
+      visibleIndexVideos.add(video);
+      requestIndexVideoPlayback(video);
+    }
+  });
+}
+
 const indexVideoObserver = "IntersectionObserver" in window
   ? new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -193,6 +208,8 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
     });
 
   resizeIndexGrid();
+  window.requestAnimationFrame(primeInitialIndexVideos);
+  window.setTimeout(primeInitialIndexVideos, 350);
   document.fonts?.ready.then(resizeIndexGrid);
   window.addEventListener("resize", resizeIndexGrid);
   window.PORTFOLIO_INDEX_LOADER?.ready();
