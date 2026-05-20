@@ -451,6 +451,8 @@ video {
   min-height: clamp(420px, 56vh, 760px);
   overflow: hidden;
   cursor: crosshair;
+  touch-action: none;
+  user-select: none;
 }
 
 .about-pointcloud-shell::before {

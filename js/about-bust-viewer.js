@@ -35,6 +35,18 @@
     targetX: -0.08,
     targetY: 0.38
   };
+  const touchRotation = {
+    x: 0,
+    y: 0,
+    targetX: 0,
+    targetY: 0
+  };
+  const drag = {
+    active: false,
+    pointerId: null,
+    lastX: 0,
+    lastY: 0
+  };
   const baseRotationY = 0.38;
   const hoverRotationRangeY = Math.PI * 0.72;
   const buffers = {
@@ -726,15 +738,24 @@
       return;
     }
 
+    touchRotation.x += (touchRotation.targetX - touchRotation.x) * 0.16;
+    touchRotation.y += (touchRotation.targetY - touchRotation.y) * 0.16;
     mouse.x += (mouse.targetX - mouse.x) * 0.11;
     mouse.y += (mouse.targetY - mouse.y) * 0.11;
     mouse.hover += ((mouse.active ? 1 : 0) - mouse.hover) * 0.12;
-    rotation.targetY = mouse.active
-      ? baseRotationY + (mouse.x / Math.max(view.width, 1) - 0.5) * hoverRotationRangeY
-      : baseRotationY + Math.sin(time * 0.00034) * 0.16;
-    rotation.targetX = mouse.active
-      ? -0.08 - (mouse.y / Math.max(view.height, 1) - 0.5) * 0.92
-      : -0.08 + Math.cos(time * 0.00028) * 0.08;
+
+    if (drag.active) {
+      rotation.targetY = baseRotationY + touchRotation.y;
+      rotation.targetX = -0.08 + touchRotation.x;
+    } else {
+      rotation.targetY = mouse.active
+        ? baseRotationY + touchRotation.y + (mouse.x / Math.max(view.width, 1) - 0.5) * hoverRotationRangeY
+        : baseRotationY + touchRotation.y + Math.sin(time * 0.00034) * 0.16;
+      rotation.targetX = mouse.active
+        ? -0.08 + touchRotation.x - (mouse.y / Math.max(view.height, 1) - 0.5) * 0.92
+        : -0.08 + touchRotation.x + Math.cos(time * 0.00028) * 0.08;
+    }
+
     rotation.x += (rotation.targetX - rotation.x) * 0.09;
     rotation.y += (rotation.targetY - rotation.y) * 0.09;
 
@@ -817,19 +838,75 @@
     mouse.targetY = event.clientY - rect.top;
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(value, max));
+  }
+
+  function beginDrag(event) {
+    drag.active = true;
+    drag.pointerId = event.pointerId;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    updatePointer(event);
+    shell.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  }
+
+  function moveDrag(event) {
+    if (!drag.active || event.pointerId !== drag.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - drag.lastX;
+    const deltaY = event.clientY - drag.lastY;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    touchRotation.targetY += deltaX * 0.008;
+    touchRotation.targetX = clamp(touchRotation.targetX - deltaY * 0.006, -0.68, 0.62);
+    updatePointer(event);
+    event.preventDefault();
+  }
+
+  function endDrag(event) {
+    if (!drag.active || event.pointerId !== drag.pointerId) {
+      return;
+    }
+
+    drag.active = false;
+    drag.pointerId = null;
+    mouse.active = false;
+    mouse.targetX = view.width / 2;
+    mouse.targetY = view.height / 2;
+    shell.releasePointerCapture?.(event.pointerId);
+  }
+
   shell.addEventListener("pointerenter", (event) => {
     updatePointer(event);
   });
 
   shell.addEventListener("pointermove", (event) => {
+    moveDrag(event);
+
+    if (drag.active) {
+      return;
+    }
+
     updatePointer(event);
   });
 
   shell.addEventListener("pointerleave", () => {
+    if (drag.active) {
+      return;
+    }
+
     mouse.active = false;
     mouse.targetX = view.width / 2;
     mouse.targetY = view.height / 2;
   });
+
+  shell.addEventListener("pointerdown", beginDrag);
+  shell.addEventListener("pointerup", endDrag);
+  shell.addEventListener("pointercancel", endDrag);
 
   window.addEventListener("resize", () => {
     resize();
