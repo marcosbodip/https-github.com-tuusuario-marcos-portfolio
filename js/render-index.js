@@ -43,7 +43,6 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         `assets/projects/${project.slug}`,
         "project-media"
       );
-      window.PORTFOLIO_INDEX_LOADER?.register(media);
 
       const resizeCard = () => resizeIndexCard(card);
 
@@ -72,5 +71,4 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   resizeIndexGrid();
   document.fonts?.ready.then(resizeIndexGrid);
   window.addEventListener("resize", resizeIndexGrid);
-  window.PORTFOLIO_INDEX_LOADER?.ready();
 }
