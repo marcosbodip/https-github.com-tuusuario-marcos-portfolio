@@ -214,14 +214,14 @@ window.PORTFOLIO_PROJECTS = [
           "ratio": "portrait"
         },
         {
-          "file": "secondary-02.gif",
-          "type": "image",
+          "file": "secondary-02_optimized.mp4",
+          "type": "video",
           "alt": "DanideVito furniture arc shot",
           "ratio": "square"
         },
         {
-          "file": "secondary-03.gif",
-          "type": "image",
+          "file": "secondary-03_optimized.mp4",
+          "type": "video",
           "alt": "DanideVito furniture solo shot",
           "ratio": "square"
         }
@@ -307,8 +307,8 @@ window.PORTFOLIO_PROJECTS = [
           "ratio": "wide"
         },
         {
-          "file": "Secuencia 01_1.gif",
-          "type": "image",
+          "file": "Secuencia 01_optimized.mp4",
+          "type": "video",
           "alt": "Ambar Beer Motion Secuencia 01 1",
           "ratio": "full-row"
         }
@@ -543,8 +543,8 @@ window.PORTFOLIO_PROJECTS = [
           "alt": "New Project main media"
         },
         {
-          "file": "v3-ezgif.com-video-to-gif-converter (1).gif",
-          "type": "image",
+          "file": "v3-ezgif.com-video-to-gif-converter (1)_optimized.mp4",
+          "type": "video",
           "alt": "New Project v3 ezgif.com video to gif converter (1)",
           "ratio": "portrait"
         },
@@ -555,8 +555,8 @@ window.PORTFOLIO_PROJECTS = [
           "ratio": "portrait"
         },
         {
-          "file": "carruselproductos.gif",
-          "type": "image",
+          "file": "carruselproductos_optimized.mp4",
+          "type": "video",
           "alt": "New Project carruselproductos",
           "ratio": "square"
         }
@@ -1058,8 +1058,8 @@ window.PORTFOLIO_PROJECTS = [
       },
       "secondary": [
         {
-          "file": "SCREENSHOTS_MARCOS-ezgif.com-video-to-gif-converter.gif",
-          "type": "image",
+          "file": "SCREENSHOTS_MARCOS-ezgif.com-video-to-gif-converter_optimized.mp4",
+          "type": "video",
           "alt": "Dron Takeoff SCREENSHOTS MARCOS ezgif.com video to gif converter",
           "ratio": "square"
         },
