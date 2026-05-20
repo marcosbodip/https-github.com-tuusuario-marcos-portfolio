@@ -556,8 +556,14 @@ video {
 }
 
 @media (max-width: 640px) {
+  .about-copy {
+    padding-bottom: 28px;
+  }
+
   .about-pointcloud-shell {
-    display: none;
+    display: block;
+    min-height: clamp(280px, 92vw, 390px);
+    margin: 0 var(--side-padding) 34px;
   }
 }
 
