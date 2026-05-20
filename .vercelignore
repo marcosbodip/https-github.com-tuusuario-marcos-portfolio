@@ -1,0 +1,13 @@
+admin.html
+js/admin.js
+server.mjs
+package.json
+README.md
+DEPLOYMENT.md
+.env.example
+.gitignore
+.checkpoints/
+server.log
+server-error.log
+data/projects.backup.js
+data/projects.tmp.js
