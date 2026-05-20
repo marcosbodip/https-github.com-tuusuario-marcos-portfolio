@@ -862,7 +862,7 @@
     drag.lastX = event.clientX;
     drag.lastY = event.clientY;
     touchRotation.targetY = clamp(touchRotation.targetY + deltaX * 0.0046, -1.08, 1.08);
-    touchRotation.targetX = clamp(touchRotation.targetX - deltaY * 0.0038, -0.46, 0.48);
+    touchRotation.targetX = clamp(touchRotation.targetX - deltaY * 0.0012, -0.22, 0.24);
     updatePointer(event);
     event.preventDefault();
   }
