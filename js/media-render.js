@@ -127,7 +127,7 @@ const portfolioLazyMedia = (() => {
     observer.observe(media);
   }
 
-  return { load, observe, prepareAutoplayVideo };
+  return { load, observe, prepareAutoplayVideo, requestVideoAutoplay };
 })();
 
 window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;

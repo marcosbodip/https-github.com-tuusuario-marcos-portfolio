@@ -4,6 +4,7 @@ const indexEdgeAutoScroll = {
   frame: null,
   speed: 0
 };
+const visibleIndexVideos = new Set();
 
 function stopIndexEdgeAutoScroll() {
   indexEdgeAutoScroll.speed = 0;
@@ -99,6 +100,55 @@ function resizeIndexGrid() {
   Array.from(projectGrid.children).forEach(resizeIndexCard);
 }
 
+function requestIndexVideoPlayback(video) {
+  if (!video) {
+    return;
+  }
+
+  window.PORTFOLIO_MEDIA_LAZY?.load(video);
+  window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+}
+
+function resumeVisibleIndexVideos() {
+  visibleIndexVideos.forEach(requestIndexVideoPlayback);
+}
+
+const indexVideoObserver = "IntersectionObserver" in window
+  ? new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const video = entry.target;
+
+      if (entry.isIntersecting) {
+        visibleIndexVideos.add(video);
+        requestIndexVideoPlayback(video);
+        return;
+      }
+
+      visibleIndexVideos.delete(video);
+      video.pause();
+    });
+  }, {
+    rootMargin: "240px 0px",
+    threshold: 0.02
+  })
+  : null;
+
+function observeIndexVideo(video) {
+  if (!video) {
+    return;
+  }
+
+  if (!indexVideoObserver) {
+    visibleIndexVideos.add(video);
+    requestIndexVideoPlayback(video);
+    return;
+  }
+
+  indexVideoObserver.observe(video);
+  video.addEventListener("loadedmetadata", () => requestIndexVideoPlayback(video), { once: true });
+  video.addEventListener("canplay", () => requestIndexVideoPlayback(video), { once: true });
+}
+
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
   projectGrid.innerHTML = "";
 
@@ -119,6 +169,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       const resizeCard = () => resizeIndexCard(card);
 
       if (media.tagName === "VIDEO") {
+        observeIndexVideo(media);
         media.addEventListener("loadedmetadata", resizeCard, { once: true });
       } else if (media.complete) {
         window.requestAnimationFrame(resizeCard);
@@ -143,6 +194,14 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   resizeIndexGrid();
   document.fonts?.ready.then(resizeIndexGrid);
   window.addEventListener("resize", resizeIndexGrid);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      resumeVisibleIndexVideos();
+    }
+  });
+  window.addEventListener("pageshow", resumeVisibleIndexVideos);
+  window.addEventListener("pointerdown", resumeVisibleIndexVideos, { once: true });
+  window.addEventListener("touchstart", resumeVisibleIndexVideos, { once: true, passive: true });
 
   if (supportsIndexHover) {
     window.addEventListener("pointermove", updateIndexEdgeAutoScroll);
