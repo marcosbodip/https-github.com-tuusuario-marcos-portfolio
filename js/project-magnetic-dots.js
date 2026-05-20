@@ -19,14 +19,14 @@ if (magneticProjectRoot) {
 
   function getSettings() {
     const compact = window.innerWidth <= 760;
-    const spacingX = compact ? 24 : 28;
+    const spacingX = compact ? 19 : 22;
 
     return {
       spacingX,
-      spacingY: spacingX * 0.78,
-      radius: compact ? 140 : 210,
-      pull: compact ? 0.3 : 0.36,
-      dotSize: compact ? 1.35 : 1.55,
+      spacingY: spacingX * 0.76,
+      radius: compact ? 132 : 198,
+      pull: compact ? 0.28 : 0.34,
+      dotSize: compact ? 1.15 : 1.34,
       ease: 0.13
     };
   }
