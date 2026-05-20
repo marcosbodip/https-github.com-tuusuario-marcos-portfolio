@@ -34,11 +34,7 @@ const portfolioLazyMedia = (() => {
       return;
     }
 
-    const playWhenReady = () => {
-      if (visibleMedia.has(video)) {
-        playVideo(video);
-      }
-    };
+    const playWhenReady = () => playVideo(video);
 
     video.addEventListener("loadedmetadata", playWhenReady, { once: true });
     video.addEventListener("canplay", playWhenReady, { once: true });

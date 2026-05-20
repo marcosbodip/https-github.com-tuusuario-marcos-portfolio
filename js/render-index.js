@@ -1,10 +1,13 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const indexEdgeAutoScroll = {
   frame: null,
   speed: 0
 };
-const visibleIndexVideos = new Set();
+const allIndexVideos = new Set();
+const visibleIndexVideos = new Map();
+let indexVideoSyncFrame = null;
 
 function stopIndexEdgeAutoScroll() {
   indexEdgeAutoScroll.speed = 0;
@@ -116,11 +119,75 @@ function queueIndexVideoPlayback(video) {
 }
 
 function resumeVisibleIndexVideos() {
-  visibleIndexVideos.forEach(queueIndexVideoPlayback);
+  syncIndexVideoPlayback();
+}
+
+function getIndexVideoRatio(video) {
+  const rect = video.getBoundingClientRect();
+  const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
+  const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+  const area = rect.width * rect.height;
+
+  if (!area) {
+    return 0;
+  }
+
+  return (visibleWidth * visibleHeight) / area;
+}
+
+function getIndexVideoScore(video, ratio) {
+  const rect = video.getBoundingClientRect();
+  const center = rect.top + rect.height / 2;
+  const centerDistance = Math.abs(center - window.innerHeight / 2) / window.innerHeight;
+
+  return ratio - centerDistance * 0.35;
+}
+
+function syncIndexVideoPlayback() {
+  indexVideoSyncFrame = null;
+
+  if (!allIndexVideos.size) {
+    return;
+  }
+
+  const activeVideos = new Set();
+
+  if (isTouchIndex) {
+    const candidates = Array.from(allIndexVideos)
+      .map((video) => [video, getIndexVideoRatio(video)])
+      .filter(([, ratio]) => ratio >= 0.16)
+      .sort((a, b) => getIndexVideoScore(b[0], b[1]) - getIndexVideoScore(a[0], a[1]));
+
+    candidates.slice(0, 1).forEach(([video]) => activeVideos.add(video));
+  } else {
+    visibleIndexVideos.forEach((ratio, video) => {
+      if (ratio > 0.01) {
+        activeVideos.add(video);
+      }
+    });
+  }
+
+  activeVideos.forEach(queueIndexVideoPlayback);
+
+  if (isTouchIndex) {
+    allIndexVideos.forEach((video) => {
+      if (!activeVideos.has(video) && !video.paused) {
+        video.pause();
+      }
+    });
+  }
+}
+
+function scheduleIndexVideoSync() {
+  if (indexVideoSyncFrame) {
+    return;
+  }
+
+  indexVideoSyncFrame = window.requestAnimationFrame(syncIndexVideoPlayback);
 }
 
 function primeInitialIndexVideos() {
-  const videos = Array.from(projectGrid?.querySelectorAll("video.project-media") || []);
+  const videos = Array.from(allIndexVideos);
   const preloadMargin = 260;
 
   videos.forEach((video) => {
@@ -128,10 +195,11 @@ function primeInitialIndexVideos() {
     const isNearViewport = rect.bottom >= -preloadMargin && rect.top <= window.innerHeight + preloadMargin;
 
     if (isNearViewport) {
-      visibleIndexVideos.add(video);
-      queueIndexVideoPlayback(video);
+      window.PORTFOLIO_MEDIA_LAZY?.load(video);
     }
   });
+
+  scheduleIndexVideoSync();
 }
 
 const indexVideoObserver = "IntersectionObserver" in window
@@ -140,13 +208,15 @@ const indexVideoObserver = "IntersectionObserver" in window
       const video = entry.target;
 
       if (entry.isIntersecting) {
-        visibleIndexVideos.add(video);
-        queueIndexVideoPlayback(video);
+        visibleIndexVideos.set(video, entry.intersectionRatio);
+        window.PORTFOLIO_MEDIA_LAZY?.load(video);
+        scheduleIndexVideoSync();
         return;
       }
 
       visibleIndexVideos.delete(video);
       video.pause();
+      scheduleIndexVideoSync();
     });
   }, {
     rootMargin: "240px 0px",
@@ -160,14 +230,14 @@ function observeIndexVideo(video) {
   }
 
   if (!indexVideoObserver) {
-    visibleIndexVideos.add(video);
-    queueIndexVideoPlayback(video);
+    visibleIndexVideos.set(video, 1);
+    scheduleIndexVideoSync();
     return;
   }
 
   indexVideoObserver.observe(video);
-  video.addEventListener("loadedmetadata", () => requestIndexVideoPlayback(video), { once: true });
-  video.addEventListener("canplay", () => requestIndexVideoPlayback(video), { once: true });
+  video.addEventListener("loadedmetadata", scheduleIndexVideoSync, { once: true });
+  video.addEventListener("canplay", scheduleIndexVideoSync, { once: true });
 }
 
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
@@ -175,7 +245,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
   window.PORTFOLIO_PROJECTS
     .filter((project) => !project.hidden)
-    .forEach((project, index) => {
+    .forEach((project) => {
       const card = document.createElement("a");
       card.className = "project-card";
       card.href = `project.html?project=${project.slug}`;
@@ -213,12 +283,8 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       window.PORTFOLIO_INDEX_LOADER?.register(media);
 
       if (media.tagName === "VIDEO") {
+        allIndexVideos.add(media);
         observeIndexVideo(media);
-
-        if (index < (window.innerWidth <= 760 ? 3 : 6)) {
-          visibleIndexVideos.add(media);
-          queueIndexVideoPlayback(media);
-        }
       }
     });
 
@@ -226,7 +292,12 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   window.requestAnimationFrame(primeInitialIndexVideos);
   window.setTimeout(primeInitialIndexVideos, 350);
   document.fonts?.ready.then(resizeIndexGrid);
-  window.addEventListener("resize", resizeIndexGrid);
+  document.fonts?.ready.then(scheduleIndexVideoSync);
+  window.addEventListener("scroll", scheduleIndexVideoSync, { passive: true });
+  window.addEventListener("resize", () => {
+    resizeIndexGrid();
+    scheduleIndexVideoSync();
+  });
   window.PORTFOLIO_INDEX_LOADER?.ready();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {

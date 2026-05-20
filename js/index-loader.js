@@ -14,7 +14,7 @@
     items: new Map(),
     ready: false,
     hidden: false,
-    maxItems: window.innerWidth <= 760 ? 4 : 6
+    maxItems: window.innerWidth <= 760 ? 2 : 6
   };
 
   function setProgress(value) {
@@ -67,8 +67,8 @@
   }
 
   function registerVideo(video) {
+    video.preload = "auto";
     window.PORTFOLIO_MEDIA_LAZY?.load(video);
-    window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
 
     if (video.readyState >= 3) {
       updateItem(video, 1);

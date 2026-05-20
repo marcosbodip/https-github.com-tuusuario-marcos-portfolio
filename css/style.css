@@ -262,6 +262,14 @@ video {
   transition: filter 0.35s ease, transform 0.5s ease;
 }
 
+.project-media::-webkit-media-controls,
+.project-media::-webkit-media-controls-panel,
+.project-media::-webkit-media-controls-overlay-play-button,
+.project-media::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
 .placeholder-media {
   min-height: auto;
   aspect-ratio: 4 / 5;
