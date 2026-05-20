@@ -52,6 +52,13 @@
 
     document.body.classList.remove("is-index-loading");
     document.body.classList.add("is-index-loaded");
+    window.dispatchEvent(new CustomEvent("portfolio:index-loader-hidden"));
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("portfolio:index-loader-hidden"));
+    });
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("portfolio:index-loader-hidden"));
+    }, 320);
     loader.addEventListener("transitionend", () => loader.remove(), { once: true });
     window.setTimeout(() => loader.remove(), 700);
   }

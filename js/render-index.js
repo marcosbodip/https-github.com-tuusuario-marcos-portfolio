@@ -9,6 +9,10 @@ const allIndexVideos = new Set();
 const visibleIndexVideos = new Map();
 let indexVideoSyncFrame = null;
 
+function isIndexLoaderActive() {
+  return document.body.classList.contains("is-index-loading");
+}
+
 function stopIndexEdgeAutoScroll() {
   indexEdgeAutoScroll.speed = 0;
 
@@ -113,6 +117,11 @@ function requestIndexVideoPlayback(video) {
 }
 
 function queueIndexVideoPlayback(video) {
+  if (isIndexLoaderActive()) {
+    window.PORTFOLIO_MEDIA_LAZY?.load(video);
+    return;
+  }
+
   requestIndexVideoPlayback(video);
   window.requestAnimationFrame(() => requestIndexVideoPlayback(video));
   window.setTimeout(() => requestIndexVideoPlayback(video), 500);
@@ -147,6 +156,10 @@ function syncIndexVideoPlayback() {
   indexVideoSyncFrame = null;
 
   if (!allIndexVideos.size) {
+    return;
+  }
+
+  if (isIndexLoaderActive()) {
     return;
   }
 
@@ -293,6 +306,11 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   window.setTimeout(primeInitialIndexVideos, 350);
   document.fonts?.ready.then(resizeIndexGrid);
   document.fonts?.ready.then(scheduleIndexVideoSync);
+  window.addEventListener("portfolio:index-loader-hidden", () => {
+    scheduleIndexVideoSync();
+    window.setTimeout(scheduleIndexVideoSync, 220);
+    window.setTimeout(scheduleIndexVideoSync, 700);
+  });
   window.addEventListener("scroll", scheduleIndexVideoSync, { passive: true });
   window.addEventListener("resize", () => {
     resizeIndexGrid();
