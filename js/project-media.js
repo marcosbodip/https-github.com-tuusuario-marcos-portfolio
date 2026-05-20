@@ -3,6 +3,7 @@ const desktopMaxHoverScale = 1.28;
 const viewportMargin = 32;
 
 function playVideo(video) {
+  window.PORTFOLIO_MEDIA_LAZY?.load(video);
   const playAttempt = video.play();
 
   if (playAttempt && typeof playAttempt.catch === "function") {

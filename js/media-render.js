@@ -1,16 +1,98 @@
+const portfolioLazyMedia = (() => {
+  const loadedMedia = new WeakSet();
+  const visibleMedia = new WeakSet();
+
+  function playVideo(video) {
+    const playAttempt = video.play();
+
+    if (playAttempt && typeof playAttempt.catch === "function") {
+      playAttempt.catch(() => {});
+    }
+  }
+
+  function load(media) {
+    if (!media || loadedMedia.has(media)) {
+      return media;
+    }
+
+    const src = media.dataset.src;
+
+    if (src) {
+      media.src = src;
+      media.removeAttribute("data-src");
+    }
+
+    loadedMedia.add(media);
+    media.load?.();
+
+    if (media.tagName === "VIDEO" && media.dataset.lazyAutoplay === "true" && visibleMedia.has(media)) {
+      playVideo(media);
+    }
+
+    return media;
+  }
+
+  const observer = "IntersectionObserver" in window
+    ? new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const media = entry.target;
+
+        if (entry.isIntersecting) {
+          visibleMedia.add(media);
+          load(media);
+
+          if (media.tagName === "VIDEO" && media.dataset.lazyAutoplay === "true") {
+            playVideo(media);
+          }
+
+          return;
+        }
+
+        visibleMedia.delete(media);
+
+        if (media.tagName === "VIDEO" && !media.closest(".project-media-carousel")) {
+          media.pause();
+        }
+      });
+    }, {
+      rootMargin: "700px 0px",
+      threshold: 0.01
+    })
+    : null;
+
+  function observe(media) {
+    if (!media) {
+      return;
+    }
+
+    if (!observer) {
+      load(media);
+      return;
+    }
+
+    observer.observe(media);
+  }
+
+  return { load, observe };
+})();
+
+window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;
+
 function createMediaElement(media, basePath, className = "") {
   const mediaPath = media.previewUrl || `${basePath}/${media.file}`;
 
   if (media.type === "video" || /\.(mp4|webm|mov)$/i.test(media.file)) {
     const video = document.createElement("video");
     video.className = className;
-    video.src = mediaPath;
+    video.dataset.src = mediaPath;
+    video.dataset.lazyAutoplay = "true";
     video.autoplay = true;
     video.muted = true;
     video.loop = true;
     video.playsInline = true;
-    video.preload = "metadata";
+    video.preload = "none";
     video.setAttribute("aria-label", media.alt || "");
+    portfolioLazyMedia.observe(video);
     return video;
   }
 
@@ -18,6 +100,8 @@ function createMediaElement(media, basePath, className = "") {
   img.className = className;
   img.src = mediaPath;
   img.alt = media.alt || "";
+  img.loading = "lazy";
+  img.decoding = "async";
   return img;
 }
 
