@@ -282,7 +282,7 @@ function prepareCarouselVideo(item) {
 
   if (video.dataset.carouselPrepared !== "true") {
     video.dataset.carouselPrepared = "true";
-    video.preload = "auto";
+    video.preload = "none";
     video.autoplay = false;
     video.muted = true;
     video.playsInline = true;

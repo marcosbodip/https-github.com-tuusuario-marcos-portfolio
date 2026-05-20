@@ -32,6 +32,22 @@ const portfolioLazyMedia = (() => {
     return media;
   }
 
+  function shouldLoadCarouselVideo(media) {
+    if (media.tagName !== "VIDEO") {
+      return true;
+    }
+
+    const carousel = media.closest(".project-media-carousel");
+
+    if (!carousel) {
+      return true;
+    }
+
+    const item = media.closest(".project-media-item");
+
+    return Boolean(item?.classList.contains("is-active") || item?.classList.contains("is-hovered"));
+  }
+
   const observer = "IntersectionObserver" in window
     ? new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -39,6 +55,11 @@ const portfolioLazyMedia = (() => {
 
         if (entry.isIntersecting) {
           visibleMedia.add(media);
+
+          if (!shouldLoadCarouselVideo(media)) {
+            return;
+          }
+
           load(media);
 
           if (media.tagName === "VIDEO" && media.dataset.lazyAutoplay === "true") {
