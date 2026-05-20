@@ -69,6 +69,7 @@
   let program = null;
   let texture = null;
   let hasTexture = false;
+  let pointBudget = null;
 
   const vertexShader = `
     precision mediump float;
@@ -82,6 +83,7 @@
     uniform float uHover;
     uniform vec2 uPointer;
     uniform float uPixelRatio;
+    uniform float uPointScale;
     uniform float uRotationX;
     uniform float uRotationY;
     varying float vLight;
@@ -106,7 +108,7 @@
       projected.xy += direction * influence * influence * 0.006 * projected.w;
       projected.z += influence * 0.01 * projected.w;
       gl_Position = projected;
-      gl_PointSize = clamp((0.42 + aRandom * 0.24 + influence * 0.24) * uPixelRatio / max(projected.w * 0.42, 0.72), 0.56, 2.18);
+      gl_PointSize = clamp((0.42 + aRandom * 0.24 + influence * 0.24) * uPixelRatio * uPointScale / max(projected.w * 0.42, 0.72), 0.56, 3.1);
 
       float cosY = cos(uRotationY);
       float sinY = sin(uRotationY);
@@ -142,6 +144,7 @@
     uniform sampler2D uTexture;
     uniform float uHasTexture;
     uniform float uHover;
+    uniform float uAlphaScale;
     varying float vLight;
     varying float vDepth;
     varying float vFacing;
@@ -165,7 +168,7 @@
       float scan = 0.035 + form + detail * 0.58 - textureShadow * 0.68 - cavity * 0.86 + vRandom * 0.035 + uHover * 0.1;
       float colorInfluence = smoothstep(0.02, 0.86, vInfluence) + smoothstep(0.35, 1.0, uHover) * 0.22;
       vec3 color = mix(uBase, uAccent, clamp(colorInfluence, 0.0, 1.0));
-      float alpha = (0.016 + vLight * 0.32 + detail * 0.14 + frontalDetail * 0.1 + cavity * 0.16 + vInfluence * 0.05) * vFacing * fade;
+      float alpha = (0.016 + vLight * 0.32 + detail * 0.14 + frontalDetail * 0.1 + cavity * 0.16 + vInfluence * 0.05) * vFacing * fade * uAlphaScale;
       gl_FragColor = vec4(color * clamp(scan, 0.025, 1.28), alpha);
     }
   `;
@@ -313,29 +316,35 @@
 
     if (width <= 640) {
       return {
-        maxVertexCount: 360000,
-        maxSurfaceCount: 440000,
-        surfaceSamples: 2
+        maxVertexCount: 260000,
+        maxSurfaceCount: 320000,
+        surfaceSamples: 1,
+        pointScale: 1.45,
+        alphaScale: 1.35
       };
     }
 
     if (width <= 980) {
       return {
-        maxVertexCount: 520000,
-        maxSurfaceCount: 620000,
-        surfaceSamples: 3
+        maxVertexCount: 420000,
+        maxSurfaceCount: 520000,
+        surfaceSamples: 2,
+        pointScale: 1.18,
+        alphaScale: 1.16
       };
     }
 
     return {
       maxVertexCount: 720000,
       maxSurfaceCount: 850000,
-      surfaceSamples: 5
+      surfaceSamples: 5,
+      pointScale: 1,
+      alphaScale: 1
     };
   }
 
   function buildPointCloud(glb) {
-    const pointBudget = getPointBudget();
+    pointBudget = getPointBudget();
     const positions = [];
     const normals = [];
     const uvs = [];
@@ -800,6 +809,7 @@
     gl.uniform1f(gl.getUniformLocation(program, "uHover"), mouse.hover);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationX"), rotation.x);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationY"), rotation.y);
+    gl.uniform1f(gl.getUniformLocation(program, "uPointScale"), pointBudget?.pointScale || 1);
     gl.uniform2f(
       gl.getUniformLocation(program, "uPointer"),
       (mouse.x / Math.max(view.width, 1)) * 2 - 1,
@@ -809,6 +819,7 @@
     gl.uniform3fv(gl.getUniformLocation(program, "uBase"), [242 / 255, 238 / 255, 231 / 255]);
     gl.uniform3fv(gl.getUniformLocation(program, "uAccent"), accentRgb);
     gl.uniform1f(gl.getUniformLocation(program, "uHasTexture"), hasTexture ? 1 : 0);
+    gl.uniform1f(gl.getUniformLocation(program, "uAlphaScale"), pointBudget?.alphaScale || 1);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture || createFallbackTexture());
     gl.uniform1i(gl.getUniformLocation(program, "uTexture"), 0);
