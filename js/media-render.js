@@ -55,7 +55,7 @@ const portfolioLazyMedia = (() => {
         }
       });
     }, {
-      rootMargin: "700px 0px",
+      rootMargin: "180px 0px",
       threshold: 0.01
     })
     : null;
@@ -98,10 +98,11 @@ function createMediaElement(media, basePath, className = "") {
 
   const img = document.createElement("img");
   img.className = className;
-  img.src = mediaPath;
+  img.dataset.src = mediaPath;
   img.alt = media.alt || "";
   img.loading = "lazy";
   img.decoding = "async";
+  portfolioLazyMedia.observe(img);
   return img;
 }
 
