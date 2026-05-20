@@ -310,21 +310,20 @@
 
   function getPointBudget() {
     const width = window.innerWidth;
-    const dpr = window.devicePixelRatio || 1;
 
-    if (width <= 640 || dpr >= 2.6) {
+    if (width <= 640) {
       return {
-        maxVertexCount: 180000,
-        maxSurfaceCount: 220000,
-        surfaceSamples: 1
+        maxVertexCount: 360000,
+        maxSurfaceCount: 440000,
+        surfaceSamples: 2
       };
     }
 
     if (width <= 980) {
       return {
-        maxVertexCount: 300000,
-        maxSurfaceCount: 360000,
-        surfaceSamples: 2
+        maxVertexCount: 520000,
+        maxSurfaceCount: 620000,
+        surfaceSamples: 3
       };
     }
 
