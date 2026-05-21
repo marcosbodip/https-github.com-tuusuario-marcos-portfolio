@@ -271,7 +271,11 @@ video {
 .project-media::-webkit-media-controls,
 .project-media::-webkit-media-controls-panel,
 .project-media::-webkit-media-controls-overlay-play-button,
-.project-media::-webkit-media-controls-start-playback-button {
+.project-media::-webkit-media-controls-start-playback-button,
+.project-media-item video::-webkit-media-controls,
+.project-media-item video::-webkit-media-controls-panel,
+.project-media-item video::-webkit-media-controls-overlay-play-button,
+.project-media-item video::-webkit-media-controls-start-playback-button {
   display: none !important;
   -webkit-appearance: none;
 }

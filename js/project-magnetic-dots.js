@@ -8,6 +8,7 @@ if (magneticProjectRoot) {
     y: 0,
     active: false
   };
+  const supportsPointerMagnet = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   let dots = [];
   let width = 0;
   let height = 0;
@@ -134,11 +135,12 @@ if (magneticProjectRoot) {
   resizeCanvas();
   drawDots();
 
-  window.addEventListener("pointermove", updatePointer);
-  window.addEventListener("pointerdown", updatePointer);
-  window.addEventListener("pointerleave", () => {
-    pointer.active = false;
-  });
+  if (supportsPointerMagnet) {
+    window.addEventListener("pointermove", updatePointer);
+    window.addEventListener("pointerleave", () => {
+      pointer.active = false;
+    });
+  }
   window.addEventListener("blur", () => {
     pointer.active = false;
   });

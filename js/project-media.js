@@ -4,11 +4,7 @@ const viewportMargin = 32;
 
 function playVideo(video) {
   window.PORTFOLIO_MEDIA_LAZY?.load(video);
-  const playAttempt = video.play();
-
-  if (playAttempt && typeof playAttempt.catch === "function") {
-    playAttempt.catch(() => {});
-  }
+  window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
 }
 
 function pauseVideosAround(activeItem, grid) {
@@ -283,10 +279,13 @@ function prepareCarouselVideo(item) {
   if (video.dataset.carouselPrepared !== "true") {
     video.dataset.carouselPrepared = "true";
     video.preload = "none";
-    video.autoplay = false;
     video.muted = true;
     video.playsInline = true;
-    video.removeAttribute("autoplay");
+    video.controls = false;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.removeAttribute("controls");
   }
 
   return video;
@@ -635,6 +634,37 @@ function setupProjectCarousel(carousel) {
 
 document.querySelectorAll(".project-media-item").forEach(classifyMediaItem);
 document.querySelectorAll(".project-media-carousel").forEach(setupProjectCarousel);
+
+function autoplayInitialProjectVideos() {
+  document.querySelectorAll(".project-media-item video").forEach((video) => {
+    const item = video.closest(".project-media-item");
+    const carousel = video.closest(".project-media-carousel");
+
+    if (carousel && !item?.classList.contains("is-active")) {
+      return;
+    }
+
+    const rect = video.getBoundingClientRect();
+    const isNearViewport = rect.bottom >= -160 && rect.top <= window.innerHeight + 180;
+
+    if (!isNearViewport) {
+      return;
+    }
+
+    playVideo(video);
+    window.requestAnimationFrame(() => playVideo(video));
+    window.setTimeout(() => playVideo(video), 450);
+  });
+}
+
+window.requestAnimationFrame(autoplayInitialProjectVideos);
+window.setTimeout(autoplayInitialProjectVideos, 350);
+window.addEventListener("pageshow", autoplayInitialProjectVideos);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    autoplayInitialProjectVideos();
+  }
+});
 
 if (supportsHover) {
   window.addEventListener("pointermove", updateEdgeAutoScroll);
