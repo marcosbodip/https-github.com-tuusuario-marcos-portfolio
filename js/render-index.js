@@ -144,14 +144,6 @@ function getVisibleRatio(element) {
   return (visibleWidth * visibleHeight) / area;
 }
 
-function getIndexCardScore(card, ratio) {
-  const rect = card.getBoundingClientRect();
-  const center = rect.top + rect.height / 2;
-  const centerDistance = Math.abs(center - window.innerHeight / 2) / window.innerHeight;
-
-  return ratio - centerDistance * 0.35;
-}
-
 function syncIndexVideoPlayback() {
   indexVideoSyncFrame = null;
 
@@ -165,20 +157,13 @@ function syncIndexVideoPlayback() {
 
   const activeVideos = new Set();
 
-  if (isTouchIndex) {
-    const candidates = Array.from(visibleIndexCards)
-      .map(([card, video]) => [card, video, getVisibleRatio(card)])
-      .filter(([, , ratio]) => ratio >= 0.16)
-      .sort((a, b) => getIndexCardScore(b[0], b[2]) - getIndexCardScore(a[0], a[2]));
+  const minVisibleRatio = isTouchIndex ? 0.08 : 0.01;
 
-    candidates.slice(0, 1).forEach(([, video]) => activeVideos.add(video));
-  } else {
-    visibleIndexCards.forEach((video, card) => {
-      if (getVisibleRatio(card) > 0.01) {
-        activeVideos.add(video);
-      }
-    });
-  }
+  visibleIndexCards.forEach((video, card) => {
+    if (getVisibleRatio(card) >= minVisibleRatio) {
+      activeVideos.add(video);
+    }
+  });
 
   activeVideos.forEach(queueIndexVideoPlayback);
 
