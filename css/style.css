@@ -3097,6 +3097,7 @@ video {
     filter: none !important;
     opacity: 1 !important;
     transform: none !important;
+    cursor: default;
   }
 
   .project-media-carousel-track .project-media-item img,
@@ -3104,6 +3105,7 @@ video {
     width: 100%;
     height: auto;
     max-height: none;
+    cursor: default;
     object-fit: contain;
   }
 

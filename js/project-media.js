@@ -641,6 +641,10 @@ function setupProjectCarousel(carousel) {
   track.classList.remove("is-resetting");
 
   carousel.addEventListener("click", (event) => {
+    if (isMobileCarouselLayout()) {
+      return;
+    }
+
     const item = getCarouselItemAtPoint(carousel, event.clientX, event.clientY);
 
     if (!item) {
@@ -678,6 +682,10 @@ function setupProjectCarousel(carousel) {
   }
 
   track.addEventListener("keydown", (event) => {
+    if (isMobileCarouselLayout()) {
+      return;
+    }
+
     const item = event.target.closest(".project-media-item");
 
     if (!item || (event.key !== "Enter" && event.key !== " ")) {
@@ -695,6 +703,10 @@ function setupProjectCarousel(carousel) {
   });
 
   track.addEventListener("keydown", (event) => {
+    if (isMobileCarouselLayout()) {
+      return;
+    }
+
     if (event.key === "Escape" && carousel.classList.contains("is-expanded")) {
       event.preventDefault();
       setCarouselViewer(carousel, false);
