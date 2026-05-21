@@ -248,8 +248,14 @@ function setupIndexVideoPoster(video, poster) {
     return;
   }
 
+  let hasPlayed = false;
   const showPoster = () => poster.classList.remove("is-hidden");
   const hidePoster = () => poster.classList.add("is-hidden");
+  const showPosterBeforePlayback = () => {
+    if (!hasPlayed) {
+      showPoster();
+    }
+  };
 
   const capturePosterFrame = () => {
     if (!video.videoWidth || !video.videoHeight || poster.dataset.posterReady === "true") {
@@ -272,11 +278,14 @@ function setupIndexVideoPoster(video, poster) {
   showPoster();
   video.addEventListener("loadeddata", capturePosterFrame, { once: true });
   video.addEventListener("canplay", capturePosterFrame, { once: true });
-  video.addEventListener("playing", hidePoster);
-  video.addEventListener("pause", showPoster);
-  video.addEventListener("waiting", showPoster);
-  video.addEventListener("stalled", showPoster);
-  video.addEventListener("emptied", showPoster);
+  video.addEventListener("playing", () => {
+    hasPlayed = true;
+    hidePoster();
+  });
+  video.addEventListener("pause", showPosterBeforePlayback);
+  video.addEventListener("waiting", showPosterBeforePlayback);
+  video.addEventListener("stalled", showPosterBeforePlayback);
+  video.addEventListener("emptied", showPosterBeforePlayback);
   video.addEventListener("error", showPoster);
 }
 

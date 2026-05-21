@@ -28,7 +28,10 @@ const portfolioLazyMedia = (() => {
         return;
       }
 
-      const threshold = Math.min(0.22, Math.max(0.08, duration * 0.035));
+      const customTrim = Number.parseFloat(video.dataset.loopTrim || "");
+      const threshold = Number.isFinite(customTrim) && customTrim > 0
+        ? Math.min(customTrim, Math.max(0.08, duration * 0.45))
+        : Math.min(0.22, Math.max(0.08, duration * 0.035));
       const remaining = duration - video.currentTime;
       const now = performance.now();
 
@@ -220,6 +223,9 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     video.className = className;
     video.dataset.src = mediaPath;
     video.dataset.lazyAutoplay = "true";
+    if (media.loopTrim) {
+      video.dataset.loopTrim = String(media.loopTrim);
+    }
     portfolioLazyMedia.prepareAutoplayVideo(video);
     video.preload = "none";
     video.setAttribute("aria-label", media.alt || "");

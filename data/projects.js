@@ -31,6 +31,7 @@ window.PORTFOLIO_PROJECTS = [
       "cover": {
         "file": "cover_optimized.mp4",
         "type": "video",
+        "loopTrim": 0.45,
         "alt": "Meta Heart"
       },
       "main": {
