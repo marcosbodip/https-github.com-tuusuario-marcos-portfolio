@@ -363,6 +363,17 @@ function syncCarouselVideo(item, shouldLoad, shouldPlay) {
     return;
   }
 
+  if (isMobileCarouselLayout()) {
+    video.autoplay = true;
+    video.setAttribute("autoplay", "");
+
+    if (shouldLoad) {
+      window.PORTFOLIO_MEDIA_LAZY?.load(video);
+    }
+
+    return;
+  }
+
   if (shouldPlay) {
     video.autoplay = true;
     video.setAttribute("autoplay", "");
@@ -739,6 +750,57 @@ document.querySelectorAll(".project-media-item").forEach(classifyMediaItem);
 document.querySelectorAll(".project-media-item video").forEach(setupProjectVideoPoster);
 document.querySelectorAll(".project-media-carousel").forEach(setupProjectCarousel);
 
+const mobileProjectVideoObserver = "IntersectionObserver" in window
+  ? new IntersectionObserver((entries) => {
+    if (!isMobileCarouselLayout()) {
+      return;
+    }
+
+    entries.forEach((entry) => {
+      const video = entry.target;
+
+      if (entry.isIntersecting) {
+        playVideo(video);
+        return;
+      }
+
+      video.pause();
+    });
+  }, {
+    rootMargin: "180px 0px",
+    threshold: [0, 0.08, 0.24, 0.5]
+  })
+  : null;
+
+function setupMobileProjectVideoPlayback() {
+  document.querySelectorAll(".project-media-item video").forEach((video) => {
+    if (mobileProjectVideoObserver) {
+      mobileProjectVideoObserver.observe(video);
+    }
+  });
+}
+
+function syncMobileProjectVideos() {
+  if (!isMobileCarouselLayout()) {
+    return;
+  }
+
+  document.querySelectorAll(".project-media-item video").forEach((video) => {
+    const rect = video.getBoundingClientRect();
+    const isVisible = rect.bottom >= -120 && rect.top <= window.innerHeight + 160;
+
+    if (isVisible) {
+      playVideo(video);
+      return;
+    }
+
+    video.pause();
+  });
+}
+
+setupMobileProjectVideoPlayback();
+window.requestAnimationFrame(syncMobileProjectVideos);
+
 function autoplayInitialProjectVideos() {
   document.querySelectorAll(".project-media-item video").forEach((video) => {
     const item = video.closest(".project-media-item");
@@ -764,9 +826,12 @@ function autoplayInitialProjectVideos() {
 window.requestAnimationFrame(autoplayInitialProjectVideos);
 window.setTimeout(autoplayInitialProjectVideos, 350);
 window.addEventListener("pageshow", autoplayInitialProjectVideos);
+window.addEventListener("scroll", syncMobileProjectVideos, { passive: true });
+window.addEventListener("resize", syncMobileProjectVideos);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     autoplayInitialProjectVideos();
+    syncMobileProjectVideos();
   }
 });
 
