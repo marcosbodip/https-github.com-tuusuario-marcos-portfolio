@@ -192,10 +192,15 @@ function updateHoverScale(item) {
 }
 
 const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const mobileCarouselLayout = window.matchMedia("(max-width: 860px)");
 const edgeAutoScroll = {
   frame: null,
   speed: 0
 };
+
+function isMobileCarouselLayout() {
+  return mobileCarouselLayout.matches;
+}
 
 function stopEdgeAutoScroll() {
   edgeAutoScroll.speed = 0;
@@ -389,6 +394,10 @@ function syncCarouselLazyMedia(item, shouldLoad) {
 }
 
 function shouldCarouselItemLoad(item) {
+  if (isMobileCarouselLayout()) {
+    return true;
+  }
+
   const offset = Math.abs(Number(item.dataset.carouselOffset || 0));
 
   return offset <= 2 && item.getAttribute("aria-hidden") !== "true";
@@ -404,6 +413,10 @@ function isCarouselItemHovered(item) {
 }
 
 function shouldCarouselItemPlay(item, carousel) {
+  if (isMobileCarouselLayout()) {
+    return false;
+  }
+
   const offset = Number(item.dataset.carouselOffset || 0);
 
   if (offset === 0) {
@@ -534,7 +547,7 @@ function renderCarousel(carousel) {
   items.forEach((item, index) => {
     const offset = getCarouselCircularOffset(index, activeIndex, count);
     const isActive = offset === 0;
-    const isNear = Math.abs(offset) <= 2;
+    const isNear = isMobileCarouselLayout() || Math.abs(offset) <= 2;
 
     item.dataset.carouselIndex = String(index);
     item.dataset.carouselOffset = String(offset);
@@ -719,7 +732,7 @@ function autoplayInitialProjectVideos() {
     const item = video.closest(".project-media-item");
     const carousel = video.closest(".project-media-carousel");
 
-    if (carousel && !item?.classList.contains("is-active")) {
+    if (carousel && !isMobileCarouselLayout() && !item?.classList.contains("is-active")) {
       return;
     }
 

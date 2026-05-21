@@ -155,6 +155,10 @@ const portfolioLazyMedia = (() => {
       return true;
     }
 
+    if (window.matchMedia("(max-width: 860px)").matches) {
+      return true;
+    }
+
     if (media.tagName !== "VIDEO" && media.dataset.lazyCarousel !== "true") {
       return true;
     }

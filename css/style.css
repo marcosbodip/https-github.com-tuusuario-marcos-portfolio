@@ -3085,7 +3085,7 @@ video {
   }
 
   .project-media-carousel-track .project-media-item {
-    position: static;
+    position: relative;
     width: 100%;
     aspect-ratio: auto;
     flex-basis: auto;
