@@ -296,33 +296,6 @@ function setupIndexVideoPoster(video, poster) {
   video.addEventListener("error", showPoster);
 }
 
-function setupIndexCardTouchFeedback(card) {
-  if (!card || supportsIndexHover) {
-    return;
-  }
-
-  let releaseTimer = null;
-
-  const release = () => {
-    window.clearTimeout(releaseTimer);
-    card.classList.remove("is-touch-pressed");
-  };
-
-  card.addEventListener("pointerdown", (event) => {
-    if (event.pointerType === "mouse") {
-      return;
-    }
-
-    card.classList.add("is-touch-pressed");
-    window.clearTimeout(releaseTimer);
-    releaseTimer = window.setTimeout(release, 180);
-  }, { passive: true });
-
-  card.addEventListener("pointerup", release, { passive: true });
-  card.addEventListener("pointercancel", release, { passive: true });
-  card.addEventListener("pointerleave", release, { passive: true });
-}
-
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
   projectGrid.innerHTML = "";
 
@@ -333,7 +306,6 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       card.className = "project-card";
       card.href = `project.html?project=${project.slug}`;
       card.dataset.category = project.cardType || "";
-      setupIndexCardTouchFeedback(card);
 
       const media = createMediaElement(
         project.media.cover,

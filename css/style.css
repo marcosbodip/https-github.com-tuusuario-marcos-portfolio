@@ -323,12 +323,6 @@ video {
   display: block;
 }
 
-.project-card.is-touch-pressed .project-media,
-.project-card.is-touch-pressed .index-video-poster {
-  filter: invert(1);
-  transform: scale(1.03);
-}
-
 @media (hover: hover) and (pointer: fine) {
   .project-card:hover .project-media,
   .project-card:hover .index-video-poster {
