@@ -4,5 +4,6 @@ server-error.log
 data/projects.backup.js
 data/projects.tmp.js
 node_modules/
+.tools/
 .DS_Store
 Thumbs.db

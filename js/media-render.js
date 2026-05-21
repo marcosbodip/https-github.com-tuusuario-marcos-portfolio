@@ -219,13 +219,30 @@ const portfolioLazyMedia = (() => {
 
 window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;
 
+function shouldUseMobileVideoAsset() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function getMobileVideoPath(mediaPath) {
+  if (!/\.(mp4|webm|mov)$/i.test(mediaPath)) {
+    return "";
+  }
+
+  return mediaPath.replace(/\.(mp4|webm|mov)$/i, "_mobile.mp4");
+}
+
 function createMediaElement(media, basePath, className = "", options = {}) {
   const mediaPath = media.previewUrl || `${basePath}/${media.file}`;
 
   if (media.type === "video" || /\.(mp4|webm|mov)$/i.test(media.file)) {
+    const mobileMediaPath = media.previewUrl ? "" : getMobileVideoPath(mediaPath);
     const video = document.createElement("video");
     video.className = className;
-    video.dataset.src = mediaPath;
+    video.dataset.src = mobileMediaPath && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
+    video.dataset.desktopSrc = mediaPath;
+    if (mobileMediaPath) {
+      video.dataset.mobileSrc = mobileMediaPath;
+    }
     video.dataset.lazyAutoplay = "true";
     if (media.loopTrim) {
       video.dataset.loopTrim = String(media.loopTrim);
@@ -233,6 +250,16 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     portfolioLazyMedia.prepareAutoplayVideo(video);
     video.preload = "none";
     video.setAttribute("aria-label", media.alt || "");
+    video.addEventListener("error", () => {
+      if (!video.dataset.mobileSrc || video.dataset.fallbackSrcTried === "true") {
+        return;
+      }
+
+      video.dataset.fallbackSrcTried = "true";
+      video.src = video.dataset.desktopSrc;
+      video.load();
+      portfolioLazyMedia.requestVideoAutoplay(video);
+    });
 
     if (!options.deferObserve) {
       portfolioLazyMedia.observe(video);
