@@ -296,6 +296,22 @@ video {
   opacity: 0;
 }
 
+.project-video-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: var(--card);
+  background-position: center;
+  background-size: cover;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 0.18s ease, filter 0.35s ease, transform 0.5s ease;
+}
+
+.project-video-poster.is-hidden {
+  opacity: 0;
+}
+
 .placeholder-media {
   min-height: auto;
   aspect-ratio: 4 / 5;

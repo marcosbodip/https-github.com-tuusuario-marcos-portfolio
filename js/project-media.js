@@ -86,6 +86,50 @@ function classifyMediaItem(item) {
   }
 }
 
+function setupProjectVideoPoster(video) {
+  const item = video?.closest(".project-media-item");
+
+  if (!video || !item || item.querySelector(".project-video-poster")) {
+    return;
+  }
+
+  const poster = document.createElement("div");
+  poster.className = "project-video-poster";
+  poster.setAttribute("aria-hidden", "true");
+  item.append(poster);
+
+  const showPoster = () => poster.classList.remove("is-hidden");
+  const hidePoster = () => poster.classList.add("is-hidden");
+
+  const capturePosterFrame = () => {
+    if (!video.videoWidth || !video.videoHeight || poster.dataset.posterReady === "true") {
+      return;
+    }
+
+    const maxPosterWidth = 420;
+    const scale = Math.min(1, maxPosterWidth / video.videoWidth);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+
+    try {
+      canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      poster.style.backgroundImage = `url("${canvas.toDataURL("image/jpeg", 0.58)}")`;
+      poster.dataset.posterReady = "true";
+    } catch {}
+  };
+
+  showPoster();
+  video.addEventListener("loadeddata", capturePosterFrame, { once: true });
+  video.addEventListener("canplay", capturePosterFrame, { once: true });
+  video.addEventListener("playing", hidePoster);
+  video.addEventListener("pause", showPoster);
+  video.addEventListener("waiting", showPoster);
+  video.addEventListener("stalled", showPoster);
+  video.addEventListener("emptied", showPoster);
+  video.addEventListener("error", showPoster);
+}
+
 function getResponsiveMaxHoverScale() {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -658,6 +702,7 @@ function setupProjectCarousel(carousel) {
 }
 
 document.querySelectorAll(".project-media-item").forEach(classifyMediaItem);
+document.querySelectorAll(".project-media-item video").forEach(setupProjectVideoPoster);
 document.querySelectorAll(".project-media-carousel").forEach(setupProjectCarousel);
 
 function autoplayInitialProjectVideos() {

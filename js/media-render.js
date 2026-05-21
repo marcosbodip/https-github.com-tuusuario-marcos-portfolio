@@ -1,6 +1,83 @@
 const portfolioLazyMedia = (() => {
   const loadedMedia = new WeakSet();
   const visibleMedia = new WeakSet();
+  const seamlessLoopVideos = new WeakSet();
+
+  function setupSeamlessLoop(video) {
+    if (!video || seamlessLoopVideos.has(video)) {
+      return;
+    }
+
+    seamlessLoopVideos.add(video);
+
+    let monitoring = false;
+    let lastLoopAt = 0;
+
+    const playSilently = () => {
+      const playAttempt = video.play();
+
+      if (playAttempt && typeof playAttempt.catch === "function") {
+        playAttempt.catch(() => {});
+      }
+    };
+
+    const loopBeforeEnd = () => {
+      const duration = video.duration;
+
+      if (!Number.isFinite(duration) || duration <= 0 || video.paused || video.seeking) {
+        return;
+      }
+
+      const threshold = Math.min(0.22, Math.max(0.08, duration * 0.035));
+      const remaining = duration - video.currentTime;
+      const now = performance.now();
+
+      if (remaining > 0 && remaining <= threshold && now - lastLoopAt > 320) {
+        lastLoopAt = now;
+        video.currentTime = 0.001;
+        playSilently();
+      }
+    };
+
+    const scheduleMonitor = () => {
+      if (!monitoring) {
+        return;
+      }
+
+      if ("requestVideoFrameCallback" in video) {
+        video.requestVideoFrameCallback(() => {
+          loopBeforeEnd();
+          scheduleMonitor();
+        });
+        return;
+      }
+
+      window.requestAnimationFrame(() => {
+        loopBeforeEnd();
+        scheduleMonitor();
+      });
+    };
+
+    const startMonitor = () => {
+      if (monitoring) {
+        return;
+      }
+
+      monitoring = true;
+      scheduleMonitor();
+    };
+
+    const stopMonitor = () => {
+      monitoring = false;
+    };
+
+    video.addEventListener("playing", startMonitor);
+    video.addEventListener("pause", stopMonitor);
+    video.addEventListener("ended", () => {
+      video.currentTime = 0.001;
+      playSilently();
+    });
+  }
 
   function prepareAutoplayVideo(video) {
     video.autoplay = true;
@@ -15,6 +92,7 @@ const portfolioLazyMedia = (() => {
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
     video.removeAttribute("controls");
+    setupSeamlessLoop(video);
   }
 
   function playVideo(video) {

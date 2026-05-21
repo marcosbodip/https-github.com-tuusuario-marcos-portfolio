@@ -288,7 +288,6 @@ function setupIndexVideoPoster(video, poster) {
   video.addEventListener("loadeddata", capturePosterFrame, { once: true });
   video.addEventListener("canplay", capturePosterFrame, { once: true });
   video.addEventListener("playing", hidePoster);
-  video.addEventListener("play", hidePoster);
   video.addEventListener("pause", showPoster);
   video.addEventListener("waiting", showPoster);
   video.addEventListener("stalled", showPoster);
