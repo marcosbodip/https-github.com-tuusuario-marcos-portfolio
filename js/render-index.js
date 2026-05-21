@@ -271,7 +271,7 @@ function setupIndexVideoPoster(video, poster) {
       return;
     }
 
-    const maxPosterWidth = 960;
+    const maxPosterWidth = 420;
     const scale = Math.min(1, maxPosterWidth / video.videoWidth);
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
@@ -279,7 +279,7 @@ function setupIndexVideoPoster(video, poster) {
 
     try {
       canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
-      poster.style.backgroundImage = `url("${canvas.toDataURL("image/jpeg", 0.72)}")`;
+      poster.style.backgroundImage = `url("${canvas.toDataURL("image/jpeg", 0.58)}")`;
       poster.dataset.posterReady = "true";
     } catch {}
   };
@@ -296,6 +296,33 @@ function setupIndexVideoPoster(video, poster) {
   video.addEventListener("error", showPoster);
 }
 
+function setupIndexCardTouchFeedback(card) {
+  if (!card || supportsIndexHover) {
+    return;
+  }
+
+  let releaseTimer = null;
+
+  const release = () => {
+    window.clearTimeout(releaseTimer);
+    card.classList.remove("is-touch-pressed");
+  };
+
+  card.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse") {
+      return;
+    }
+
+    card.classList.add("is-touch-pressed");
+    window.clearTimeout(releaseTimer);
+    releaseTimer = window.setTimeout(release, 180);
+  }, { passive: true });
+
+  card.addEventListener("pointerup", release, { passive: true });
+  card.addEventListener("pointercancel", release, { passive: true });
+  card.addEventListener("pointerleave", release, { passive: true });
+}
+
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
   projectGrid.innerHTML = "";
 
@@ -306,6 +333,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       card.className = "project-card";
       card.href = `project.html?project=${project.slug}`;
       card.dataset.category = project.cardType || "";
+      setupIndexCardTouchFeedback(card);
 
       const media = createMediaElement(
         project.media.cover,
