@@ -249,6 +249,12 @@ video {
   opacity: 1;
 }
 
+.index-media-frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--card);
+}
+
 .project-media-wrap {
   overflow: hidden;
   background: var(--card);
@@ -268,6 +274,22 @@ video {
 .project-media::-webkit-media-controls-start-playback-button {
   display: none !important;
   -webkit-appearance: none;
+}
+
+.index-video-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--card);
+  background-position: center;
+  background-size: cover;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 0.18s ease, filter 0.35s ease, transform 0.5s ease;
+}
+
+.index-video-poster.is-hidden {
+  opacity: 0;
 }
 
 .placeholder-media {
@@ -302,6 +324,11 @@ video {
 }
 
 .project-card:hover .project-media {
+  filter: invert(1);
+  transform: scale(1.03);
+}
+
+.project-card:hover .index-video-poster {
   filter: invert(1);
   transform: scale(1.03);
 }

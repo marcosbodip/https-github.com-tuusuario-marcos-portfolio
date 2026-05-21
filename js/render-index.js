@@ -258,6 +258,44 @@ function observeIndexVideoCard(card, video) {
   video.addEventListener("canplay", scheduleIndexVideoSync, { once: true });
 }
 
+function setupIndexVideoPoster(video, poster) {
+  if (!video || !poster) {
+    return;
+  }
+
+  const showPoster = () => poster.classList.remove("is-hidden");
+  const hidePoster = () => poster.classList.add("is-hidden");
+
+  const capturePosterFrame = () => {
+    if (!video.videoWidth || !video.videoHeight || poster.dataset.posterReady === "true") {
+      return;
+    }
+
+    const maxPosterWidth = 960;
+    const scale = Math.min(1, maxPosterWidth / video.videoWidth);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+
+    try {
+      canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      poster.style.backgroundImage = `url("${canvas.toDataURL("image/jpeg", 0.72)}")`;
+      poster.dataset.posterReady = "true";
+    } catch {}
+  };
+
+  showPoster();
+  video.addEventListener("loadeddata", capturePosterFrame, { once: true });
+  video.addEventListener("canplay", capturePosterFrame, { once: true });
+  video.addEventListener("playing", hidePoster);
+  video.addEventListener("play", hidePoster);
+  video.addEventListener("pause", showPoster);
+  video.addEventListener("waiting", showPoster);
+  video.addEventListener("stalled", showPoster);
+  video.addEventListener("emptied", showPoster);
+  video.addEventListener("error", showPoster);
+}
+
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
   projectGrid.innerHTML = "";
 
@@ -296,7 +334,20 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       category.textContent = project.cardCategory || project.category;
 
       info.append(title, category);
-      card.append(media, info);
+
+      if (media.tagName === "VIDEO") {
+        const mediaFrame = document.createElement("div");
+        const poster = document.createElement("div");
+        mediaFrame.className = "index-media-frame";
+        poster.className = "index-video-poster";
+        poster.setAttribute("aria-hidden", "true");
+        setupIndexVideoPoster(media, poster);
+        mediaFrame.append(media, poster);
+        card.append(mediaFrame, info);
+      } else {
+        card.append(media, info);
+      }
+
       projectGrid.append(card);
 
       window.PORTFOLIO_INDEX_LOADER?.register(media);
