@@ -3086,9 +3086,12 @@ video {
 
   .project-media-carousel-track .project-media-item {
     position: relative;
+    inset: auto;
     width: 100%;
+    max-width: 100%;
     aspect-ratio: auto;
     flex-basis: auto;
+    justify-self: center;
     max-height: none;
     overflow: visible;
     filter: none !important;
