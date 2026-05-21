@@ -202,6 +202,32 @@ function isMobileCarouselLayout() {
   return mobileCarouselLayout.matches;
 }
 
+function isElementNearViewport(element, before = 260, after = 420) {
+  const rect = element.getBoundingClientRect();
+
+  return rect.bottom >= -before && rect.top <= window.innerHeight + after;
+}
+
+function getElementVisibleRatio(element) {
+  const rect = element.getBoundingClientRect();
+  const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
+  const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+  const area = rect.width * rect.height;
+
+  if (!area) {
+    return 0;
+  }
+
+  return (visibleWidth * visibleHeight) / area;
+}
+
+function getElementCenterDistance(element) {
+  const rect = element.getBoundingClientRect();
+  const center = rect.top + rect.height / 2;
+
+  return Math.abs(center - window.innerHeight / 2);
+}
+
 function stopEdgeAutoScroll() {
   edgeAutoScroll.speed = 0;
 
@@ -406,7 +432,7 @@ function syncCarouselLazyMedia(item, shouldLoad) {
 
 function shouldCarouselItemLoad(item) {
   if (isMobileCarouselLayout()) {
-    return true;
+    return isElementNearViewport(item, 320, 520);
   }
 
   const offset = Math.abs(Number(item.dataset.carouselOffset || 0));
@@ -750,6 +776,8 @@ document.querySelectorAll(".project-media-item").forEach(classifyMediaItem);
 document.querySelectorAll(".project-media-item video").forEach(setupProjectVideoPoster);
 document.querySelectorAll(".project-media-carousel").forEach(setupProjectCarousel);
 
+let mobileProjectVideoSyncFrame = null;
+
 const mobileProjectVideoObserver = "IntersectionObserver" in window
   ? new IntersectionObserver((entries) => {
     if (!isMobileCarouselLayout()) {
@@ -757,17 +785,14 @@ const mobileProjectVideoObserver = "IntersectionObserver" in window
     }
 
     entries.forEach((entry) => {
-      const video = entry.target;
-
       if (entry.isIntersecting) {
-        playVideo(video);
-        return;
+        entry.target.preload = "metadata";
+        window.PORTFOLIO_MEDIA_LAZY?.load(entry.target);
       }
-
-      video.pause();
     });
+    scheduleMobileProjectVideoSync();
   }, {
-    rootMargin: "180px 0px",
+    rootMargin: "360px 0px",
     threshold: [0, 0.08, 0.24, 0.5]
   })
   : null;
@@ -781,15 +806,29 @@ function setupMobileProjectVideoPlayback() {
 }
 
 function syncMobileProjectVideos() {
+  mobileProjectVideoSyncFrame = null;
+
   if (!isMobileCarouselLayout()) {
     return;
   }
 
-  document.querySelectorAll(".project-media-item video").forEach((video) => {
-    const rect = video.getBoundingClientRect();
-    const isVisible = rect.bottom >= -120 && rect.top <= window.innerHeight + 160;
+  const videos = Array.from(document.querySelectorAll(".project-media-item video"));
+  const activeVideo = videos
+    .map((video) => ({
+      video,
+      ratio: getElementVisibleRatio(video),
+      distance: getElementCenterDistance(video)
+    }))
+    .filter(({ ratio }) => ratio >= 0.08)
+    .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)[0]?.video || null;
 
-    if (isVisible) {
+  videos.forEach((video) => {
+    if (isElementNearViewport(video, 320, 520)) {
+      video.preload = "metadata";
+      window.PORTFOLIO_MEDIA_LAZY?.load(video);
+    }
+
+    if (video === activeVideo) {
       playVideo(video);
       return;
     }
@@ -798,10 +837,23 @@ function syncMobileProjectVideos() {
   });
 }
 
+function scheduleMobileProjectVideoSync() {
+  if (mobileProjectVideoSyncFrame) {
+    return;
+  }
+
+  mobileProjectVideoSyncFrame = window.requestAnimationFrame(syncMobileProjectVideos);
+}
+
 setupMobileProjectVideoPlayback();
-window.requestAnimationFrame(syncMobileProjectVideos);
+scheduleMobileProjectVideoSync();
 
 function autoplayInitialProjectVideos() {
+  if (isMobileCarouselLayout()) {
+    scheduleMobileProjectVideoSync();
+    return;
+  }
+
   document.querySelectorAll(".project-media-item video").forEach((video) => {
     const item = video.closest(".project-media-item");
     const carousel = video.closest(".project-media-carousel");
@@ -826,12 +878,12 @@ function autoplayInitialProjectVideos() {
 window.requestAnimationFrame(autoplayInitialProjectVideos);
 window.setTimeout(autoplayInitialProjectVideos, 350);
 window.addEventListener("pageshow", autoplayInitialProjectVideos);
-window.addEventListener("scroll", syncMobileProjectVideos, { passive: true });
-window.addEventListener("resize", syncMobileProjectVideos);
+window.addEventListener("scroll", scheduleMobileProjectVideoSync, { passive: true });
+window.addEventListener("resize", scheduleMobileProjectVideoSync);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     autoplayInitialProjectVideos();
-    syncMobileProjectVideos();
+    scheduleMobileProjectVideoSync();
   }
 });
 
