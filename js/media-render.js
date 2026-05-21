@@ -40,7 +40,7 @@ const portfolioLazyMedia = (() => {
     video.addEventListener("canplay", playWhenReady, { once: true });
   }
 
-  function load(media) {
+  function load(media, options = {}) {
     if (!media || loadedMedia.has(media)) {
       return media;
     }
@@ -55,7 +55,12 @@ const portfolioLazyMedia = (() => {
     loadedMedia.add(media);
     media.load?.();
 
-    if (media.tagName === "VIDEO" && media.dataset.lazyAutoplay === "true" && visibleMedia.has(media)) {
+    if (
+      options.autoplay !== false &&
+      media.tagName === "VIDEO" &&
+      media.dataset.lazyAutoplay === "true" &&
+      visibleMedia.has(media)
+    ) {
       requestVideoAutoplay(media);
     }
 

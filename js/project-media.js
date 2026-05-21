@@ -291,11 +291,30 @@ function prepareCarouselVideo(item) {
   return video;
 }
 
-function syncCarouselVideo(item, shouldPlay) {
+function loadCarouselVideoPreview(video) {
+  video.autoplay = false;
+  video.removeAttribute("autoplay");
+  video.preload = "auto";
+  window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: false });
+}
+
+function syncCarouselVideo(item, shouldLoad, shouldPlay) {
   const video = prepareCarouselVideo(item);
 
   if (!video) {
     return;
+  }
+
+  if (shouldPlay) {
+    video.autoplay = true;
+    video.setAttribute("autoplay", "");
+  } else {
+    video.autoplay = false;
+    video.removeAttribute("autoplay");
+  }
+
+  if (shouldLoad) {
+    loadCarouselVideoPreview(video);
   }
 
   if (shouldPlay) {
@@ -316,9 +335,15 @@ function syncCarouselLazyMedia(item, shouldLoad) {
   });
 }
 
-function syncCarouselMedia(item, shouldPlay) {
-  syncCarouselLazyMedia(item, shouldPlay);
-  syncCarouselVideo(item, shouldPlay);
+function shouldCarouselItemLoad(item) {
+  const offset = Math.abs(Number(item.dataset.carouselOffset || 0));
+
+  return offset <= 2 && item.getAttribute("aria-hidden") !== "true";
+}
+
+function syncCarouselMedia(item, shouldLoad, shouldPlay) {
+  syncCarouselLazyMedia(item, shouldLoad);
+  syncCarouselVideo(item, shouldLoad, shouldPlay);
 }
 
 function isCarouselItemHovered(item) {
@@ -341,7 +366,7 @@ function shouldCarouselItemPlay(item, carousel) {
 
 function syncCarouselPlayback(carousel) {
   getCarouselItems(carousel).forEach((item) => {
-    syncCarouselMedia(item, shouldCarouselItemPlay(item, carousel));
+    syncCarouselMedia(item, shouldCarouselItemLoad(item), shouldCarouselItemPlay(item, carousel));
   });
 }
 
