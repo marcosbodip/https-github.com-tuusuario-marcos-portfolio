@@ -1,6 +1,7 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+const reduceIndexMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const indexEdgeAutoScroll = {
   frame: null,
   speed: 0
@@ -8,6 +9,7 @@ const indexEdgeAutoScroll = {
 const allIndexVideos = new Set();
 const visibleIndexCards = new Map();
 let indexVideoSyncFrame = null;
+let indexGridResizeFrame = null;
 
 function prepareDesktopIndexVideo(video) {
   if (!supportsIndexHover || !video) {
@@ -116,6 +118,170 @@ function resizeIndexGrid() {
   }
 
   Array.from(projectGrid.children).forEach(resizeIndexCard);
+}
+
+function scheduleIndexGridResize() {
+  if (indexGridResizeFrame) {
+    cancelAnimationFrame(indexGridResizeFrame);
+  }
+
+  indexGridResizeFrame = window.requestAnimationFrame(() => {
+    indexGridResizeFrame = null;
+    resizeIndexGrid();
+    window.setTimeout(resizeIndexGrid, 80);
+    window.setTimeout(resizeIndexGrid, 220);
+  });
+}
+
+function getIndexGridColumns() {
+  if (!projectGrid) {
+    return [];
+  }
+
+  return window.getComputedStyle(projectGrid).gridTemplateColumns
+    .split(" ")
+    .map((value) => Number.parseFloat(value))
+    .filter((value) => Number.isFinite(value) && value > 0);
+}
+
+function getIndexCardColumn(card) {
+  const columns = getIndexGridColumns();
+
+  if (!projectGrid || !card || !columns.length) {
+    return 0;
+  }
+
+  const gridStyles = window.getComputedStyle(projectGrid);
+  const gridRect = projectGrid.getBoundingClientRect();
+  const cardRect = card.getBoundingClientRect();
+  const gap = Number.parseFloat(gridStyles.columnGap) || 0;
+  const paddingLeft = Number.parseFloat(gridStyles.paddingLeft) || 0;
+  const contentLeft = gridRect.left + paddingLeft;
+  const cardCenter = cardRect.left + cardRect.width / 2;
+  let x = contentLeft;
+  let closestIndex = 0;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  columns.forEach((width, index) => {
+    const columnCenter = x + width / 2;
+    const distance = Math.abs(cardCenter - columnCenter);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = index;
+    }
+
+    x += width + gap;
+  });
+
+  return closestIndex;
+}
+
+function getExpandedIndexGridColumn(card) {
+  const columns = getIndexGridColumns();
+
+  if (columns.length < 3) {
+    return "";
+  }
+
+  const column = getIndexCardColumn(card);
+  const startLine = column >= columns.length - 1 ? columns.length - 1 : column + 1;
+
+  return `${startLine} / span 2`;
+}
+
+function animateIndexGridLayout(applyLayoutChange) {
+  if (!projectGrid || reduceIndexMotion) {
+    applyLayoutChange();
+    scheduleIndexGridResize();
+    return;
+  }
+
+  const cards = Array.from(projectGrid.children);
+
+  cards.forEach((card) => {
+    card.style.transition = "";
+    card.style.transform = "";
+    card.style.transformOrigin = "";
+  });
+
+  const firstRects = new Map(cards.map((card) => [card, card.getBoundingClientRect()]));
+
+  applyLayoutChange();
+  resizeIndexGrid();
+
+  window.requestAnimationFrame(() => {
+    resizeIndexGrid();
+
+    cards.forEach((card) => {
+      const first = firstRects.get(card);
+      const last = card.getBoundingClientRect();
+
+      if (!first || !last.width || !last.height) {
+        return;
+      }
+
+      const deltaX = first.left - last.left;
+      const deltaY = first.top - last.top;
+      const scaleX = first.width / last.width;
+      const scaleY = first.height / last.height;
+      const hasMovement = Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5;
+      const hasScale = Math.abs(scaleX - 1) > 0.002 || Math.abs(scaleY - 1) > 0.002;
+
+      if (!hasMovement && !hasScale) {
+        return;
+      }
+
+      card.style.transition = "none";
+      card.style.transformOrigin = "top left";
+      card.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+    });
+
+    window.requestAnimationFrame(() => {
+      cards.forEach((card) => {
+        if (!card.style.transform) {
+          return;
+        }
+
+        card.style.transition = "transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1)";
+        card.style.transform = "";
+      });
+
+      window.setTimeout(() => {
+        cards.forEach((card) => {
+          card.style.transition = "";
+          card.style.transformOrigin = "";
+        });
+        resizeIndexGrid();
+      }, 460);
+    });
+  });
+}
+
+function setIndexCardExpanded(card, expanded) {
+  if (!supportsIndexHover || !card) {
+    return;
+  }
+
+  if (card.classList.contains("is-index-hovered") === expanded) {
+    return;
+  }
+
+  animateIndexGridLayout(() => {
+    card.classList.toggle("is-index-hovered", expanded);
+    card.style.gridColumn = expanded ? getExpandedIndexGridColumn(card) : "";
+  });
+}
+
+function setupIndexCardExpansion(card) {
+  if (!supportsIndexHover || !card) {
+    return;
+  }
+
+  card.addEventListener("pointerenter", () => setIndexCardExpanded(card, true));
+  card.addEventListener("pointerleave", () => setIndexCardExpanded(card, false));
+  card.addEventListener("focusin", () => setIndexCardExpanded(card, true));
+  card.addEventListener("focusout", () => setIndexCardExpanded(card, false));
 }
 
 function requestIndexVideoPlayback(video) {
@@ -401,6 +567,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       card.append(mediaFrame, info);
 
       projectGrid.append(card);
+      setupIndexCardExpansion(card);
 
       if (media.tagName !== "VIDEO" || isTouchIndex) {
         window.PORTFOLIO_INDEX_LOADER?.register(media);

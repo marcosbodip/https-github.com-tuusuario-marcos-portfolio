@@ -255,10 +255,6 @@ video {
   background: var(--card);
 }
 
-.index-media-frame .project-media {
-  transform-origin: center;
-}
-
 .project-media-wrap {
   overflow: hidden;
   background: var(--card);
@@ -269,7 +265,7 @@ video {
   width: 100%;
   height: auto;
   display: block;
-  transition: filter 0.35s ease, transform 0.72s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: filter 0.35s ease;
 }
 
 .project-media::-webkit-media-controls,
@@ -293,7 +289,7 @@ video {
   background-size: cover;
   opacity: 1;
   pointer-events: none;
-  transition: opacity 0.18s ease, filter 0.35s ease, transform 0.72s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: opacity 0.18s ease, filter 0.35s ease;
 }
 
 .index-video-poster.is-hidden {
@@ -347,11 +343,10 @@ video {
   display: block;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .project-card:hover .index-media-frame .project-media,
-  .project-card:hover .index-video-poster {
-    filter: none;
-    transform: scale(1.105);
+@media (hover: hover) and (pointer: fine) and (min-width: 1181px) {
+  .project-card.is-index-hovered {
+    position: relative;
+    z-index: 4;
   }
 }
 
