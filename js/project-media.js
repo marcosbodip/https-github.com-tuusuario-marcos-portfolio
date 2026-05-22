@@ -197,9 +197,217 @@ const edgeAutoScroll = {
   frame: null,
   speed: 0
 };
+let activeProjectMediaDetail = null;
 
 function isMobileCarouselLayout() {
   return mobileCarouselLayout.matches;
+}
+
+function shouldUseMobileProjectMediaDetail() {
+  return isMobileCarouselLayout() && Boolean(document.querySelector(".project-page"));
+}
+
+function getMediaRatio(media) {
+  const width = media.videoWidth || media.naturalWidth;
+  const height = media.videoHeight || media.naturalHeight;
+
+  if (width && height) {
+    return width / height;
+  }
+
+  const rect = media.getBoundingClientRect();
+
+  if (rect.width && rect.height) {
+    return rect.width / rect.height;
+  }
+
+  const item = media.closest(".project-media-item");
+
+  if (item?.classList.contains("project-media-portrait") || item?.classList.contains("project-media-auto-portrait")) {
+    return 0.72;
+  }
+
+  if (item?.classList.contains("project-media-square") || item?.classList.contains("project-media-auto-square")) {
+    return 1;
+  }
+
+  return 1.6;
+}
+
+function getDetailVideoSource(video) {
+  const desktopSource = video.dataset.desktopSrc || "";
+  const currentSource = video.currentSrc || video.src || "";
+  const defaultSource = currentSource || video.dataset.src || video.dataset.mobileSrc || desktopSource;
+  const targetPixels = window.innerWidth * (window.devicePixelRatio || 1);
+
+  if (desktopSource && targetPixels >= 1180) {
+    return desktopSource;
+  }
+
+  return defaultSource;
+}
+
+function getCapturedPosterSource(video) {
+  const poster = video.closest(".project-media-item")?.querySelector(".project-video-poster");
+  const background = poster ? window.getComputedStyle(poster).backgroundImage : "";
+  const match = background.match(/^url\(["']?(.+?)["']?\)$/);
+
+  return match?.[1] || "";
+}
+
+function createProjectMediaDetailAsset(media, frame) {
+  const ratio = getMediaRatio(media);
+  frame.classList.toggle("is-portrait", ratio < 0.88);
+
+  if (media.tagName === "VIDEO") {
+    const video = document.createElement("video");
+    const poster = media.poster || media.dataset.posterSrc || getCapturedPosterSource(media);
+
+    video.className = "project-media-detail-asset";
+    video.src = getDetailVideoSource(media);
+    video.preload = "auto";
+    video.controls = false;
+
+    if (poster) {
+      video.poster = poster;
+    }
+
+    if (media.dataset.loopTrim) {
+      video.dataset.loopTrim = media.dataset.loopTrim;
+    }
+
+    window.PORTFOLIO_MEDIA_LAZY?.prepareAutoplayVideo(video);
+    return video;
+  }
+
+  window.PORTFOLIO_MEDIA_LAZY?.load(media, { autoplay: false });
+
+  const image = document.createElement("img");
+  image.className = "project-media-detail-asset";
+  image.alt = media.alt || "";
+  image.decoding = "async";
+  image.src = media.currentSrc || media.src || media.dataset.src || "";
+  return image;
+}
+
+function playProjectMediaDetailAsset(asset) {
+  if (asset.tagName !== "VIDEO") {
+    return;
+  }
+
+  window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(asset);
+  const playAttempt = asset.play();
+
+  if (playAttempt && typeof playAttempt.catch === "function") {
+    playAttempt.catch(() => {});
+  }
+}
+
+function closeProjectMediaDetail() {
+  const detail = activeProjectMediaDetail;
+
+  if (!detail) {
+    return;
+  }
+
+  activeProjectMediaDetail = null;
+  detail.overlay.classList.remove("is-open");
+  document.body.classList.remove("is-project-media-detail-open");
+  document.removeEventListener("keydown", detail.handleKeydown);
+
+  let didRemove = false;
+  const removeDetail = () => {
+    if (didRemove) {
+      return;
+    }
+
+    didRemove = true;
+    detail.asset.pause?.();
+    detail.overlay.remove();
+
+    if (detail.shouldResumeSource) {
+      playVideo(detail.sourceMedia);
+    }
+
+    scheduleMobileProjectVideoSync();
+  };
+
+  detail.overlay.addEventListener("transitionend", removeDetail, { once: true });
+  window.setTimeout(removeDetail, 560);
+}
+
+function openProjectMediaDetail(sourceMedia) {
+  if (activeProjectMediaDetail) {
+    closeProjectMediaDetail();
+  }
+
+  const overlay = document.createElement("div");
+  const frame = document.createElement("div");
+  const closeButton = document.createElement("button");
+  const asset = createProjectMediaDetailAsset(sourceMedia, frame);
+  const shouldResumeSource = sourceMedia.tagName === "VIDEO" && !sourceMedia.paused && !sourceMedia.ended;
+
+  overlay.className = "project-media-detail";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+
+  frame.className = `project-media-detail-frame${frame.classList.contains("is-portrait") ? " is-portrait" : ""}`;
+
+  closeButton.className = "project-media-detail-close";
+  closeButton.type = "button";
+  closeButton.setAttribute("aria-label", "Close media");
+
+  if (sourceMedia.tagName === "VIDEO") {
+    sourceMedia.pause();
+  }
+
+  const handleKeydown = (event) => {
+    if (event.key === "Escape") {
+      closeProjectMediaDetail();
+    }
+  };
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeProjectMediaDetail();
+    }
+  });
+  frame.addEventListener("click", (event) => event.stopPropagation());
+  closeButton.addEventListener("click", closeProjectMediaDetail);
+  document.addEventListener("keydown", handleKeydown);
+
+  frame.append(asset);
+  overlay.append(closeButton, frame);
+  document.body.append(overlay);
+  document.body.classList.add("is-project-media-detail-open");
+
+  activeProjectMediaDetail = {
+    asset,
+    handleKeydown,
+    overlay,
+    shouldResumeSource,
+    sourceMedia
+  };
+
+  window.requestAnimationFrame(() => overlay.classList.add("is-open"));
+  playProjectMediaDetailAsset(asset);
+}
+
+function setupMobileProjectMediaDetail() {
+  document.addEventListener("click", (event) => {
+    if (!shouldUseMobileProjectMediaDetail() || event.defaultPrevented) {
+      return;
+    }
+
+    const media = event.target.closest(".project-media-item img, .project-media-item video");
+
+    if (!media) {
+      return;
+    }
+
+    event.preventDefault();
+    openProjectMediaDetail(media);
+  });
 }
 
 function isElementNearViewport(element, before = 260, after = 420) {
@@ -775,6 +983,7 @@ function setupProjectCarousel(carousel) {
 document.querySelectorAll(".project-media-item").forEach(classifyMediaItem);
 document.querySelectorAll(".project-media-item video").forEach(setupProjectVideoPoster);
 document.querySelectorAll(".project-media-carousel").forEach(setupProjectCarousel);
+setupMobileProjectMediaDetail();
 
 let mobileProjectVideoSyncFrame = null;
 
