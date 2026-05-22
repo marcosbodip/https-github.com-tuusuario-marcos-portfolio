@@ -1,7 +1,6 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-const reduceIndexMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const indexEdgeAutoScroll = {
   frame: null,
   speed: 0
@@ -98,6 +97,8 @@ function resizeIndexCard(card) {
     return;
   }
 
+  syncIndexFrameSize(card);
+
   const gridStyles = window.getComputedStyle(projectGrid);
   const rowHeight = Number.parseFloat(gridStyles.gridAutoRows);
   const rowGap = Number.parseFloat(gridStyles.rowGap);
@@ -133,129 +134,44 @@ function scheduleIndexGridResize() {
   });
 }
 
-function getIndexGridColumns() {
-  if (!projectGrid) {
-    return [];
-  }
+function getIndexMediaAspect(media) {
+  const width = media?.videoWidth || media?.naturalWidth;
+  const height = media?.videoHeight || media?.naturalHeight;
 
-  return window.getComputedStyle(projectGrid).gridTemplateColumns
-    .split(" ")
-    .map((value) => Number.parseFloat(value))
-    .filter((value) => Number.isFinite(value) && value > 0);
-}
-
-function getIndexCardColumn(card) {
-  const columns = getIndexGridColumns();
-
-  if (!projectGrid || !card || !columns.length) {
+  if (!width || !height) {
     return 0;
   }
 
-  const gridStyles = window.getComputedStyle(projectGrid);
-  const gridRect = projectGrid.getBoundingClientRect();
-  const cardRect = card.getBoundingClientRect();
-  const gap = Number.parseFloat(gridStyles.columnGap) || 0;
-  const paddingLeft = Number.parseFloat(gridStyles.paddingLeft) || 0;
-  const contentLeft = gridRect.left + paddingLeft;
-  const cardCenter = cardRect.left + cardRect.width / 2;
-  let x = contentLeft;
-  let closestIndex = 0;
-  let closestDistance = Number.POSITIVE_INFINITY;
-
-  columns.forEach((width, index) => {
-    const columnCenter = x + width / 2;
-    const distance = Math.abs(cardCenter - columnCenter);
-
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closestIndex = index;
-    }
-
-    x += width + gap;
-  });
-
-  return closestIndex;
+  return width / height;
 }
 
-function getExpandedIndexGridColumn(card) {
-  const columns = getIndexGridColumns();
-
-  if (columns.length < 3) {
-    return "";
-  }
-
-  const column = getIndexCardColumn(card);
-  const startLine = column >= columns.length - 1 ? columns.length - 1 : column + 1;
-
-  return `${startLine} / span 2`;
-}
-
-function animateIndexGridLayout(applyLayoutChange) {
-  if (!projectGrid || reduceIndexMotion) {
-    applyLayoutChange();
-    scheduleIndexGridResize();
+function syncIndexFrameSize(card) {
+  if (!supportsIndexHover || !card) {
     return;
   }
 
-  const cards = Array.from(projectGrid.children);
+  const frame = card.querySelector(".index-media-frame");
+  const media = frame?.querySelector(".project-media");
 
-  cards.forEach((card) => {
-    card.style.transition = "";
-    card.style.transform = "";
-    card.style.transformOrigin = "";
-  });
+  if (!frame || !media) {
+    return;
+  }
 
-  const firstRects = new Map(cards.map((card) => [card, card.getBoundingClientRect()]));
+  const frameWidth = frame.getBoundingClientRect().width;
+  const aspect = getIndexMediaAspect(media);
+  const fallbackHeight = Number.parseFloat(card.style.getPropertyValue("--index-frame-height")) ||
+    frame.getBoundingClientRect().height;
+  const baseHeight = aspect && frameWidth ? frameWidth / aspect : fallbackHeight;
 
-  applyLayoutChange();
-  resizeIndexGrid();
+  if (!baseHeight || !Number.isFinite(baseHeight)) {
+    return;
+  }
 
-  window.requestAnimationFrame(() => {
-    resizeIndexGrid();
+  const hoverGrowth = Math.max(10, Math.min(28, baseHeight * 0.055));
 
-    cards.forEach((card) => {
-      const first = firstRects.get(card);
-      const last = card.getBoundingClientRect();
-
-      if (!first || !last.width || !last.height) {
-        return;
-      }
-
-      const deltaX = first.left - last.left;
-      const deltaY = first.top - last.top;
-      const scaleX = first.width / last.width;
-      const scaleY = first.height / last.height;
-      const hasMovement = Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5;
-      const hasScale = Math.abs(scaleX - 1) > 0.002 || Math.abs(scaleY - 1) > 0.002;
-
-      if (!hasMovement && !hasScale) {
-        return;
-      }
-
-      card.style.transition = "none";
-      card.style.transformOrigin = "top left";
-      card.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
-    });
-
-    window.requestAnimationFrame(() => {
-      cards.forEach((card) => {
-        if (!card.style.transform) {
-          return;
-        }
-
-        card.style.transition = "transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1)";
-        card.style.transform = "";
-      });
-
-      window.setTimeout(() => {
-        cards.forEach((card) => {
-          card.style.transition = "";
-          card.style.transformOrigin = "";
-        });
-        resizeIndexGrid();
-      }, 460);
-    });
-  });
+  card.style.setProperty("--index-frame-height", `${Math.round(baseHeight)}px`);
+  card.style.setProperty("--index-hover-growth", `${Math.round(hoverGrowth)}px`);
+  card.classList.add("has-index-frame-height");
 }
 
 function setIndexCardExpanded(card, expanded) {
@@ -267,10 +183,9 @@ function setIndexCardExpanded(card, expanded) {
     return;
   }
 
-  animateIndexGridLayout(() => {
-    card.classList.toggle("is-index-hovered", expanded);
-    card.style.gridColumn = expanded ? getExpandedIndexGridColumn(card) : "";
-  });
+  syncIndexFrameSize(card);
+  card.classList.toggle("is-index-hovered", expanded);
+  scheduleIndexGridResize();
 }
 
 function setupIndexCardExpansion(card) {
