@@ -231,17 +231,30 @@ function getMobileVideoPath(mediaPath) {
   return mediaPath.replace(/\.(mp4|webm|mov)$/i, "_mobile.mp4");
 }
 
+function getVideoPosterPath(mediaPath) {
+  if (!/\.(mp4|webm|mov)$/i.test(mediaPath)) {
+    return "";
+  }
+
+  return mediaPath.replace(/\.(mp4|webm|mov)$/i, "_poster.jpg");
+}
+
 function createMediaElement(media, basePath, className = "", options = {}) {
   const mediaPath = media.previewUrl || `${basePath}/${media.file}`;
 
   if (media.type === "video" || /\.(mp4|webm|mov)$/i.test(media.file)) {
     const mobileMediaPath = media.previewUrl ? "" : getMobileVideoPath(mediaPath);
+    const posterPath = media.previewUrl ? "" : getVideoPosterPath(mediaPath);
     const video = document.createElement("video");
     video.className = className;
     video.dataset.src = mobileMediaPath && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
     video.dataset.desktopSrc = mediaPath;
     if (mobileMediaPath) {
       video.dataset.mobileSrc = mobileMediaPath;
+    }
+    if (options.poster && posterPath) {
+      video.poster = posterPath;
+      video.dataset.posterSrc = posterPath;
     }
     video.dataset.lazyAutoplay = "true";
     if (media.loopTrim) {

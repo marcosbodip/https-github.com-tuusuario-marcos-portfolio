@@ -289,6 +289,11 @@ function setupIndexVideoPoster(video, poster) {
     return;
   }
 
+  if (video.dataset.posterSrc) {
+    poster.style.backgroundImage = `url("${video.dataset.posterSrc}")`;
+    poster.dataset.posterReady = "true";
+  }
+
   let hasPlayed = false;
   const showPoster = () => poster.classList.remove("is-hidden");
   const hidePoster = () => poster.classList.add("is-hidden");
@@ -303,7 +308,7 @@ function setupIndexVideoPoster(video, poster) {
       return;
     }
 
-    const maxPosterWidth = 420;
+    const maxPosterWidth = 960;
     const scale = Math.min(1, maxPosterWidth / video.videoWidth);
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
@@ -311,7 +316,7 @@ function setupIndexVideoPoster(video, poster) {
 
     try {
       canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
-      poster.style.backgroundImage = `url("${canvas.toDataURL("image/jpeg", 0.58)}")`;
+      poster.style.backgroundImage = `url("${canvas.toDataURL("image/jpeg", 0.82)}")`;
       poster.dataset.posterReady = "true";
     } catch {}
   };
@@ -352,7 +357,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         project.media.cover,
         `assets/projects/${project.slug}`,
         "project-media",
-        { deferObserve: true }
+        { deferObserve: true, poster: true }
       );
 
       if (media.tagName === "VIDEO") {
@@ -395,7 +400,9 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       projectGrid.append(card);
 
-      window.PORTFOLIO_INDEX_LOADER?.register(media);
+      if (media.tagName !== "VIDEO" || isTouchIndex) {
+        window.PORTFOLIO_INDEX_LOADER?.register(media);
+      }
 
       if (media.tagName === "VIDEO") {
         allIndexVideos.add(media);
