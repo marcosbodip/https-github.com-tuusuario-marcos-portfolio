@@ -18,6 +18,9 @@ const adminCode = process.env.ADMIN_CODE || "";
 const adminSessionSecret = process.env.ADMIN_SESSION_SECRET || randomBytes(32).toString("hex");
 const autoGitPush = process.env.AUTO_GIT_PUSH === "true";
 const execFileAsync = promisify(execFile);
+const localFfmpegPath = resolve(rootDir, ".tools", "ffmpeg", "ffmpeg-8.1.1-essentials_build", "bin", "ffmpeg.exe");
+const ffmpegPath = process.env.FFMPEG_PATH || localFfmpegPath;
+const videoExtensions = new Set([".mp4", ".mov", ".webm"]);
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -280,12 +283,48 @@ async function listProjectFiles(slug) {
 }
 
 function getProjectMediaFiles(project) {
-  return new Set([
+  const files = [
     project?.media?.cover?.file,
     project?.media?.main?.file,
     ...(project?.media?.secondary || []).map((item) => item?.file),
     ...(project?.media?.hidden || []).map((item) => item?.file)
-  ].filter(Boolean));
+  ].filter(Boolean);
+  const usedFiles = new Set(files);
+
+  for (const file of files) {
+    if (!isVideoFile(file)) {
+      continue;
+    }
+
+    const optimized = getOptimizedVideoFileName(file);
+    usedFiles.add(optimized);
+    usedFiles.add(getMobileVideoFileName(optimized));
+    usedFiles.add(getPosterFileName(optimized));
+  }
+
+  return usedFiles;
+}
+
+function isVideoFile(fileName = "") {
+  return videoExtensions.has(extname(fileName).toLowerCase());
+}
+
+function getFileStem(fileName = "") {
+  return fileName.replace(/\.[^.]+$/, "");
+}
+
+function getOptimizedVideoFileName(fileName = "") {
+  const stem = getFileStem(fileName);
+
+  return stem.endsWith("_optimized") ? `${stem}.mp4` : `${stem}_optimized.mp4`;
+}
+
+function getMobileVideoFileName(fileName = "") {
+  return `${getFileStem(fileName)}_mobile.mp4`;
+}
+
+function getPosterFileName(fileName = "") {
+  return `${getFileStem(fileName)}_poster.jpg`;
 }
 
 function validateProjectsPayload(projects) {
@@ -440,6 +479,149 @@ async function pathExists(path) {
 
     throw error;
   }
+}
+
+async function shouldRegenerateFile(sourcePath, targetPath) {
+  try {
+    const [sourceStat, targetStat] = await Promise.all([
+      stat(sourcePath),
+      stat(targetPath)
+    ]);
+
+    return sourceStat.mtimeMs > targetStat.mtimeMs || targetStat.size === 0;
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return true;
+    }
+
+    throw error;
+  }
+}
+
+function getProjectMediaItems(project) {
+  return [
+    project?.media?.cover,
+    project?.media?.main,
+    ...(project?.media?.secondary || []),
+    ...(project?.media?.hidden || [])
+  ].filter((item) => item?.file);
+}
+
+async function runFfmpeg(args, timeout = 600000) {
+  const { stdout, stderr } = await execFileAsync(ffmpegPath, args, {
+    cwd: rootDir,
+    timeout,
+    windowsHide: true,
+    maxBuffer: 1024 * 1024 * 16
+  });
+
+  return `${stdout || ""}${stderr || ""}`.trim();
+}
+
+async function encodeDesktopVideo(sourcePath, targetPath) {
+  await runFfmpeg([
+    "-y",
+    "-i", sourcePath,
+    "-map", "0:v:0",
+    "-an",
+    "-vf", "scale=w='trunc(min(1920,iw)/2)*2':h=-2",
+    "-c:v", "libx264",
+    "-preset", "medium",
+    "-crf", "25",
+    "-pix_fmt", "yuv420p",
+    "-movflags", "+faststart",
+    targetPath
+  ]);
+}
+
+async function encodeMobileVideo(sourcePath, targetPath) {
+  await runFfmpeg([
+    "-y",
+    "-i", sourcePath,
+    "-map", "0:v:0",
+    "-an",
+    "-vf", "scale=w='trunc(min(860,iw)/2)*2':h=-2",
+    "-c:v", "libx264",
+    "-preset", "medium",
+    "-crf", "30",
+    "-pix_fmt", "yuv420p",
+    "-movflags", "+faststart",
+    targetPath
+  ]);
+}
+
+async function createVideoPoster(sourcePath, targetPath) {
+  await runFfmpeg([
+    "-y",
+    "-ss", "0.35",
+    "-i", sourcePath,
+    "-frames:v", "1",
+    "-vf", "scale=w='trunc(min(1280,iw)/2)*2':h=-2",
+    "-q:v", "4",
+    targetPath
+  ], 180000);
+}
+
+async function optimizeProjectVideos(projects) {
+  if (!(await pathExists(ffmpegPath))) {
+    throw new Error(`FFmpeg not found at ${ffmpegPath}`);
+  }
+
+  const optimized = {
+    desktop: 0,
+    mobile: 0,
+    posters: 0,
+    references: 0
+  };
+
+  for (const project of projects) {
+    const slug = project?.slug;
+
+    if (!slug) {
+      continue;
+    }
+
+    for (const item of getProjectMediaItems(project)) {
+      if (!isVideoFile(item.file)) {
+        continue;
+      }
+
+      const sourceFile = item.file;
+      const desktopFile = getOptimizedVideoFileName(sourceFile);
+      const mobileFile = getMobileVideoFileName(desktopFile);
+      const posterFile = getPosterFileName(desktopFile);
+      const sourcePath = safeProjectFile(slug, sourceFile);
+      const desktopPath = safeProjectFile(slug, desktopFile);
+      const mobilePath = safeProjectFile(slug, mobileFile);
+      const posterPath = safeProjectFile(slug, posterFile);
+      const sourceIsDesktop = sourceFile === desktopFile;
+
+      if (!sourceIsDesktop && await shouldRegenerateFile(sourcePath, desktopPath)) {
+        await encodeDesktopVideo(sourcePath, desktopPath);
+        optimized.desktop += 1;
+      }
+
+      const desktopSourcePath = sourceIsDesktop ? sourcePath : desktopPath;
+
+      if (await shouldRegenerateFile(desktopSourcePath, mobilePath)) {
+        await encodeMobileVideo(desktopSourcePath, mobilePath);
+        optimized.mobile += 1;
+      }
+
+      if (await shouldRegenerateFile(desktopSourcePath, posterPath)) {
+        await createVideoPoster(desktopSourcePath, posterPath);
+        optimized.posters += 1;
+      }
+
+      if (item.file !== desktopFile) {
+        item.file = desktopFile;
+        item.type = "video";
+        optimized.references += 1;
+      }
+    }
+  }
+
+  return optimized;
 }
 
 async function mergeProjectDirs(fromDir, toDir) {
@@ -746,6 +928,7 @@ async function handleRequest(request, response) {
 
       await prepareProjectAssetFolders(projects, assetSlugMap);
       await resolveMissingProjectAssets(projects, assetSlugMap);
+      const optimization = await optimizeProjectVideos(projects);
 
       const assetError = await validateProjectAssets(projects);
 
@@ -770,10 +953,12 @@ async function handleRequest(request, response) {
 
       try {
         const publishMessage = await publishSavedChanges();
-        sendJson(response, 200, { ok: true, publishMessage });
+        sendJson(response, 200, { ok: true, publishMessage, optimization, projects });
       } catch (error) {
         sendJson(response, 200, {
           ok: true,
+          optimization,
+          projects,
           warning: `Site saved locally, but Git publish failed: ${error.message}`
         });
       }

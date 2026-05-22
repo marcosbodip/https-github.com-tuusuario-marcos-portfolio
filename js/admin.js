@@ -1356,9 +1356,20 @@ async function saveProjectsFile() {
   });
   const data = await readApiJson(response, "Save failed");
 
+  if (Array.isArray(data.projects)) {
+    projects.splice(0, projects.length, ...data.projects);
+    loadProject(currentIndex);
+    updateOutput();
+  }
+
   projectAssetSlugs = projects.map((item) => item.slug || "");
   await refreshFolderMedia();
-  setStatus(data.warning || data.publishMessage || "Site saved. Assets cleaned.", data.warning ? "warning" : "");
+  const optimization = data.optimization || {};
+  const optimizedCount = (optimization.desktop || 0) + (optimization.mobile || 0) + (optimization.posters || 0);
+  const optimizationMessage = optimizedCount
+    ? ` Optimized ${optimization.desktop || 0} desktop, ${optimization.mobile || 0} mobile, ${optimization.posters || 0} poster.`
+    : "";
+  setStatus(`${data.warning || data.publishMessage || "Site saved. Assets cleaned."}${optimizationMessage}`, data.warning ? "warning" : "");
 }
 
 function makeUniqueSlug(baseSlug) {
