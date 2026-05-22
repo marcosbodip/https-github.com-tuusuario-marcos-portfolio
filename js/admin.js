@@ -21,7 +21,6 @@ const duplicateProjectButton = document.querySelector("#duplicateProjectButton")
 const toggleVisibilityButton = document.querySelector("#toggleVisibilityButton");
 const deleteProjectButton = document.querySelector("#deleteProjectButton");
 const saveButton = document.querySelector("#saveButton");
-const copyButton = document.querySelector("#copyButton");
 const visibilityBadge = document.querySelector("#visibilityBadge");
 
 let currentIndex = 0;
@@ -1354,12 +1353,6 @@ function updateCleanupStatus(issues = validateProjects(readForm())) {
   }
 }
 
-async function copyProjectsFile() {
-  updateOutput();
-  await navigator.clipboard.writeText(outputCode.textContent);
-  setStatus("projects.js copied");
-}
-
 async function saveProjectsFile() {
   updateOutput();
 
@@ -1563,12 +1556,6 @@ deleteProjectButton.addEventListener("click", () => {
     .catch(() => {
       setStatus(`${removed.title || removed.slug} removed from data. Could not delete assets from disk.`, "warning", true);
     });
-});
-
-copyButton.addEventListener("click", () => {
-  copyProjectsFile().catch(() => {
-    setStatus("Copy failed. Use the code panel instead.", "warning", true);
-  });
 });
 
 saveButton.addEventListener("click", () => {
