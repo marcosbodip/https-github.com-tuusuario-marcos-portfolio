@@ -716,20 +716,14 @@ function setCarouselViewer(carousel, shouldExpand) {
     const scrollX = Number(carousel.dataset.viewerScrollX || window.scrollX);
     const scrollY = Number(carousel.dataset.viewerScrollY || window.scrollY);
     const restoreScroll = () => window.scrollTo(scrollX, scrollY);
-    const finishClosing = () => {
-      carousel.classList.remove("is-expanded", "is-viewer-closing");
-      document.body.classList.remove("is-carousel-viewer-open");
-      delete carousel.dataset.viewerTransitionTimer;
-      syncCarouselPlayback(carousel);
-      restoreScroll();
-      window.requestAnimationFrame(restoreScroll);
-      window.setTimeout(restoreScroll, 80);
-    };
 
-    carousel.classList.remove("is-viewer-ready");
-    carousel.classList.add("is-viewer-closing");
+    carousel.classList.remove("is-expanded", "is-viewer-ready", "is-viewer-closing");
+    document.body.classList.remove("is-carousel-viewer-open");
+    delete carousel.dataset.viewerTransitionTimer;
     syncCarouselPlayback(carousel);
-    carousel.dataset.viewerTransitionTimer = String(window.setTimeout(finishClosing, 520));
+    restoreScroll();
+    window.requestAnimationFrame(restoreScroll);
+    window.setTimeout(restoreScroll, 80);
     return;
   }
 

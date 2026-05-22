@@ -2467,12 +2467,6 @@ video {
   transform: translate(-50%, -50%) translateY(0) scale(1);
 }
 
-.project-media-carousel.is-expanded.is-viewer-closing .project-media-carousel-track .project-media-item.is-active,
-.project-media-carousel.is-expanded.is-viewer-closing .project-media-carousel-track .project-media-item[data-carousel-offset="0"] {
-  opacity: 0;
-  transform: translate(-50%, -50%) translateY(10px) scale(0.965);
-}
-
 .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item.is-active img,
 .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item.is-active video,
 .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item[data-carousel-offset="0"] img,
