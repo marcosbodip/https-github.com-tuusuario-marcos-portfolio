@@ -31,7 +31,6 @@ window.PORTFOLIO_PROJECTS = [
       "cover": {
         "file": "cover_optimized.mp4",
         "type": "video",
-        "loopTrim": 0.45,
         "alt": "Meta Heart"
       },
       "main": {
@@ -141,19 +140,19 @@ window.PORTFOLIO_PROJECTS = [
       },
       "secondary": [
         {
-          "file": "secondary-01.mp4",
+          "file": "secondary-01_optimized.mp4",
           "type": "video",
           "alt": "Nissan Micra 3D extra 01",
           "ratio": "wide"
         },
         {
-          "file": "secondary-02.mp4",
+          "file": "secondary-02_optimized.mp4",
           "type": "video",
           "alt": "Nissan Micra 3D extra 02",
           "ratio": "wide"
         },
         {
-          "file": "secondary-03.mp4",
+          "file": "secondary-03_optimized.mp4",
           "type": "video",
           "alt": "Nissan Micra 3D extra 03",
           "ratio": "wide"
@@ -369,22 +368,22 @@ window.PORTFOLIO_PROJECTS = [
       },
       "secondary": [
         {
-          "file": "secondary-01.mp4",
+          "file": "secondary-01_optimized.mp4",
           "type": "video",
           "alt": "Brunch Festival 25 secondary 01"
         },
         {
-          "file": "secondary-02.mp4",
+          "file": "secondary-02_optimized.mp4",
           "type": "video",
           "alt": "Brunch Festival 25 secondary 02"
         },
         {
-          "file": "secondary-03.mp4",
+          "file": "secondary-03_optimized.mp4",
           "type": "video",
           "alt": "Brunch Festival 25 secondary 03"
         },
         {
-          "file": "secondary-04.mp4",
+          "file": "secondary-04_optimized.mp4",
           "type": "video",
           "alt": "Brunch Festival 25 secondary 04"
         }
@@ -521,7 +520,7 @@ window.PORTFOLIO_PROJECTS = [
     "credits": [],
     "media": {
       "cover": {
-        "file": "smooth (editado).mp4",
+        "file": "smooth (editado)_optimized.mp4",
         "type": "video",
         "alt": "Kuurth Imagery"
       },
@@ -595,7 +594,7 @@ window.PORTFOLIO_PROJECTS = [
         "alt": "Glitchy Ravens"
       },
       "main": {
-        "file": "cuervo_v01.mp4",
+        "file": "cuervo_v01_optimized.mp4",
         "type": "video",
         "ratio": "landscape",
         "alt": "Glitchy Ravens main media"
@@ -895,12 +894,12 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "lucessuper35.mp4",
+        "file": "lucessuper35_optimized.mp4",
         "type": "video",
         "alt": "La Piraña Sunglasses"
       },
       "main": {
-        "file": "gafarotandosuper35.mp4",
+        "file": "gafarotandosuper35_optimized.mp4",
         "type": "video",
         "ratio": "square",
         "alt": "La Piraña Sunglasses main media"
@@ -913,7 +912,7 @@ window.PORTFOLIO_PROJECTS = [
           "ratio": "portrait"
         },
         {
-          "file": "lucessuper35.mp4",
+          "file": "lucessuper35_optimized.mp4",
           "type": "video",
           "alt": "La Piraña Sunglasses lucessuper35"
         },
@@ -989,26 +988,26 @@ window.PORTFOLIO_PROJECTS = [
         "alt": "3D Space RnD"
       },
       "main": {
-        "file": "shottorbellino.mp4",
+        "file": "shottorbellino_optimized.mp4",
         "type": "video",
         "ratio": "portrait",
         "alt": "3D Space RnD main media"
       },
       "secondary": [
         {
-          "file": "shotdespegue.mp4",
+          "file": "shotdespegue_optimized.mp4",
           "type": "video",
           "alt": "3D Space RnD shotdespegue",
           "ratio": "portrait"
         },
         {
-          "file": "shotexterior.mp4",
+          "file": "shotexterior_optimized.mp4",
           "type": "video",
           "alt": "3D Space RnD shotexterior",
           "ratio": "portrait"
         },
         {
-          "file": "shotventanica.mp4",
+          "file": "shotventanica_optimized.mp4",
           "type": "video",
           "alt": "3D Space RnD shotventanica",
           "ratio": "portrait"
@@ -1052,7 +1051,7 @@ window.PORTFOLIO_PROJECTS = [
         "alt": "Dron Takeoff"
       },
       "main": {
-        "file": "DRON_V01.mp4",
+        "file": "DRON_V01_optimized.mp4",
         "type": "video",
         "ratio": "square",
         "alt": "Dron Takeoff main media"
@@ -1065,7 +1064,7 @@ window.PORTFOLIO_PROJECTS = [
           "ratio": "square"
         },
         {
-          "file": "GRANADA_v02.mp4",
+          "file": "GRANADA_v02_optimized.mp4",
           "type": "video",
           "alt": "Dron Takeoff GRANADA v02",
           "ratio": "square"
