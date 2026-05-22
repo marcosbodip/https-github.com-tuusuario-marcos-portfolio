@@ -573,7 +573,7 @@ function renderIndexOrderBoard() {
 
     const meta = document.createElement("p");
     meta.className = "admin-index-order-meta";
-    meta.textContent = `${index + 1}. ${project.hidden ? "Hidden" : "Public"} / ${project.category || "No category"}`;
+    meta.textContent = `${index + 1}. ${project.category || "No category"}`;
     info.append(title, meta);
 
     const actions = document.createElement("div");
@@ -991,7 +991,9 @@ function populateSelect() {
   projects.forEach((project, index) => {
     const option = document.createElement("option");
     option.value = index;
-    option.textContent = `${project.hidden ? "[Hidden]" : "[Public]"} ${project.title || project.slug}`;
+    option.textContent = project.hidden
+      ? `[Hidden] ${project.title || project.slug}`
+      : project.title || project.slug;
     projectSelect.append(option);
   });
 
