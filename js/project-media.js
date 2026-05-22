@@ -729,7 +729,6 @@ function setCarouselViewer(carousel, shouldExpand) {
     carousel.classList.remove("is-viewer-ready");
     carousel.classList.add("is-viewer-closing");
     syncCarouselPlayback(carousel);
-    restoreScroll();
     carousel.dataset.viewerTransitionTimer = String(window.setTimeout(finishClosing, 520));
     return;
   }
