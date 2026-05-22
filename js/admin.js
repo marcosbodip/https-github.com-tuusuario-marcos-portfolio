@@ -154,6 +154,12 @@ function slugify(value) {
     .replace(/(^-|-$)/g, "");
 }
 
+function normalizeProjectType(value) {
+  return String(value || "").trim().toLowerCase() === "client project"
+    ? "Client Project"
+    : "Personal Project";
+}
+
 function cleanProject(project) {
   return JSON.parse(JSON.stringify(project));
 }
@@ -984,7 +990,7 @@ function fillForm(project) {
   form.compositionPreset.value = mediaLayout.composition;
   syncLegacyLayoutField();
   form.detailRole.value = project.details?.Role || "";
-  form.detailType.value = project.details?.Type || "";
+  form.detailType.value = normalizeProjectType(project.details?.Type);
   form.detailTools.value = project.details?.Tools || "";
   form.concept.value = (project.concept || []).join("\n");
   form.teamEnabled.checked = project.teamEnabled !== false && Boolean(project.credits?.length);
@@ -1027,7 +1033,7 @@ function readForm() {
     mediaLayout,
     details: {
       Role: form.detailRole.value.trim(),
-      Type: form.detailType.value.trim(),
+      Type: normalizeProjectType(form.detailType.value),
       Tools: form.detailTools.value.trim()
     },
     concept: linesToArray(form.concept.value),
