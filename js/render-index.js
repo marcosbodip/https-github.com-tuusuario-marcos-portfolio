@@ -8,7 +8,6 @@ const indexEdgeAutoScroll = {
 const allIndexVideos = new Set();
 const visibleIndexCards = new Map();
 let indexVideoSyncFrame = null;
-let indexGridResizeFrame = null;
 
 function prepareDesktopIndexVideo(video) {
   if (!supportsIndexHover || !video) {
@@ -97,8 +96,6 @@ function resizeIndexCard(card) {
     return;
   }
 
-  syncIndexFrameSize(card);
-
   const gridStyles = window.getComputedStyle(projectGrid);
   const rowHeight = Number.parseFloat(gridStyles.gridAutoRows);
   const rowGap = Number.parseFloat(gridStyles.rowGap);
@@ -121,71 +118,12 @@ function resizeIndexGrid() {
   Array.from(projectGrid.children).forEach(resizeIndexCard);
 }
 
-function scheduleIndexGridResize() {
-  if (indexGridResizeFrame) {
-    cancelAnimationFrame(indexGridResizeFrame);
-  }
-
-  indexGridResizeFrame = window.requestAnimationFrame(() => {
-    indexGridResizeFrame = null;
-    resizeIndexGrid();
-    window.setTimeout(resizeIndexGrid, 80);
-    window.setTimeout(resizeIndexGrid, 220);
-  });
-}
-
-function getIndexMediaAspect(media) {
-  const width = media?.videoWidth || media?.naturalWidth;
-  const height = media?.videoHeight || media?.naturalHeight;
-
-  if (!width || !height) {
-    return 0;
-  }
-
-  return width / height;
-}
-
-function syncIndexFrameSize(card) {
-  if (!supportsIndexHover || !card) {
-    return;
-  }
-
-  const frame = card.querySelector(".index-media-frame");
-  const media = frame?.querySelector(".project-media");
-
-  if (!frame || !media) {
-    return;
-  }
-
-  const frameWidth = frame.getBoundingClientRect().width;
-  const aspect = getIndexMediaAspect(media);
-  const fallbackHeight = Number.parseFloat(card.style.getPropertyValue("--index-frame-height")) ||
-    frame.getBoundingClientRect().height;
-  const baseHeight = aspect && frameWidth ? frameWidth / aspect : fallbackHeight;
-
-  if (!baseHeight || !Number.isFinite(baseHeight)) {
-    return;
-  }
-
-  const hoverGrowth = Math.max(10, Math.min(28, baseHeight * 0.055));
-
-  card.style.setProperty("--index-frame-height", `${Math.round(baseHeight)}px`);
-  card.style.setProperty("--index-hover-growth", `${Math.round(hoverGrowth)}px`);
-  card.classList.add("has-index-frame-height");
-}
-
 function setIndexCardExpanded(card, expanded) {
   if (!supportsIndexHover || !card) {
     return;
   }
 
-  if (card.classList.contains("is-index-hovered") === expanded) {
-    return;
-  }
-
-  syncIndexFrameSize(card);
   card.classList.toggle("is-index-hovered", expanded);
-  scheduleIndexGridResize();
 }
 
 function setupIndexCardExpansion(card) {

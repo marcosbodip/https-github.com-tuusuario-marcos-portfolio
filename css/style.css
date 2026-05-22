@@ -253,16 +253,9 @@ video {
   position: relative;
   overflow: hidden;
   background: var(--card);
-  transition: height 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.project-card.has-index-frame-height .index-media-frame {
-  height: var(--index-frame-height);
-}
-
-.project-card.has-index-frame-height .index-media-frame .project-media {
-  height: 100%;
-  object-fit: cover;
+  transform-origin: center;
+  transition: transform 520ms cubic-bezier(0.45, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .project-media-wrap {
@@ -359,8 +352,8 @@ video {
     z-index: 4;
   }
 
-  .project-card.has-index-frame-height.is-index-hovered .index-media-frame {
-    height: calc(var(--index-frame-height) + var(--index-hover-growth, 18px));
+  .project-card.is-index-hovered .index-media-frame {
+    transform: scale(1.065);
   }
 }
 
