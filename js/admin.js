@@ -17,7 +17,6 @@ const indexOrderBoard = document.querySelector("#indexOrderBoard");
 const indexOrderToggle = document.querySelector("#indexOrderToggle");
 const teamField = document.querySelector("#teamField");
 const newProjectButton = document.querySelector("#newProjectButton");
-const duplicateProjectButton = document.querySelector("#duplicateProjectButton");
 const toggleVisibilityButton = document.querySelector("#toggleVisibilityButton");
 const deleteProjectButton = document.querySelector("#deleteProjectButton");
 const saveButton = document.querySelector("#saveButton");
@@ -1499,23 +1498,6 @@ newProjectButton.addEventListener("click", () => {
   folderMedia = [];
   folderMediaSlug = "";
   setStatus("Draft created. Import media or press Save site when ready.");
-});
-
-duplicateProjectButton.addEventListener("click", () => {
-  clearImportedMediaUrls();
-  const duplicate = cleanProject(projects[currentIndex]);
-  duplicate.slug = makeUniqueSlug(`${duplicate.slug || "project"}-copy`);
-  duplicate.title = `${duplicate.title || "Project"} Copy`;
-  duplicate.hidden = true;
-  projects.splice(currentIndex + 1, 0, duplicate);
-  projectAssetSlugs.splice(currentIndex + 1, 0, projects[currentIndex].slug || duplicate.slug);
-  currentIndex += 1;
-  populateSelect();
-  fillForm(projects[currentIndex]);
-  folderExists = false;
-  folderMedia = [];
-  folderMediaSlug = "";
-  setStatus("Draft duplicated. Import media or press Save site when ready.");
 });
 
 toggleVisibilityButton.addEventListener("click", () => {
