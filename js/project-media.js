@@ -681,6 +681,18 @@ function syncCarouselPlayback(carousel) {
   });
 }
 
+function lockCarouselViewerScroll(scrollX, scrollY) {
+  document.body.style.setProperty("--carousel-viewer-lock-left", `${-scrollX}px`);
+  document.body.style.setProperty("--carousel-viewer-lock-top", `${-scrollY}px`);
+  document.body.classList.add("is-carousel-viewer-open");
+}
+
+function unlockCarouselViewerScroll() {
+  document.body.classList.remove("is-carousel-viewer-open");
+  document.body.style.removeProperty("--carousel-viewer-lock-left");
+  document.body.style.removeProperty("--carousel-viewer-lock-top");
+}
+
 function setCarouselViewer(carousel, shouldExpand) {
   const isExpanded = carousel.classList.contains("is-expanded");
   const finishTimer = Number(carousel.dataset.viewerTransitionTimer || 0);
@@ -695,8 +707,8 @@ function setCarouselViewer(carousel, shouldExpand) {
     carousel.dataset.viewerScrollY = String(window.scrollY);
     stopEdgeAutoScroll();
     carousel.classList.remove("is-viewer-closing");
+    lockCarouselViewerScroll(window.scrollX, window.scrollY);
     carousel.classList.add("is-expanded");
-    document.body.classList.add("is-carousel-viewer-open");
     syncCarouselPlayback(carousel);
     window.requestAnimationFrame(() => {
       carousel.classList.add("is-viewer-ready");
@@ -707,7 +719,7 @@ function setCarouselViewer(carousel, shouldExpand) {
   if (shouldExpand) {
     carousel.classList.remove("is-viewer-closing");
     carousel.classList.add("is-viewer-ready");
-    document.body.classList.add("is-carousel-viewer-open");
+    lockCarouselViewerScroll(window.scrollX, window.scrollY);
     syncCarouselPlayback(carousel);
     return;
   }
@@ -718,7 +730,7 @@ function setCarouselViewer(carousel, shouldExpand) {
     const restoreScroll = () => window.scrollTo(scrollX, scrollY);
 
     carousel.classList.remove("is-expanded", "is-viewer-ready", "is-viewer-closing");
-    document.body.classList.remove("is-carousel-viewer-open");
+    unlockCarouselViewerScroll();
     delete carousel.dataset.viewerTransitionTimer;
     syncCarouselPlayback(carousel);
     restoreScroll();
@@ -727,7 +739,7 @@ function setCarouselViewer(carousel, shouldExpand) {
     return;
   }
 
-  document.body.classList.remove("is-carousel-viewer-open");
+  unlockCarouselViewerScroll();
   syncCarouselPlayback(carousel);
 }
 

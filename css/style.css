@@ -31,6 +31,14 @@ body.is-project-media-detail-open {
   overflow: hidden;
 }
 
+body.is-carousel-viewer-open {
+  position: fixed;
+  top: var(--carousel-viewer-lock-top, 0);
+  left: var(--carousel-viewer-lock-left, 0);
+  right: 0;
+  width: 100%;
+}
+
 body.is-index-loading {
   overflow: hidden;
 }
