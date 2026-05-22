@@ -385,18 +385,20 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       info.append(title, category);
 
+      const mediaFrame = document.createElement("div");
+      mediaFrame.className = "index-media-frame";
+
       if (media.tagName === "VIDEO") {
-        const mediaFrame = document.createElement("div");
         const poster = document.createElement("div");
-        mediaFrame.className = "index-media-frame";
         poster.className = "index-video-poster";
         poster.setAttribute("aria-hidden", "true");
         setupIndexVideoPoster(media, poster);
         mediaFrame.append(media, poster);
-        card.append(mediaFrame, info);
       } else {
-        card.append(media, info);
+        mediaFrame.append(media);
       }
+
+      card.append(mediaFrame, info);
 
       projectGrid.append(card);
 

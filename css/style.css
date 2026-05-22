@@ -255,6 +255,10 @@ video {
   background: var(--card);
 }
 
+.index-media-frame .project-media {
+  transform-origin: center;
+}
+
 .project-media-wrap {
   overflow: hidden;
   background: var(--card);
@@ -265,7 +269,7 @@ video {
   width: 100%;
   height: auto;
   display: block;
-  transition: filter 0.35s ease, transform 0.5s ease;
+  transition: filter 0.35s ease, transform 0.72s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .project-media::-webkit-media-controls,
@@ -289,7 +293,7 @@ video {
   background-size: cover;
   opacity: 1;
   pointer-events: none;
-  transition: opacity 0.18s ease, filter 0.35s ease, transform 0.5s ease;
+  transition: opacity 0.18s ease, filter 0.35s ease, transform 0.72s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .index-video-poster.is-hidden {
@@ -344,10 +348,10 @@ video {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .project-card:hover .project-media,
+  .project-card:hover .index-media-frame .project-media,
   .project-card:hover .index-video-poster {
     filter: none;
-    transform: scale(1.03);
+    transform: scale(1.105);
   }
 }
 
