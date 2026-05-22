@@ -8,7 +8,6 @@ const indexEdgeAutoScroll = {
 };
 const allIndexVideos = new Set();
 const visibleIndexCards = new Map();
-const pausedIndexVideosByHover = new Set();
 let indexVideoSyncFrame = null;
 let activeIndexCard = null;
 let indexNeighborFrame = null;
@@ -300,24 +299,6 @@ function stopIndexVideoPlayback(video) {
   video.pause();
 }
 
-function pauseIndexVideoForHover(video) {
-  if (!supportsIndexHover || !video) {
-    return;
-  }
-
-  pausedIndexVideosByHover.add(video);
-  video.pause();
-}
-
-function resumeIndexVideoAfterHover(video) {
-  if (!supportsIndexHover || !video) {
-    return;
-  }
-
-  pausedIndexVideosByHover.delete(video);
-  scheduleIndexVideoSync();
-}
-
 function queueIndexVideoPlayback(video) {
   if (isIndexLoaderActive()) {
     window.PORTFOLIO_MEDIA_LAZY?.load(video);
@@ -366,7 +347,6 @@ function syncIndexVideoPlayback() {
       distance: Math.abs(card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2 - window.innerHeight / 2)
     }))
     .filter(({ ratio }) => ratio >= minVisibleRatio)
-    .filter(({ video }) => !pausedIndexVideosByHover.has(video))
     .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)
     .slice(0, maxActiveVideos)
     .map(({ video }) => video));
@@ -446,10 +426,10 @@ function observeIndexVideoCard(card, video) {
   video.addEventListener("loadedmetadata", scheduleIndexVideoSync, { once: true });
   video.addEventListener("canplay", scheduleIndexVideoSync, { once: true });
 
-  card.addEventListener("pointerenter", () => pauseIndexVideoForHover(video));
-  card.addEventListener("pointerleave", () => resumeIndexVideoAfterHover(video));
-  card.addEventListener("focusin", () => pauseIndexVideoForHover(video));
-  card.addEventListener("focusout", () => resumeIndexVideoAfterHover(video));
+  card.addEventListener("pointerenter", scheduleIndexVideoSync);
+  card.addEventListener("pointerleave", scheduleIndexVideoSync);
+  card.addEventListener("focusin", scheduleIndexVideoSync);
+  card.addEventListener("focusout", scheduleIndexVideoSync);
 }
 
 function setupIndexVideoPoster(video, poster) {
