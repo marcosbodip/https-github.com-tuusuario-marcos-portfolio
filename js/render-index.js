@@ -140,6 +140,23 @@ function getExpandedIndexRect(frame) {
   };
 }
 
+function updateIndexInfoOffset(card) {
+  if (!supportsIndexExpand || !card) {
+    return;
+  }
+
+  const frame = card.querySelector(".index-media-frame");
+
+  if (!frame) {
+    return;
+  }
+
+  const expandedOverflow = frame.offsetHeight * (indexHoverScale - 1) / 2;
+  const offset = Math.round(Math.min(38, Math.max(14, expandedOverflow + 8)));
+
+  card.style.setProperty("--index-info-y", `${offset}px`);
+}
+
 function rectsOverlap(first, second) {
   return first.left < second.right &&
     first.right > second.left &&
@@ -197,6 +214,8 @@ function updateIndexNeighborOffsets(card) {
 
     const activeRect = getExpandedIndexRect(activeFrame);
     const influenceRect = getExpandedIndexInfluence(activeRect);
+    const activeInfoShift = Number.parseFloat(card.style.getPropertyValue("--index-info-y")) || 0;
+    influenceRect.bottom += activeInfoShift;
 
     Array.from(projectGrid.children).forEach((item) => {
       if (item === card) {
@@ -240,6 +259,10 @@ function setIndexCardExpanded(card, expanded) {
 
   if (expanded && activeIndexCard && activeIndexCard !== card) {
     activeIndexCard.classList.remove("is-index-hovered");
+  }
+
+  if (expanded) {
+    updateIndexInfoOffset(card);
   }
 
   card.classList.toggle("is-index-hovered", expanded);
