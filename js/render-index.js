@@ -18,10 +18,10 @@ function prepareDesktopIndexVideo(video) {
     return;
   }
 
-  video.dataset.lazyAutoplay = "false";
-  video.autoplay = false;
+  video.dataset.lazyAutoplay = "true";
+  video.autoplay = true;
   video.preload = "metadata";
-  video.removeAttribute("autoplay");
+  video.setAttribute("autoplay", "");
 }
 
 function isIndexLoaderActive() {
@@ -297,18 +297,6 @@ function stopIndexVideoPlayback(video) {
   }
 
   video.pause();
-
-  if (supportsIndexHover) {
-    video.dataset.lazyAutoplay = "false";
-    video.autoplay = false;
-    video.removeAttribute("autoplay");
-
-    if (video.readyState >= 1) {
-      try {
-        video.currentTime = 0.001;
-      } catch {}
-    }
-  }
 }
 
 function queueIndexVideoPlayback(video) {
@@ -350,19 +338,18 @@ function syncIndexVideoPlayback() {
     return;
   }
 
-  if (!isTouchIndex) {
-    return;
-  }
-
-  const activeVideos = new Set();
-
   const minVisibleRatio = isTouchIndex ? 0.08 : 0.01;
-
-  visibleIndexCards.forEach((video, card) => {
-    if (getVisibleRatio(card) >= minVisibleRatio) {
-      activeVideos.add(video);
-    }
-  });
+  const maxActiveVideos = isTouchIndex ? 2 : 7;
+  const activeVideos = new Set(Array.from(visibleIndexCards.entries())
+    .map(([card, video]) => ({
+      video,
+      ratio: getVisibleRatio(card),
+      distance: Math.abs(card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2 - window.innerHeight / 2)
+    }))
+    .filter(({ ratio }) => ratio >= minVisibleRatio)
+    .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)
+    .slice(0, maxActiveVideos)
+    .map(({ video }) => video));
 
   activeVideos.forEach(queueIndexVideoPlayback);
 
@@ -409,7 +396,7 @@ const indexCardObserver = "IntersectionObserver" in window
 
       if (entry.isIntersecting) {
         visibleIndexCards.set(card, video);
-        window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: isTouchIndex });
+        window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: false });
         scheduleIndexVideoSync();
         return;
       }
@@ -439,12 +426,10 @@ function observeIndexVideoCard(card, video) {
   video.addEventListener("loadedmetadata", scheduleIndexVideoSync, { once: true });
   video.addEventListener("canplay", scheduleIndexVideoSync, { once: true });
 
-  if (supportsIndexHover) {
-    card.addEventListener("pointerenter", () => requestIndexVideoPlayback(video));
-    card.addEventListener("pointerleave", () => stopIndexVideoPlayback(video));
-    card.addEventListener("focusin", () => requestIndexVideoPlayback(video));
-    card.addEventListener("focusout", () => stopIndexVideoPlayback(video));
-  }
+  card.addEventListener("pointerenter", scheduleIndexVideoSync);
+  card.addEventListener("pointerleave", scheduleIndexVideoSync);
+  card.addEventListener("focusin", scheduleIndexVideoSync);
+  card.addEventListener("focusout", scheduleIndexVideoSync);
 }
 
 function setupIndexVideoPoster(video, poster) {
@@ -492,11 +477,6 @@ function setupIndexVideoPoster(video, poster) {
     hidePoster();
   });
   video.addEventListener("pause", () => {
-    if (supportsIndexHover) {
-      showPoster();
-      return;
-    }
-
     showPosterBeforePlayback();
   });
   video.addEventListener("waiting", showPosterBeforePlayback);
