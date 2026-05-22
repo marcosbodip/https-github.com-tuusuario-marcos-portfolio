@@ -9,6 +9,17 @@ const allIndexVideos = new Set();
 const visibleIndexCards = new Map();
 let indexVideoSyncFrame = null;
 
+function prepareDesktopIndexVideo(video) {
+  if (!supportsIndexHover || !video) {
+    return;
+  }
+
+  video.dataset.lazyAutoplay = "false";
+  video.autoplay = false;
+  video.preload = "metadata";
+  video.removeAttribute("autoplay");
+}
+
 function isIndexLoaderActive() {
   return document.body.classList.contains("is-index-loading");
 }
@@ -112,8 +123,29 @@ function requestIndexVideoPlayback(video) {
     return;
   }
 
+  video.dataset.lazyAutoplay = "true";
   window.PORTFOLIO_MEDIA_LAZY?.load(video);
   window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+}
+
+function stopIndexVideoPlayback(video) {
+  if (!video) {
+    return;
+  }
+
+  video.pause();
+
+  if (supportsIndexHover) {
+    video.dataset.lazyAutoplay = "false";
+    video.autoplay = false;
+    video.removeAttribute("autoplay");
+
+    if (video.readyState >= 1) {
+      try {
+        video.currentTime = 0.001;
+      } catch {}
+    }
+  }
 }
 
 function queueIndexVideoPlayback(video) {
@@ -155,6 +187,10 @@ function syncIndexVideoPlayback() {
     return;
   }
 
+  if (!isTouchIndex) {
+    return;
+  }
+
   const activeVideos = new Set();
 
   const minVisibleRatio = isTouchIndex ? 0.08 : 0.01;
@@ -167,13 +203,11 @@ function syncIndexVideoPlayback() {
 
   activeVideos.forEach(queueIndexVideoPlayback);
 
-  if (isTouchIndex) {
-    allIndexVideos.forEach((video) => {
-      if (!activeVideos.has(video) && !video.paused) {
-        video.pause();
-      }
-    });
-  }
+  allIndexVideos.forEach((video) => {
+    if (!activeVideos.has(video) && !video.paused) {
+      video.pause();
+    }
+  });
 }
 
 function scheduleIndexVideoSync() {
@@ -193,7 +227,7 @@ function primeInitialIndexVideos() {
     const isNearViewport = rect.bottom >= -preloadMargin && rect.top <= window.innerHeight + preloadMargin;
 
     if (isNearViewport) {
-      window.PORTFOLIO_MEDIA_LAZY?.load(video);
+      window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: false });
     }
   });
 
@@ -212,13 +246,13 @@ const indexCardObserver = "IntersectionObserver" in window
 
       if (entry.isIntersecting) {
         visibleIndexCards.set(card, video);
-        window.PORTFOLIO_MEDIA_LAZY?.load(video);
+        window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: isTouchIndex });
         scheduleIndexVideoSync();
         return;
       }
 
       visibleIndexCards.delete(card);
-      video.pause();
+      stopIndexVideoPlayback(video);
       scheduleIndexVideoSync();
     });
   }, {
@@ -241,6 +275,13 @@ function observeIndexVideoCard(card, video) {
   indexCardObserver.observe(card);
   video.addEventListener("loadedmetadata", scheduleIndexVideoSync, { once: true });
   video.addEventListener("canplay", scheduleIndexVideoSync, { once: true });
+
+  if (supportsIndexHover) {
+    card.addEventListener("pointerenter", () => requestIndexVideoPlayback(video));
+    card.addEventListener("pointerleave", () => stopIndexVideoPlayback(video));
+    card.addEventListener("focusin", () => requestIndexVideoPlayback(video));
+    card.addEventListener("focusout", () => stopIndexVideoPlayback(video));
+  }
 }
 
 function setupIndexVideoPoster(video, poster) {
@@ -282,7 +323,14 @@ function setupIndexVideoPoster(video, poster) {
     hasPlayed = true;
     hidePoster();
   });
-  video.addEventListener("pause", showPosterBeforePlayback);
+  video.addEventListener("pause", () => {
+    if (supportsIndexHover) {
+      showPoster();
+      return;
+    }
+
+    showPosterBeforePlayback();
+  });
   video.addEventListener("waiting", showPosterBeforePlayback);
   video.addEventListener("stalled", showPosterBeforePlayback);
   video.addEventListener("emptied", showPosterBeforePlayback);
@@ -306,6 +354,10 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         "project-media",
         { deferObserve: true }
       );
+
+      if (media.tagName === "VIDEO") {
+        prepareDesktopIndexVideo(media);
+      }
 
       const resizeCard = () => resizeIndexCard(card);
 

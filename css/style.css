@@ -346,7 +346,7 @@ video {
 @media (hover: hover) and (pointer: fine) {
   .project-card:hover .project-media,
   .project-card:hover .index-video-poster {
-    filter: invert(1);
+    filter: none;
     transform: scale(1.03);
   }
 }
@@ -637,7 +637,7 @@ video {
   }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px), (hover: none) and (pointer: coarse) {
   .about-hero {
     grid-template-columns: 1fr;
     padding-right: 0;
@@ -648,8 +648,7 @@ video {
   }
 
   .about-pointcloud-shell {
-    min-height: clamp(320px, 54vw, 520px);
-    margin: 0 var(--side-padding) clamp(42px, 8vw, 82px);
+    display: none;
   }
 }
 
@@ -659,9 +658,7 @@ video {
   }
 
   .about-pointcloud-shell {
-    display: block;
-    min-height: clamp(280px, 92vw, 390px);
-    margin: 0 var(--side-padding) 34px;
+    display: none;
   }
 }
 

@@ -6,6 +6,13 @@
   }
 
   const shell = canvas.closest(".about-pointcloud-shell") || canvas;
+  const compactViewport = window.matchMedia("(max-width: 1180px), (hover: none) and (pointer: coarse)");
+
+  if (compactViewport.matches) {
+    shell.remove();
+    return;
+  }
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const source = canvas.dataset.src || "assets/about/marcos-bust.glb";
   const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ccff00";
