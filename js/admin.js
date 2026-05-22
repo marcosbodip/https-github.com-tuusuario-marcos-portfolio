@@ -145,6 +145,36 @@ function getFileStem(fileName) {
   return fileName.replace(/\.[^.]+$/, "");
 }
 
+function getOptimizedVideoFileName(fileName) {
+  const stem = getFileStem(fileName);
+
+  return stem.endsWith("_optimized") ? `${stem}.mp4` : `${stem}_optimized.mp4`;
+}
+
+function isGeneratedMediaDerivative(fileName = "") {
+  return /_mobile\.mp4$/i.test(fileName) || /_poster\.jpe?g$/i.test(fileName);
+}
+
+function isSupersededSourceVideo(fileName, availableFiles = []) {
+  if (getMediaType(fileName) !== "video") {
+    return false;
+  }
+
+  const stem = getFileStem(fileName);
+
+  if (stem.endsWith("_optimized")) {
+    return false;
+  }
+
+  return new Set(availableFiles).has(getOptimizedVideoFileName(fileName));
+}
+
+function isPublicAdminMediaFile(fileName, availableFiles = []) {
+  return Boolean(fileName) &&
+    !isGeneratedMediaDerivative(fileName) &&
+    !isSupersededSourceVideo(fileName, availableFiles);
+}
+
 function slugify(value) {
   return value
     .toLowerCase()
@@ -628,19 +658,21 @@ function renderMediaBoard() {
   const activeFiles = new Set(mediaItems.map((item) => item.file).filter(Boolean));
   const hiddenFiles = new Set(hiddenMediaItems.map((item) => item.file).filter(Boolean));
   const folderOnlyItems = currentFolderMedia
+    .filter((file) => isPublicAdminMediaFile(file, currentFolderMedia))
     .filter((file) => !activeFiles.has(file) && !hiddenFiles.has(file))
     .map((file) => ({
       ...makeMediaItem(file, "available media"),
       pendingCleanup: true
     }));
   const importedOnlyItems = Array.from(importedMediaFiles.keys())
+    .filter((file) => isPublicAdminMediaFile(file, currentFolderMedia))
     .filter((file) => !activeFiles.has(file) && !hiddenFiles.has(file))
     .map((file) => ({
       ...makeMediaItem(file, "available media"),
       pendingUpload: true
     }));
   const libraryItems = uniqueMediaItems([
-    ...hiddenMediaItems,
+    ...hiddenMediaItems.filter((item) => isPublicAdminMediaFile(item.file, currentFolderMedia)),
     ...folderOnlyItems,
     ...importedOnlyItems
   ]);
@@ -1140,7 +1172,9 @@ function getPendingCleanupCount() {
 
   const usedFiles = getCurrentKeptMediaFiles();
 
-  return folderMedia.filter((file) => !usedFiles.has(file)).length;
+  return folderMedia
+    .filter((file) => isPublicAdminMediaFile(file, folderMedia))
+    .filter((file) => !usedFiles.has(file)).length;
 }
 
 function getPreviewProjects(project) {
