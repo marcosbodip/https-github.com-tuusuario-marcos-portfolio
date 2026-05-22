@@ -39,6 +39,12 @@ body.is-carousel-viewer-open {
   width: 100%;
 }
 
+body.is-carousel-viewer-open .site-header,
+body.is-carousel-viewer-open .site-footer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 body.is-index-loading {
   overflow: hidden;
 }
