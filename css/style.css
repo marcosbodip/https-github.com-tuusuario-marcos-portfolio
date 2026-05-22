@@ -2416,20 +2416,34 @@ video {
   width: 100vw;
   height: 100vh;
   padding: clamp(16px, 3vw, 44px);
-  background: color-mix(in srgb, var(--bg) 96%, transparent);
+  background: rgba(8, 8, 7, 0.2);
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
   cursor: zoom-out;
-  opacity: 1;
+  opacity: 0;
   overflow: hidden;
   transform: none;
-  transition: none;
+  transition:
+    opacity 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    backdrop-filter 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.project-media-carousel.is-expanded.is-viewer-ready .project-media-carousel-track {
+  background: rgba(8, 8, 7, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  opacity: 1;
 }
 
 .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item {
   pointer-events: none;
   opacity: 0;
   filter: none;
-  transform: translate(-50%, -50%) scale(0.98);
-  transition: opacity 0.18s ease, transform 0.22s ease;
+  transform: translate(-50%, -50%) translateY(14px) scale(0.94);
+  transition:
+    opacity 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item.is-active,
@@ -2441,10 +2455,22 @@ video {
   max-height: none;
   aspect-ratio: auto;
   cursor: zoom-out;
-  opacity: 1;
+  opacity: 0;
   filter: none;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) translateY(14px) scale(0.94);
   z-index: 10;
+}
+
+.project-media-carousel.is-expanded.is-viewer-ready .project-media-carousel-track .project-media-item.is-active,
+.project-media-carousel.is-expanded.is-viewer-ready .project-media-carousel-track .project-media-item[data-carousel-offset="0"] {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0) scale(1);
+}
+
+.project-media-carousel.is-expanded.is-viewer-closing .project-media-carousel-track .project-media-item.is-active,
+.project-media-carousel.is-expanded.is-viewer-closing .project-media-carousel-track .project-media-item[data-carousel-offset="0"] {
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(10px) scale(0.965);
 }
 
 .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item.is-active img,
