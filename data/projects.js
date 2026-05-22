@@ -326,18 +326,18 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "brunch-festival-25",
     "title": "Brunch Festival 25",
-    "category": "Full-digital / CGI",
+    "category": "CGI",
     "summary": "Summer collided with pixels in an Instagram promo created for Brunch Festival, bringing the Forum stage to life as a digital playground.",
     "description": "Summer collided with pixels in an Instagram promo created for Brunch Festival, bringing the Forum stage to life as a digital playground.",
-    "cardCategory": "Full-digital / CGI",
-    "cardType": "full-digital-cgi",
+    "cardCategory": "CGI",
+    "cardType": "cgi",
     "layout": "auto",
     "mediaLayout": {
       "composition": "carousel"
     },
     "details": {
       "Role": "CG Artist",
-      "Type": "Instagram Promo",
+      "Type": "Personal Project",
       "Tools": "C4D Octane"
     },
     "concept": [
