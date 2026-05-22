@@ -1,5 +1,6 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const supportsIndexExpand = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1181px)").matches;
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const indexEdgeAutoScroll = {
   frame: null,
@@ -8,6 +9,9 @@ const indexEdgeAutoScroll = {
 const allIndexVideos = new Set();
 const visibleIndexCards = new Map();
 let indexVideoSyncFrame = null;
+let activeIndexCard = null;
+let indexNeighborFrame = null;
+const indexHoverScale = 1.065;
 
 function prepareDesktopIndexVideo(video) {
   if (!supportsIndexHover || !video) {
@@ -116,18 +120,135 @@ function resizeIndexGrid() {
   }
 
   Array.from(projectGrid.children).forEach(resizeIndexCard);
+  updateIndexNeighborOffsets(activeIndexCard);
 }
 
-function setIndexCardExpanded(card, expanded) {
-  if (!supportsIndexHover || !card) {
+function getExpandedIndexRect(frame) {
+  const rect = frame.getBoundingClientRect();
+  const width = frame.offsetWidth * indexHoverScale;
+  const height = frame.offsetHeight * indexHoverScale;
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  return {
+    left: centerX - width / 2,
+    right: centerX + width / 2,
+    top: centerY - height / 2,
+    bottom: centerY + height / 2,
+    centerX,
+    centerY
+  };
+}
+
+function rectsOverlap(first, second) {
+  return first.left < second.right &&
+    first.right > second.left &&
+    first.top < second.bottom &&
+    first.bottom > second.top;
+}
+
+function getExpandedIndexInfluence(rect) {
+  const margin = Math.min(42, Math.max(22, Math.min(rect.right - rect.left, rect.bottom - rect.top) * 0.08));
+
+  return {
+    left: rect.left - margin,
+    right: rect.right + margin,
+    top: rect.top - margin,
+    bottom: rect.bottom + margin,
+    centerX: rect.centerX,
+    centerY: rect.centerY
+  };
+}
+
+function clearIndexNeighborOffsets() {
+  if (!projectGrid) {
     return;
   }
 
+  Array.from(projectGrid.children).forEach((card) => {
+    card.style.setProperty("--index-neighbor-x", "0px");
+    card.style.setProperty("--index-neighbor-y", "0px");
+  });
+}
+
+function updateIndexNeighborOffsets(card) {
+  if (!supportsIndexExpand || !projectGrid) {
+    return;
+  }
+
+  if (indexNeighborFrame) {
+    cancelAnimationFrame(indexNeighborFrame);
+  }
+
+  indexNeighborFrame = window.requestAnimationFrame(() => {
+    indexNeighborFrame = null;
+
+    if (!card || !card.classList.contains("is-index-hovered")) {
+      clearIndexNeighborOffsets();
+      return;
+    }
+
+    const activeFrame = card.querySelector(".index-media-frame");
+
+    if (!activeFrame) {
+      clearIndexNeighborOffsets();
+      return;
+    }
+
+    const activeRect = getExpandedIndexRect(activeFrame);
+    const influenceRect = getExpandedIndexInfluence(activeRect);
+
+    Array.from(projectGrid.children).forEach((item) => {
+      if (item === card) {
+        item.style.setProperty("--index-neighbor-x", "0px");
+        item.style.setProperty("--index-neighbor-y", "0px");
+        return;
+      }
+
+      const frame = item.querySelector(".index-media-frame");
+      const rect = frame?.getBoundingClientRect();
+
+      if (!rect || !rectsOverlap(rect, influenceRect)) {
+        item.style.setProperty("--index-neighbor-x", "0px");
+        item.style.setProperty("--index-neighbor-y", "0px");
+        return;
+      }
+
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = centerX - activeRect.centerX;
+      const deltaY = centerY - activeRect.centerY;
+      const distance = Math.hypot(deltaX, deltaY) || 1;
+      const maxShift = Math.min(22, Math.max(12, Math.min(activeFrame.offsetWidth, activeFrame.offsetHeight) * 0.045));
+      const overlapX = Math.min(rect.right, influenceRect.right) - Math.max(rect.left, influenceRect.left);
+      const overlapY = Math.min(rect.bottom, influenceRect.bottom) - Math.max(rect.top, influenceRect.top);
+      const overlapRatio = Math.min(1, Math.max(overlapX / rect.width, overlapY / rect.height));
+      const shift = maxShift * (0.38 + overlapRatio * 0.62);
+      const x = Math.round((deltaX / distance) * shift);
+      const y = Math.round((deltaY / distance) * shift * 0.75);
+
+      item.style.setProperty("--index-neighbor-x", `${x}px`);
+      item.style.setProperty("--index-neighbor-y", `${y}px`);
+    });
+  });
+}
+
+function setIndexCardExpanded(card, expanded) {
+  if (!supportsIndexExpand || !card) {
+    return;
+  }
+
+  if (expanded && activeIndexCard && activeIndexCard !== card) {
+    activeIndexCard.classList.remove("is-index-hovered");
+  }
+
   card.classList.toggle("is-index-hovered", expanded);
+  activeIndexCard = expanded ? card : activeIndexCard === card ? null : activeIndexCard;
+  updateIndexNeighborOffsets(activeIndexCard);
 }
 
 function setupIndexCardExpansion(card) {
-  if (!supportsIndexHover || !card) {
+  if (!supportsIndexExpand || !card) {
     return;
   }
 
