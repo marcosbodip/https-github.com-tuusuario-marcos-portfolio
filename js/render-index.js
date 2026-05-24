@@ -340,8 +340,13 @@ function syncIndexVideoPlayback() {
 
   const minVisibleRatio = isTouchIndex ? 0.08 : 0.01;
   const maxActiveVideos = isTouchIndex ? 2 : 7;
-  const activeVideos = new Set(Array.from(visibleIndexCards.entries())
-    .map(([card, video]) => ({
+  const activeVideos = new Set(Array.from(allIndexVideos)
+    .map((video) => ({
+      video,
+      card: video.closest(".project-card")
+    }))
+    .filter(({ card }) => Boolean(card))
+    .map(({ card, video }) => ({
       video,
       ratio: getVisibleRatio(card),
       distance: Math.abs(card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2 - window.innerHeight / 2)
