@@ -1,5 +1,36 @@
 const params = new URLSearchParams(window.location.search);
-const slug = params.get("project") || window.PORTFOLIO_ADMIN_PREVIEW_SLUG;
+function getProjectSlugFromPath() {
+  const match = window.location.pathname.match(/\/projects\/([^/]+)\.html$/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+function getProjectPageHref(projectData) {
+  return `/projects/${encodeURIComponent(projectData.slug)}.html`;
+}
+
+function setMetaContent(selector, content) {
+  const meta = document.querySelector(selector);
+
+  if (meta && content) {
+    meta.content = content;
+  }
+}
+
+function getProjectSocialImage(projectData) {
+  const coverFile = projectData?.media?.cover?.file || "";
+
+  if (!coverFile) {
+    return "";
+  }
+
+  const imageFile = /\.(mp4|mov|webm)$/i.test(coverFile)
+    ? coverFile.replace(/\.[^.]+$/, "_poster.jpg")
+    : coverFile;
+
+  return `${window.location.origin}/assets/projects/${projectData.slug}/${encodeURI(imageFile)}`;
+}
+
+const slug = params.get("project") || window.PORTFOLIO_PROJECT_SLUG || getProjectSlugFromPath() || window.PORTFOLIO_ADMIN_PREVIEW_SLUG;
 const project = window.PORTFOLIO_PROJECTS?.find((item) => item.slug === slug);
 const projectRoot = document.querySelector("[data-project-root]");
 const nextProjectLink = document.querySelector("[data-next-project-link]");
@@ -12,7 +43,7 @@ function updateNextProjectLink(currentProject) {
   const publicProjects = window.PORTFOLIO_PROJECTS.filter((item) => !item.hidden);
 
   if (publicProjects.length <= 1) {
-    nextProjectLink.href = "index.html";
+    nextProjectLink.href = "/index.html";
     nextProjectLink.textContent = "Projects";
     nextProjectLink.setAttribute("aria-label", "Back to projects");
     return;
@@ -21,7 +52,7 @@ function updateNextProjectLink(currentProject) {
   const currentPublicIndex = publicProjects.findIndex((item) => item.slug === currentProject.slug);
   const nextProject = publicProjects[(currentPublicIndex + 1) % publicProjects.length] || publicProjects[0];
 
-  nextProjectLink.href = `project.html?project=${encodeURIComponent(nextProject.slug)}`;
+  nextProjectLink.href = getProjectPageHref(nextProject);
   nextProjectLink.textContent = "Next project →";
   nextProjectLink.setAttribute("aria-label", `Next project: ${nextProject.title || nextProject.slug}`);
 }
@@ -88,7 +119,7 @@ function createProjectMediaFigure(media, basePath) {
 }
 
 function renderProjectMedia(projectData, gallery) {
-  const basePath = `assets/projects/${projectData.slug}`;
+  const basePath = `/assets/projects/${projectData.slug}`;
   const grid = document.createElement("div");
   const composition = getComposition(projectData);
   grid.className = [
@@ -141,10 +172,19 @@ if (!projectRoot || !project) {
   updateNextProjectLink(project);
   document.title = `${project.title} — Marcos Bodi`;
 
-  const description = document.querySelector("meta[name=\"description\"]");
-  if (description) {
-    description.content = project.description || project.summary;
-  }
+  const description = project.description || project.summary;
+  const canonicalUrl = `${window.location.origin}${getProjectPageHref(project)}`;
+  const socialTitle = `${project.title} - Marcos Bodi`;
+  const socialImage = getProjectSocialImage(project);
+
+  setMetaContent("meta[name=\"description\"]", description);
+  setMetaContent("meta[property=\"og:title\"]", socialTitle);
+  setMetaContent("meta[property=\"og:description\"]", description);
+  setMetaContent("meta[property=\"og:url\"]", canonicalUrl);
+  setMetaContent("meta[property=\"og:image\"]", socialImage);
+  setMetaContent("meta[name=\"twitter:title\"]", socialTitle);
+  setMetaContent("meta[name=\"twitter:description\"]", description);
+  setMetaContent("meta[name=\"twitter:image\"]", socialImage);
 
   projectRoot.innerHTML = "";
 

@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "generate:seo": "node scripts/seo-pages.mjs",
     "start": "node server.mjs"
   },
   "devDependencies": {}

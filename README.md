@@ -5,26 +5,27 @@ Portfolio personal estatico en HTML, CSS y JavaScript.
 ## Estructura
 
 - `index.html`: home con el grid de proyectos.
-- `project.html`: plantilla unica que renderiza cualquier proyecto con `?project=project-slug`.
+- `project.html`: plantilla generica/fallback que renderiza cualquier proyecto con `?project=project-slug`.
+- `projects/`: paginas HTML generadas para SEO/social previews de cada proyecto publico.
 - `about.html`: pagina About.
 - `data/projects.js`: datos de todos los proyectos.
 - `assets/projects/`: media de cada proyecto, organizada por slug.
 - `css/style.css`: estilos globales.
 - `js/`: scripts de render, interacciones y utilidades.
 
-El contenido de proyectos vive en `data/projects.js`. No hace falta crear paginas HTML dentro de una carpeta `projects`.
+El contenido de proyectos vive en `data/projects.js`. Las paginas de `projects/` se regeneran automaticamente desde esos datos.
 
 ## URLs de proyecto
 
 Cada proyecto usa el campo `slug` de `data/projects.js`:
 
 ```text
-project.html?project=meta-heart
-project.html?project=nissan-micra
-project.html?project=brunch-festival-25
+/projects/meta-heart.html
+/projects/nissan-micra.html
+/projects/brunch-festival-25.html
 ```
 
-La home genera automaticamente las tarjetas con `js/render-index.js`, y la pagina de detalle se genera con `js/render-project.js`.
+La home genera automaticamente las tarjetas con `js/render-index.js`, y la pagina de detalle se genera con `js/render-project.js`. El formato antiguo `project.html?project=slug` sigue funcionando como fallback.
 
 ## Assets
 
@@ -79,6 +80,7 @@ js/ excepto js/admin.js
 about.html
 index.html
 project.html
+projects/
 package.json solo si el hosting lo necesita
 ```
 
@@ -99,6 +101,6 @@ data/projects.backup.js
 - Revisar la web en desktop y movil.
 - Comprimir videos grandes y sustituir `.mov` por `.mp4` cuando sea posible.
 - Anadir favicon.
-- Anadir metas sociales `og:title`, `og:description`, `og:image` y `twitter:card`.
-- Revisar que todos los proyectos abren con `project.html?project=slug`.
+- Revisar las metas sociales `og:title`, `og:description`, `og:image` y `twitter:card`.
+- Revisar que todos los proyectos abren con `/projects/slug.html`.
 - Confirmar que no se publica ningun archivo de admin o desarrollo.

@@ -498,7 +498,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
     .forEach((project, index) => {
       const card = document.createElement("a");
       card.className = "project-card";
-      card.href = `project.html?project=${project.slug}`;
+      card.href = `/projects/${encodeURIComponent(project.slug)}.html`;
       card.dataset.category = project.cardType || "";
 
       const media = createMediaElement(

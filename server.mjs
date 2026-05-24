@@ -6,6 +6,7 @@ import { basename, extname, join, normalize, relative, resolve } from "node:path
 import { Readable } from "node:stream";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
+import { generateProjectSeoPages } from "./scripts/seo-pages.mjs";
 
 const rootDir = process.cwd();
 const projectsAssetsDir = resolve(rootDir, "assets", "projects");
@@ -193,6 +194,7 @@ function isBlockedStaticPath(requestPath) {
     normalizedPath === "/README.md" ||
     normalizedPath === "/package.json" ||
     normalizedPath === "/server.mjs" ||
+    normalizedPath.startsWith("/scripts/") ||
     normalizedPath.endsWith(".log") ||
     normalizedPath.endsWith(".backup.js") ||
     normalizedPath.endsWith(".tmp.js")
@@ -706,9 +708,9 @@ async function publishSavedChanges() {
   }
 
   await runGit(["rev-parse", "--is-inside-work-tree"]);
-  await runGit(["add", "data/projects.js", "assets/projects"]);
+  await runGit(["add", "data/projects.js", "assets/projects", "projects"]);
 
-  const status = await runGit(["status", "--porcelain", "--", "data/projects.js", "assets/projects"]);
+  const status = await runGit(["status", "--porcelain", "--", "data/projects.js", "assets/projects", "projects"]);
 
   if (!status) {
     return "No Git changes to publish.";
@@ -949,6 +951,7 @@ async function handleRequest(request, response) {
 
       await writeFile(projectsTempFile, nextProjectsFile);
       await rename(projectsTempFile, projectsDataFile);
+      await generateProjectSeoPages(projects, rootDir);
       await pruneUnusedProjectAssets(projects);
 
       try {
