@@ -246,8 +246,13 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     const mobileMediaPath = media.previewUrl ? "" : getMobileVideoPath(mediaPath);
     const posterPath = media.previewUrl ? "" : getVideoPosterPath(mediaPath);
     const video = document.createElement("video");
+    const sourcePath = mobileMediaPath && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
     video.className = className;
-    video.dataset.src = mobileMediaPath && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
+    if (options.eager) {
+      video.src = sourcePath;
+    } else {
+      video.dataset.src = sourcePath;
+    }
     video.dataset.desktopSrc = mediaPath;
     if (mobileMediaPath) {
       video.dataset.mobileSrc = mobileMediaPath;
@@ -261,7 +266,7 @@ function createMediaElement(media, basePath, className = "", options = {}) {
       video.dataset.loopTrim = String(media.loopTrim);
     }
     portfolioLazyMedia.prepareAutoplayVideo(video);
-    video.preload = "none";
+    video.preload = options.eager ? "auto" : "none";
     video.setAttribute("aria-label", media.alt || "");
     video.addEventListener("error", () => {
       if (!video.dataset.mobileSrc || video.dataset.fallbackSrcTried === "true") {

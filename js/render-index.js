@@ -495,7 +495,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
   window.PORTFOLIO_PROJECTS
     .filter((project) => !project.hidden)
-    .forEach((project) => {
+    .forEach((project, index) => {
       const card = document.createElement("a");
       card.className = "project-card";
       card.href = `project.html?project=${project.slug}`;
@@ -505,7 +505,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         project.media.cover,
         `assets/projects/${project.slug}`,
         "project-media",
-        { deferObserve: true, poster: true }
+        { deferObserve: true, poster: true, eager: isTouchIndex && index < 2 }
       );
 
       if (media.tagName === "VIDEO") {
@@ -558,6 +558,9 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       if (media.tagName === "VIDEO") {
         allIndexVideos.add(media);
         observeIndexVideoCard(card, media);
+        if (isTouchIndex && index < 2) {
+          requestIndexVideoPlayback(media);
+        }
       } else {
         window.PORTFOLIO_MEDIA_LAZY?.observe(media);
       }
