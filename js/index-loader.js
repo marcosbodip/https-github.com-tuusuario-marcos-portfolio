@@ -77,8 +77,17 @@
     video.preload = "auto";
     window.PORTFOLIO_MEDIA_LAZY?.load(video);
 
+    const requestAutoplay = () => {
+      if (video.dataset.lazyAutoplay === "true") {
+        window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+      }
+    };
+
+    requestAutoplay();
+
     if (video.readyState >= 3) {
       updateItem(video, 1);
+      requestAutoplay();
       return;
     }
 
@@ -87,8 +96,14 @@
     }
 
     video.addEventListener("loadedmetadata", () => updateItem(video, 0.42), { once: true });
-    video.addEventListener("loadeddata", () => updateItem(video, 0.72), { once: true });
-    video.addEventListener("canplay", () => updateItem(video, 1), { once: true });
+    video.addEventListener("loadeddata", () => {
+      updateItem(video, 0.72);
+      requestAutoplay();
+    }, { once: true });
+    video.addEventListener("canplay", () => {
+      updateItem(video, 1);
+      requestAutoplay();
+    }, { once: true });
     video.addEventListener("error", () => updateItem(video, 1), { once: true });
     video.addEventListener("progress", () => {
       if (!video.duration || !video.buffered.length) {
