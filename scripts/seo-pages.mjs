@@ -269,6 +269,7 @@ function createProjectSeoHtml(project = {}) {
   <meta name="twitter:title" content="${escapeHtml(title)}" />
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(image)}" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/style.css" />
   ${jsonLdScript(createPersonProfessionalServiceJsonLd())}
   ${jsonLdScript(createProjectJsonLd(project))}
