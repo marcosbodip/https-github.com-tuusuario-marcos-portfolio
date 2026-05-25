@@ -1,0 +1,94 @@
+{
+  "redirects": [
+    {
+      "source": "/About",
+      "destination": "/about.html",
+      "permanent": true
+    },
+    {
+      "source": "/About/",
+      "destination": "/about.html",
+      "permanent": true
+    },
+    {
+      "source": "/Contact",
+      "destination": "/about.html",
+      "permanent": true
+    },
+    {
+      "source": "/Contact/",
+      "destination": "/about.html",
+      "permanent": true
+    },
+    {
+      "source": "/3D-Space-RnD",
+      "destination": "/projects/space.html",
+      "permanent": true
+    },
+    {
+      "source": "/3D-Space-RnD/",
+      "destination": "/projects/space.html",
+      "permanent": true
+    },
+    {
+      "source": "/Kuurth-Imagery",
+      "destination": "/projects/kuurth.html",
+      "permanent": true
+    },
+    {
+      "source": "/Kuurth-Imagery/",
+      "destination": "/projects/kuurth.html",
+      "permanent": true
+    },
+    {
+      "source": "/Bouncy-balls",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Bouncy-balls/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Summer-Vibes",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Summer-Vibes/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Brutalist-War",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Brutalist-War/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/JENKINS-FOOH",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/JENKINS-FOOH/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Jimena-Amarillo-Cover",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Jimena-Amarillo-Cover/",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
+}
