@@ -37,7 +37,9 @@ const mimeTypes = {
   ".mp4": "video/mp4",
   ".png": "image/png",
   ".svg": "image/svg+xml",
-  ".webm": "video/webm"
+  ".txt": "text/plain; charset=utf-8",
+  ".webm": "video/webm",
+  ".xml": "application/xml; charset=utf-8"
 };
 
 function sendJson(response, statusCode, payload) {
@@ -708,9 +710,9 @@ async function publishSavedChanges() {
   }
 
   await runGit(["rev-parse", "--is-inside-work-tree"]);
-  await runGit(["add", "data/projects.js", "assets/projects", "projects"]);
+  await runGit(["add", "data/projects.js", "assets/projects", "projects", "sitemap.xml"]);
 
-  const status = await runGit(["status", "--porcelain", "--", "data/projects.js", "assets/projects", "projects"]);
+  const status = await runGit(["status", "--porcelain", "--", "data/projects.js", "assets/projects", "projects", "sitemap.xml"]);
 
   if (!status) {
     return "No Git changes to publish.";

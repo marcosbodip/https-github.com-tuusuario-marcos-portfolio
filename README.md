@@ -7,13 +7,14 @@ Portfolio personal estatico en HTML, CSS y JavaScript.
 - `index.html`: home con el grid de proyectos.
 - `project.html`: plantilla generica/fallback que renderiza cualquier proyecto con `?project=project-slug`.
 - `projects/`: paginas HTML generadas para SEO/social previews de cada proyecto publico.
+- `robots.txt` y `sitemap.xml`: archivos de descubrimiento para buscadores.
 - `about.html`: pagina About.
 - `data/projects.js`: datos de todos los proyectos.
 - `assets/projects/`: media de cada proyecto, organizada por slug.
 - `css/style.css`: estilos globales.
 - `js/`: scripts de render, interacciones y utilidades.
 
-El contenido de proyectos vive en `data/projects.js`. Las paginas de `projects/` se regeneran automaticamente desde esos datos.
+El contenido de proyectos vive en `data/projects.js`. Las paginas de `projects/` y `sitemap.xml` se regeneran automaticamente desde esos datos.
 
 ## URLs de proyecto
 
@@ -25,7 +26,7 @@ Cada proyecto usa el campo `slug` de `data/projects.js`:
 /projects/brunch-festival-25.html
 ```
 
-La home genera automaticamente las tarjetas con `js/render-index.js`, y la pagina de detalle se genera con `js/render-project.js`. El formato antiguo `project.html?project=slug` sigue funcionando como fallback.
+La home genera automaticamente las tarjetas con `js/render-index.js`, y la pagina de detalle se genera con `js/render-project.js`. El formato antiguo `project.html?project=slug` sigue funcionando como fallback. Las paginas generadas incluyen Open Graph, Twitter Card, JSON-LD y texto visible para crawlers.
 
 ## Assets
 
