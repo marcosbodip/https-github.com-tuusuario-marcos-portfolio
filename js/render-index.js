@@ -24,10 +24,6 @@ function prepareDesktopIndexVideo(video) {
   video.setAttribute("autoplay", "");
 }
 
-function isIndexLoaderActive() {
-  return document.body.classList.contains("is-index-loading");
-}
-
 function stopIndexEdgeAutoScroll() {
   indexEdgeAutoScroll.speed = 0;
 
@@ -300,11 +296,6 @@ function stopIndexVideoPlayback(video) {
 }
 
 function queueIndexVideoPlayback(video) {
-  if (isIndexLoaderActive()) {
-    window.PORTFOLIO_MEDIA_LAZY?.load(video);
-    return;
-  }
-
   requestIndexVideoPlayback(video);
   window.requestAnimationFrame(() => requestIndexVideoPlayback(video));
   window.setTimeout(() => requestIndexVideoPlayback(video), 500);
@@ -331,10 +322,6 @@ function syncIndexVideoPlayback() {
   indexVideoSyncFrame = null;
 
   if (!allIndexVideos.size) {
-    return;
-  }
-
-  if (isIndexLoaderActive()) {
     return;
   }
 
@@ -551,10 +538,6 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       projectGrid.append(card);
       setupIndexCardExpansion(card);
 
-      if (media.tagName !== "VIDEO" || isTouchIndex) {
-        window.PORTFOLIO_INDEX_LOADER?.register(media);
-      }
-
       if (media.tagName === "VIDEO") {
         allIndexVideos.add(media);
         observeIndexVideoCard(card, media);
@@ -571,17 +554,11 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   window.setTimeout(primeInitialIndexVideos, 350);
   document.fonts?.ready.then(resizeIndexGrid);
   document.fonts?.ready.then(scheduleIndexVideoSync);
-  window.addEventListener("portfolio:index-loader-hidden", () => {
-    scheduleIndexVideoSync();
-    window.setTimeout(scheduleIndexVideoSync, 220);
-    window.setTimeout(scheduleIndexVideoSync, 700);
-  });
   window.addEventListener("scroll", scheduleIndexVideoSync, { passive: true });
   window.addEventListener("resize", () => {
     resizeIndexGrid();
     scheduleIndexVideoSync();
   });
-  window.PORTFOLIO_INDEX_LOADER?.ready();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       resumeVisibleIndexVideos();
