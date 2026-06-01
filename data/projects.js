@@ -1,87 +1,5 @@
 window.PORTFOLIO_PROJECTS = [
   {
-    "slug": "meta-heart",
-    "title": "Meta Heart",
-    "category": "CGI / Simulation",
-    "summary": "An experimental CGI study exploring the tension between organic emotion and procedural simulation, shaping a digital heart through physics, motion and controlled chaos.",
-    "description": "An experimental CGI study exploring the tension between organic emotion and procedural simulation, shaping a digital heart through physics, motion and controlled chaos.",
-    "cardCategory": "CGI / Simulation",
-    "cardType": "cgi-simulation",
-    "layout": "auto",
-    "mediaLayout": {
-      "composition": "carousel"
-    },
-    "details": {
-      "Role": "Director / CGI Artist",
-      "Type": "Personal Project",
-      "Tools": "Blender / Nuke / Davinci Resolve"
-    },
-    "concept": [
-      "Meta Heart explores the idea of giving emotional form to something entirely digital.",
-      "Built through simulation, the project transforms the heart into a procedural object — a body shaped by forces, motion and controlled instability. In a world that does not physically exist, chaos becomes material, and numbers become a way of sculpting something that feels alive.",
-      "The piece sits between organic symbolism and computational process, using simulation not only as a technical tool, but as the core visual language of the work."
-    ],
-    "teamEnabled": true,
-    "creditsTitle": "Team",
-    "credits": [
-      "Creative Direction - Marcos Bodí",
-      "Sound Design - Mario Ramirez"
-    ],
-    "media": {
-      "cover": {
-        "file": "cover_optimized.mp4",
-        "type": "video",
-        "alt": "Meta Heart"
-      },
-      "main": {
-        "file": "heart_v2_optimized.mp4",
-        "type": "video",
-        "ratio": "portrait",
-        "alt": "Meta Heart main media"
-      },
-      "secondary": [
-        {
-          "file": "respira_still.jpg",
-          "type": "image",
-          "alt": "Meta Heart respira still",
-          "ratio": "portrait"
-        },
-        {
-          "file": "respira_detalle_still.jpg",
-          "type": "image",
-          "alt": "Meta Heart respira detalle still",
-          "ratio": "portrait"
-        },
-        {
-          "file": "fire_still.jpg",
-          "type": "image",
-          "alt": "Meta Heart fire still",
-          "ratio": "portrait"
-        },
-        {
-          "file": "liquid_still.jpg",
-          "type": "image",
-          "alt": "Meta Heart liquid still",
-          "ratio": "portrait"
-        },
-        {
-          "file": "smoke_still.jpg",
-          "type": "image",
-          "alt": "Meta Heart smoke still",
-          "ratio": "portrait"
-        }
-      ],
-      "hidden": [
-        {
-          "file": "chip_detalle_still.jpg",
-          "type": "image",
-          "alt": "Meta Heart chip detalle still",
-          "ratio": "portrait"
-        }
-      ]
-    }
-  },
-  {
     "slug": "nissan-micra",
     "title": "Nissan Micra x Aitana Bonmati",
     "category": "VFX / CGI / AI",
@@ -319,6 +237,88 @@ window.PORTFOLIO_PROJECTS = [
           "type": "image",
           "alt": "Ambar Beer Motion Secuencia 01.00 00 14 14.Imagen fija006",
           "ratio": "wide"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "meta-heart",
+    "title": "Meta Heart",
+    "category": "CGI / Simulation",
+    "summary": "An experimental CGI study exploring the tension between organic emotion and procedural simulation, shaping a digital heart through physics, motion and controlled chaos.",
+    "description": "An experimental CGI study exploring the tension between organic emotion and procedural simulation, shaping a digital heart through physics, motion and controlled chaos.",
+    "cardCategory": "CGI / Simulation",
+    "cardType": "cgi-simulation",
+    "layout": "auto",
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "Director / CGI Artist",
+      "Type": "Personal Project",
+      "Tools": "Blender / Nuke / Davinci Resolve"
+    },
+    "concept": [
+      "Meta Heart explores the idea of giving emotional form to something entirely digital.",
+      "Built through simulation, the project transforms the heart into a procedural object — a body shaped by forces, motion and controlled instability. In a world that does not physically exist, chaos becomes material, and numbers become a way of sculpting something that feels alive.",
+      "The piece sits between organic symbolism and computational process, using simulation not only as a technical tool, but as the core visual language of the work."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Creative Direction - Marcos Bodí",
+      "Sound Design - Mario Ramirez"
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "alt": "Meta Heart"
+      },
+      "main": {
+        "file": "heart_v2_optimized.mp4",
+        "type": "video",
+        "ratio": "portrait",
+        "alt": "Meta Heart main media"
+      },
+      "secondary": [
+        {
+          "file": "respira_still.jpg",
+          "type": "image",
+          "alt": "Meta Heart respira still",
+          "ratio": "portrait"
+        },
+        {
+          "file": "respira_detalle_still.jpg",
+          "type": "image",
+          "alt": "Meta Heart respira detalle still",
+          "ratio": "portrait"
+        },
+        {
+          "file": "fire_still.jpg",
+          "type": "image",
+          "alt": "Meta Heart fire still",
+          "ratio": "portrait"
+        },
+        {
+          "file": "liquid_still.jpg",
+          "type": "image",
+          "alt": "Meta Heart liquid still",
+          "ratio": "portrait"
+        },
+        {
+          "file": "smoke_still.jpg",
+          "type": "image",
+          "alt": "Meta Heart smoke still",
+          "ratio": "portrait"
+        }
+      ],
+      "hidden": [
+        {
+          "file": "chip_detalle_still.jpg",
+          "type": "image",
+          "alt": "Meta Heart chip detalle still",
+          "ratio": "portrait"
         }
       ]
     }
