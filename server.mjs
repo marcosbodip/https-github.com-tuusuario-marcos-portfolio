@@ -584,13 +584,18 @@ async function optimizeProjectVideos(projects) {
       const mobilePath = safeProjectFile(slug, mobileFile);
       const posterPath = safeProjectFile(slug, posterFile);
       const sourceIsDesktop = sourceFile === desktopFile;
+      const sourceExists = await pathExists(sourcePath);
 
-      if (!sourceIsDesktop && await shouldRegenerateFile(sourcePath, desktopPath)) {
+      if (!sourceIsDesktop && sourceExists && await shouldRegenerateFile(sourcePath, desktopPath)) {
         await encodeDesktopVideo(sourcePath, desktopPath);
         optimized.desktop += 1;
       }
 
       const desktopSourcePath = sourceIsDesktop ? sourcePath : desktopPath;
+
+      if (!(await pathExists(desktopSourcePath))) {
+        continue;
+      }
 
       if (await shouldRegenerateFile(desktopSourcePath, mobilePath)) {
         await encodeMobileVideo(desktopSourcePath, mobilePath);
