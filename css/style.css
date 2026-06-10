@@ -1176,7 +1176,7 @@ video {
 }
 
 .admin-media-remove,
-.admin-media-duplicate,
+.admin-media-replace,
 .admin-media-show {
   position: absolute;
   top: 8px;
@@ -1199,9 +1199,9 @@ video {
   width: 28px;
 }
 
-.admin-media-duplicate {
+.admin-media-replace {
   left: 8px;
-  min-width: 42px;
+  min-width: 58px;
   padding: 0 8px;
   color: var(--muted);
   font-size: 10px;
@@ -1214,7 +1214,7 @@ video {
 }
 
 .admin-media-remove:hover,
-.admin-media-duplicate:hover,
+.admin-media-replace:hover,
 .admin-media-show:hover {
   border-color: var(--accent);
   color: var(--accent);
@@ -2986,6 +2986,18 @@ video {
 
   .project-copy-main {
     gap: 44px;
+    min-width: 0;
+  }
+
+  .project-intro-header,
+  .project-summary {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .project-intro h1 {
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   .project-copy-stack {

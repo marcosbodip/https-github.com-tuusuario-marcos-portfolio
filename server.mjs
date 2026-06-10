@@ -204,21 +204,6 @@ function isBlockedStaticPath(requestPath) {
 }
 
 function getStaticCacheControl(requestPath) {
-  const normalizedPath = requestPath.replace(/\\/g, "/");
-  const extension = extname(normalizedPath).toLowerCase();
-
-  if (normalizedPath === "/data/projects.js" || extension === ".html") {
-    return "no-store";
-  }
-
-  if (normalizedPath.startsWith("/assets/")) {
-    return "public, max-age=86400";
-  }
-
-  if ([".css", ".js"].includes(extension)) {
-    return "public, max-age=3600";
-  }
-
   return "no-store";
 }
 

@@ -7,3 +7,6 @@ node_modules/
 .tools/
 .DS_Store
 Thumbs.db
+
+# Local source masters kept outside the public assets tree
+source-assets/

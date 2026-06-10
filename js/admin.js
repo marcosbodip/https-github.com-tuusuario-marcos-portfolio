@@ -39,6 +39,7 @@ let draggedProjectIndex = null;
 let isIndexOrderCollapsed = false;
 let previewMode = "project";
 let originalSlug = "";
+let mediaPreviewVersion = Date.now();
 const previewCanvasWidth = 1920;
 
 const fileSorter = new Intl.Collator(undefined, {
@@ -382,6 +383,16 @@ function getPreviewUrl(file) {
   return importedMediaUrls.get(file) || "";
 }
 
+function getVersionedMediaUrl(file, slug = form.slug.value.trim()) {
+  const base = `assets/projects/${slug}/${file}`;
+  const separator = base.includes("?") ? "&" : "?";
+  return `${base}${separator}admin-preview=${mediaPreviewVersion}`;
+}
+
+function refreshMediaPreviewVersion() {
+  mediaPreviewVersion = Date.now();
+}
+
 async function readApiJson(response, fallbackMessage) {
   const text = await response.text();
   let data = {};
@@ -403,19 +414,24 @@ async function readApiJson(response, fallbackMessage) {
 
 function withPreviewUrls(project) {
   const previewProject = cleanProject(project);
+  const slug = previewProject.slug || form.slug.value.trim();
 
   if (previewProject.media?.cover?.file) {
-    previewProject.media.cover.previewUrl = getPreviewUrl(previewProject.media.cover.file);
+    previewProject.media.cover.previewUrl =
+      getPreviewUrl(previewProject.media.cover.file) ||
+      getVersionedMediaUrl(previewProject.media.cover.file, slug);
   }
 
   if (previewProject.media?.main?.file) {
-    previewProject.media.main.previewUrl = getPreviewUrl(previewProject.media.main.file);
+    previewProject.media.main.previewUrl =
+      getPreviewUrl(previewProject.media.main.file) ||
+      getVersionedMediaUrl(previewProject.media.main.file, slug);
   }
 
   previewProject.media.secondary = (previewProject.media.secondary || []).map((item) => {
     return {
       ...item,
-      previewUrl: getPreviewUrl(item.file)
+      previewUrl: getPreviewUrl(item.file) || getVersionedMediaUrl(item.file, slug)
     };
   });
 
@@ -439,8 +455,21 @@ function clearImportedMediaUrls() {
   importedMediaFiles = new Map();
 }
 
+function clearImportedMediaFiles(files) {
+  Array.from(files).forEach((file) => {
+    const previewUrl = importedMediaUrls.get(file.name);
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    importedMediaUrls.delete(file.name);
+    importedMediaFiles.delete(file.name);
+  });
+}
+
 function createMediaThumb(item) {
-  const previewUrl = getPreviewUrl(item.file) || `assets/projects/${form.slug.value.trim()}/${item.file}`;
+  const previewUrl = getPreviewUrl(item.file) || getVersionedMediaUrl(item.file);
   const mediaType = item.type || getMediaType(item.file);
 
   if (mediaType === "video") {
@@ -472,7 +501,7 @@ function createProjectOrderThumb(project) {
 
   const isCurrentProject = project.slug === form.slug.value.trim();
   const previewUrl = isCurrentProject ? getPreviewUrl(file) : "";
-  const mediaPath = previewUrl || `assets/projects/${project.slug}/${file}`;
+  const mediaPath = previewUrl || getVersionedMediaUrl(file, project.slug);
 
   if ((cover.type || getMediaType(file)) === "video") {
     const video = document.createElement("video");
@@ -695,12 +724,12 @@ function renderMediaBoard() {
     removeButton.textContent = "X";
     removeButton.disabled = index < 2;
 
-    const duplicateButton = document.createElement("button");
-    duplicateButton.className = "admin-media-duplicate";
-    duplicateButton.type = "button";
-    duplicateButton.setAttribute("aria-label", `Copy ${item.file} into another layout slot`);
-    duplicateButton.title = "Copy into another slot";
-    duplicateButton.textContent = "Copy";
+    const replaceButton = document.createElement("button");
+    replaceButton.className = "admin-media-replace";
+    replaceButton.type = "button";
+    replaceButton.setAttribute("aria-label", `Replace ${item.file}`);
+    replaceButton.title = `Replace ${getRoleLabel(index)}`;
+    replaceButton.textContent = "Replace";
 
     const thumb = document.createElement("div");
     thumb.className = "admin-media-thumb";
@@ -748,13 +777,24 @@ function renderMediaBoard() {
       updateOutput();
     });
 
-    duplicateButton.addEventListener("click", (event) => {
+    replaceButton.addEventListener("click", (event) => {
       event.stopPropagation();
-      mediaItems.push(cloneMediaItem(item));
-      syncMediaFromItems();
-      renderMediaBoard();
-      updateOutput();
-      setStatus(`${item.file} copied into another slot`);
+
+      const picker = document.createElement("input");
+      picker.type = "file";
+      picker.accept = "image/*,video/*";
+      picker.addEventListener("change", () => {
+        const [file] = picker.files || [];
+
+        if (!file) {
+          return;
+        }
+
+        replaceMediaItem(index, file).catch((error) => {
+          setStatus(error.message || "Media replacement failed", "warning", true);
+        });
+      }, { once: true });
+      picker.click();
     });
 
     removeButton.addEventListener("click", (event) => {
@@ -777,7 +817,7 @@ function renderMediaBoard() {
       setStatus(`${removed?.file || "Media"} hidden from preview`);
     });
 
-    card.append(removeButton, duplicateButton, thumb, role, name);
+    card.append(removeButton, replaceButton, thumb, role, name);
     mediaBoard.append(card);
   });
 
@@ -894,6 +934,7 @@ async function uploadMediaFiles(files) {
   folderMedia = data.files || [];
   folderMediaSlug = slug;
   projectAssetSlugs[currentIndex] = slug;
+  refreshMediaPreviewVersion();
   return folderMedia;
 }
 
@@ -906,8 +947,11 @@ async function syncImportedMediaToDisk(files) {
 
   await ensureProjectFolderForSlug(form.slug.value.trim());
   await uploadMediaFiles(selectedFiles);
+  clearImportedMediaFiles(selectedFiles);
+  refreshMediaPreviewVersion();
   renderMediaBoard();
   updateCleanupStatus();
+  updateOutput();
 }
 
 async function deleteProjectAssets(slug) {
@@ -960,6 +1004,40 @@ async function importMediaFiles(files) {
 
   await syncImportedMediaToDisk(selectedFiles);
   setStatus(`Imported ${selectedFiles.length} media file${selectedFiles.length === 1 ? "" : "s"} to assets`);
+}
+
+async function replaceMediaItem(index, file) {
+  const previous = mediaItems[index];
+  const dimensions = await getFileDimensions(file);
+  const replacement = {
+    file: file.name,
+    type: getMediaType(file.name),
+    ratio: ratioFromDimensions(dimensions.width, dimensions.height) || previous?.ratio,
+    alt: makeAltText(form.title.value.trim(), file.name, getRoleLabel(index).toLowerCase())
+  };
+
+  addImportedMediaUrls([file]);
+
+  if (
+    previous?.file &&
+    previous.file !== replacement.file &&
+    !mediaItems.some((item, itemIndex) => itemIndex !== index && item.file === previous.file)
+  ) {
+    hiddenMediaItems = uniqueMediaItems([...hiddenMediaItems, previous]);
+  }
+
+  mediaItems[index] = replacement;
+  syncMediaFromItems();
+  refreshMediaPreviewVersion();
+  renderMediaBoard();
+  updateOutput();
+  setStatus(`Replacing ${getRoleLabel(index)} with ${file.name}...`, "ok", true);
+
+  await syncImportedMediaToDisk([file]);
+  refreshMediaPreviewVersion();
+  renderMediaBoard();
+  updateOutput();
+  setStatus(`${getRoleLabel(index)} replaced with ${file.name}`);
 }
 
 function setStatus(message, type = "ok", sticky = false) {

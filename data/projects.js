@@ -1,5 +1,78 @@
 window.PORTFOLIO_PROJECTS = [
   {
+    "slug": "adolfo-dominguez-mango-palmarosa",
+    "title": "Adolfo Domínguez - Mango Palmarosa",
+    "category": "CGI / AI / Postproduction",
+    "summary": "CGI, AI and postproduction for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
+    "description": "CGI, AI and postproduction for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
+    "cardCategory": "CGI / AI / Postproduction",
+    "cardType": "cgi-ai-postproduction",
+    "layout": "auto",
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "CG Generalist",
+      "Type": "Client Project",
+      "Tools": "CGI / AI / Postproduction"
+    },
+    "concept": [
+      "Created for Adolfo Domínguez's Mango Palmarosa fragrance, the project brings CGI, AI and postproduction into a warm, tactile world shaped by fruit, flowers and insects.",
+      "My role as CG Generalist focused on helping build and refine the campaign's digital imagery as part of Groove's VFX team."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Client - Adolfo Domínguez",
+      "Director - Nacho Errando",
+      "DOP - Jesús Ponce",
+      "Camera Assistant - Romà Cots",
+      "Producer - Sandra Pohl",
+      "VFX Creative Studio - Groove",
+      "CGI Artists - Eloi Calopa / Marcos Bodí",
+      "Edit - Jouse / Nodoaviom",
+      "Color - Luna Sáez",
+      "Sound - Rafa / Farm0de"
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "alt": "Adolfo Domínguez - Mango Palmarosa"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "alt": "Adolfo Domínguez - Mango Palmarosa main media"
+      },
+      "secondary": [
+        {
+          "file": "secondary-01.jpg",
+          "type": "image",
+          "alt": "Mango and ladybird from the Mango Palmarosa campaign",
+          "ratio": "wide"
+        },
+        {
+          "file": "secondary-02.jpg",
+          "type": "image",
+          "alt": "Gloriosa flower and butterflies from the Mango Palmarosa campaign",
+          "ratio": "wide"
+        },
+        {
+          "file": "secondary-03.jpg",
+          "type": "image",
+          "alt": "Mango Palmarosa fragrance bottle",
+          "ratio": "wide"
+        },
+        {
+          "file": "secondary-04.jpg",
+          "type": "image",
+          "alt": "Adolfo Domínguez - Mango Palmarosa secondary 04"
+        }
+      ]
+    }
+  },
+  {
     "slug": "nissan-micra",
     "title": "Nissan Micra x Aitana Bonmati",
     "category": "VFX / CGI / AI",
