@@ -36,7 +36,7 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "cover_v3_optimized.mp4",
+        "file": "cover_v4_optimized.mp4",
         "type": "video",
         "alt": "AD - Mango Palmarosa"
       },
