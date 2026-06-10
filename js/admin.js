@@ -384,9 +384,7 @@ function getPreviewUrl(file) {
 }
 
 function getVersionedMediaUrl(file, slug = form.slug.value.trim()) {
-  const base = `assets/projects/${slug}/${file}`;
-  const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}admin-preview=${mediaPreviewVersion}`;
+  return `/__admin-media/${mediaPreviewVersion}/${encodeURIComponent(slug)}/${encodeURIComponent(file)}`;
 }
 
 function refreshMediaPreviewVersion() {

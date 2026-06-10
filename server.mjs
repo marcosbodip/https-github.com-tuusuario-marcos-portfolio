@@ -782,6 +782,42 @@ async function serveStatic(request, response, pathname) {
   }
 }
 
+async function serveAdminMedia(response, pathname) {
+  const parts = pathname.replace("/__admin-media/", "").split("/");
+
+  if (parts.length !== 3 || !/^\d+$/.test(parts[0])) {
+    sendError(response, 400, "Invalid admin media path");
+    return;
+  }
+
+  const filePath = safeProjectFile(parts[1], parts[2]);
+
+  try {
+    const fileStat = await stat(filePath);
+
+    if (!fileStat.isFile()) {
+      sendError(response, 404, "Not found");
+      return;
+    }
+
+    response.writeHead(200, {
+      "Content-Type": mimeTypes[extname(filePath).toLowerCase()] || "application/octet-stream",
+      "Content-Length": fileStat.size,
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    });
+    createReadStream(filePath).pipe(response);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      sendError(response, 404, "Not found");
+      return;
+    }
+
+    sendError(response, 500, "Admin media failed");
+  }
+}
+
 async function handleRequest(request, response) {
   const url = new URL(request.url, `http://${request.headers.host || `localhost:${port}`}`);
   const pathname = url.pathname;
@@ -831,6 +867,11 @@ async function handleRequest(request, response) {
     if (request.method === "GET" && pathname === "/admin") {
       response.writeHead(302, { Location: "/admin.html" });
       response.end();
+      return;
+    }
+
+    if (request.method === "GET" && pathname.startsWith("/__admin-media/")) {
+      await serveAdminMedia(response, pathname);
       return;
     }
 
