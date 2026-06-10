@@ -18,7 +18,7 @@ window.PORTFOLIO_PROJECTS = [
     },
     "concept": [
       "Created for Adolfo Domínguez's Mango Palmarosa fragrance, the project brings CGI, AI and postproduction into a warm, tactile world shaped by fruit, flowers and insects.",
-      "My role as CG Generalist focused on helping build and refine the campaign's digital imagery as part of Groove's VFX team."
+      "As part of Groove's VFX team, my role as CG Generalist focused on placing the digital insects throughout the scenes and lighting them to integrate naturally with the original live-action footage."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
