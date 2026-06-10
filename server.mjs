@@ -316,6 +316,21 @@ function getPosterFileName(fileName = "") {
   return `${getFileStem(fileName)}_poster.jpg`;
 }
 
+function getAssetFamilyFiles(fileName = "") {
+  if (!isVideoFile(fileName)) {
+    return [fileName];
+  }
+
+  const optimizedFile = getOptimizedVideoFileName(fileName);
+
+  return Array.from(new Set([
+    fileName,
+    optimizedFile,
+    getMobileVideoFileName(optimizedFile),
+    getPosterFileName(optimizedFile)
+  ]));
+}
+
 function validateProjectsPayload(projects) {
   if (!Array.isArray(projects)) {
     return "Invalid projects data";
@@ -939,7 +954,13 @@ async function handleRequest(request, response) {
       const parts = pathname.replace("/__asset/", "").split("/");
       const slug = parts.shift();
       const fileName = parts.join("/");
-      await rm(safeProjectFile(slug, fileName), { force: true });
+      const filesToDelete = url.searchParams.get("family") === "1"
+        ? getAssetFamilyFiles(cleanFileName(fileName))
+        : [cleanFileName(fileName)];
+
+      await Promise.all(filesToDelete.map((file) => {
+        return rm(safeProjectFile(slug, file), { force: true });
+      }));
       sendJson(response, 200, { ok: true, ...(await listProjectFiles(slug)) });
       return;
     }

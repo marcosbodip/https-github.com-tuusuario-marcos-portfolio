@@ -1177,7 +1177,8 @@ video {
 
 .admin-media-remove,
 .admin-media-replace,
-.admin-media-show {
+.admin-media-show,
+.admin-media-delete {
   position: absolute;
   top: 8px;
   z-index: 2;
@@ -1194,12 +1195,12 @@ video {
 }
 
 .admin-media-remove,
-.admin-media-show {
+.admin-media-delete {
   right: 8px;
-  width: 28px;
 }
 
-.admin-media-replace {
+.admin-media-replace,
+.admin-media-show {
   left: 8px;
   min-width: 58px;
   padding: 0 8px;
@@ -1213,9 +1214,18 @@ video {
   color: #52d273;
 }
 
+.admin-media-delete {
+  min-width: 52px;
+  padding: 0 7px;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
 .admin-media-remove:hover,
 .admin-media-replace:hover,
-.admin-media-show:hover {
+.admin-media-show:hover,
+.admin-media-delete:hover {
   border-color: var(--accent);
   color: var(--accent);
 }

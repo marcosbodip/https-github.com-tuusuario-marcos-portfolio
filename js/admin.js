@@ -822,13 +822,21 @@ function renderMediaBoard() {
   libraryItems.forEach((item) => {
     const card = document.createElement("article");
     card.className = "admin-media-card is-hidden-media";
+    const isHidden = hiddenFiles.has(item.file);
 
     const showButton = document.createElement("button");
     showButton.className = "admin-media-show";
     showButton.type = "button";
     showButton.setAttribute("aria-label", `Show ${item.file} in preview`);
     showButton.title = "Show in preview";
-    showButton.textContent = "+";
+    showButton.textContent = isHidden ? "Restore" : "Add";
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "admin-media-delete";
+    deleteButton.type = "button";
+    deleteButton.setAttribute("aria-label", `Delete ${item.file} permanently`);
+    deleteButton.title = "Delete permanently";
+    deleteButton.textContent = "Delete";
 
     const thumb = document.createElement("div");
     thumb.className = "admin-media-thumb";
@@ -836,7 +844,7 @@ function renderMediaBoard() {
 
     const role = document.createElement("p");
     role.className = "admin-media-role";
-    role.textContent = item.pendingCleanup ? "Unused" : "Hidden";
+    role.textContent = isHidden ? "Hidden" : "Unused";
 
     const name = document.createElement("p");
     name.className = "admin-media-name";
@@ -851,7 +859,42 @@ function renderMediaBoard() {
       setStatus(`${item.file} added to preview`);
     });
 
-    card.append(showButton, thumb, role, name);
+    deleteButton.addEventListener("click", async () => {
+      if (!window.confirm(`Delete ${item.file} permanently from this project?`)) {
+        return;
+      }
+
+      deleteButton.disabled = true;
+
+      try {
+        const slug = form.slug.value.trim();
+        const response = await fetch(
+          `/__asset/${encodeURIComponent(slug)}/${encodeURIComponent(item.file)}?family=1`,
+          { method: "DELETE" }
+        );
+        const data = await readApiJson(response, "Media delete failed");
+        const previewUrl = importedMediaUrls.get(item.file);
+
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+
+        importedMediaUrls.delete(item.file);
+        importedMediaFiles.delete(item.file);
+        hiddenMediaItems = hiddenMediaItems.filter((hiddenItem) => hiddenItem.file !== item.file);
+        folderMedia = data.files || [];
+        folderMediaSlug = slug;
+        refreshMediaPreviewVersion();
+        renderMediaBoard();
+        updateOutput();
+        setStatus(`${item.file} deleted permanently`);
+      } catch (error) {
+        deleteButton.disabled = false;
+        setStatus(error.message || "Media delete failed", "warning", true);
+      }
+    });
+
+    card.append(showButton, deleteButton, thumb, role, name);
     mediaBoard.append(card);
   });
 }
@@ -1468,7 +1511,8 @@ async function saveProjectsFile() {
 
   if (Array.isArray(data.projects)) {
     projects.splice(0, projects.length, ...data.projects);
-    loadProject(currentIndex);
+    clearImportedMediaUrls();
+    fillForm(projects[currentIndex]);
     updateOutput();
   }
 
