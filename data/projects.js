@@ -1,7 +1,7 @@
 window.PORTFOLIO_PROJECTS = [
   {
     "slug": "adolfo-dominguez-mango-palmarosa",
-    "title": "AD - Mango Palmarosa",
+    "title": "AdolfoD - Mango Palmarosa",
     "category": "CGI / AI / Postproduction",
     "summary": "CGI, AI and postproduction for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
     "description": "CGI, AI and postproduction for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
@@ -38,20 +38,14 @@ window.PORTFOLIO_PROJECTS = [
       "cover": {
         "file": "cover_v3_optimized.mp4",
         "type": "video",
-        "alt": "AD - Mango Palmarosa"
+        "alt": "AdolfoD - Mango Palmarosa"
       },
       "main": {
         "file": "main_optimized.mp4",
         "type": "video",
-        "alt": "AD - Mango Palmarosa main media"
+        "alt": "AdolfoD - Mango Palmarosa main media"
       },
       "secondary": [
-        {
-          "file": "secondary-01.jpg",
-          "type": "image",
-          "alt": "Mango and ladybird from the Mango Palmarosa campaign",
-          "ratio": "wide"
-        },
         {
           "file": "secondary-02.jpg",
           "type": "image",
@@ -62,6 +56,12 @@ window.PORTFOLIO_PROJECTS = [
           "file": "secondary-03.jpg",
           "type": "image",
           "alt": "Mango Palmarosa fragrance bottle",
+          "ratio": "wide"
+        },
+        {
+          "file": "secondary-01.jpg",
+          "type": "image",
+          "alt": "Mango and ladybird from the Mango Palmarosa campaign",
           "ratio": "wide"
         },
         {
