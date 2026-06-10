@@ -36,7 +36,7 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "cover_v4_optimized.mp4",
+        "file": "cover_v5_optimized.mp4",
         "type": "video",
         "alt": "AD - Mango Palmarosa"
       },
@@ -68,6 +68,13 @@ window.PORTFOLIO_PROJECTS = [
           "file": "secondary-04.jpg",
           "type": "image",
           "alt": "Adolfo Domínguez - Mango Palmarosa secondary 04"
+        }
+      ],
+      "hidden": [
+        {
+          "file": "cover_v4_optimized.mp4",
+          "type": "video",
+          "alt": "AD - Mango Palmarosa"
         }
       ]
     }
