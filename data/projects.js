@@ -43,6 +43,7 @@ window.PORTFOLIO_PROJECTS = [
       "main": {
         "file": "main_optimized.mp4",
         "type": "video",
+        "ratio": "landscape",
         "alt": "AD - Mango Palmarosa main media"
       },
       "secondary": [
@@ -50,23 +51,24 @@ window.PORTFOLIO_PROJECTS = [
           "file": "secondary-02.jpg",
           "type": "image",
           "alt": "Gloriosa flower and butterflies from the Mango Palmarosa campaign",
-          "ratio": "wide"
+          "ratio": "landscape"
         },
         {
           "file": "secondary-03.jpg",
           "type": "image",
           "alt": "Mango Palmarosa fragrance bottle",
-          "ratio": "wide"
+          "ratio": "landscape"
         },
         {
           "file": "secondary-01.jpg",
           "type": "image",
           "alt": "Mango and ladybird from the Mango Palmarosa campaign",
-          "ratio": "wide"
+          "ratio": "landscape"
         },
         {
           "file": "secondary-04.jpg",
           "type": "image",
+          "ratio": "landscape",
           "alt": "Adolfo Domínguez - Mango Palmarosa secondary 04"
         }
       ],
@@ -201,7 +203,7 @@ window.PORTFOLIO_PROJECTS = [
       "main": {
         "file": "main_optimized.mp4",
         "type": "video",
-        "ratio": "wide",
+        "ratio": "portrait",
         "alt": "DanideVito Furnitures main media"
       },
       "secondary": [
@@ -215,13 +217,13 @@ window.PORTFOLIO_PROJECTS = [
           "file": "secondary-02_optimized.mp4",
           "type": "video",
           "alt": "DanideVito furniture arc shot",
-          "ratio": "square"
+          "ratio": "portrait"
         },
         {
           "file": "secondary-03_optimized.mp4",
           "type": "video",
           "alt": "DanideVito furniture solo shot",
-          "ratio": "square"
+          "ratio": "portrait"
         }
       ]
     }
@@ -303,12 +305,6 @@ window.PORTFOLIO_PROJECTS = [
           "type": "image",
           "alt": "Ambar Beer Motion Secuencia 01.00 00 20 09.Imagen fija007",
           "ratio": "wide"
-        },
-        {
-          "file": "Secuencia 01_optimized.mp4",
-          "type": "video",
-          "alt": "Ambar Beer Motion Secuencia 01 1",
-          "ratio": "full-row"
         }
       ],
       "hidden": [

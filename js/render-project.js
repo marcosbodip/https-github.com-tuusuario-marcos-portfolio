@@ -30,6 +30,23 @@ function getProjectSocialImage(projectData) {
   return `${window.location.origin}/assets/projects/${projectData.slug}/${encodeURI(imageFile)}`;
 }
 
+function getDeclaredMediaRatioValue(media = {}) {
+  switch (media.ratio) {
+    case "portrait":
+      return 9 / 16;
+    case "square":
+      return 1;
+    case "landscape":
+      return 16 / 10;
+    case "wide":
+      return 16 / 9;
+    case "ultrawide":
+      return 21 / 9;
+    default:
+      return 0;
+  }
+}
+
 const slug = params.get("project") || window.PORTFOLIO_PROJECT_SLUG || getProjectSlugFromPath() || window.PORTFOLIO_ADMIN_PREVIEW_SLUG;
 const project = window.PORTFOLIO_PROJECTS?.find((item) => item.slug === slug);
 const projectRoot = document.querySelector("[data-project-root]");
@@ -114,7 +131,13 @@ function createProjectMediaFigure(media, basePath) {
   const figure = document.createElement("figure");
   const mediaClass = media.isMain ? "project-final-media" : "project-extra-media";
   figure.className = `project-media-item ${mediaClass} ${getMediaRatioClass(media)}`;
-  figure.append(createMediaElement(media, basePath));
+  const declaredRatio = getDeclaredMediaRatioValue(media);
+
+  if (declaredRatio > 0) {
+    figure.style.setProperty("--media-ratio", String(declaredRatio));
+  }
+
+  figure.append(createMediaElement(media, basePath, "", { poster: true }));
   return figure;
 }
 
@@ -154,7 +177,26 @@ function renderProjectMedia(projectData, gallery) {
       track.append(figure);
     });
 
-    carousel.append(track);
+    const chrome = document.createElement("div");
+    chrome.className = "project-media-carousel-chrome";
+
+    const counter = document.createElement("span");
+    counter.className = "project-media-carousel-counter";
+    counter.setAttribute("aria-live", "polite");
+    counter.textContent = `01 / ${String(allMedia.length).padStart(2, "0")}`;
+
+    const indicator = document.createElement("div");
+    indicator.className = "project-media-carousel-indicator";
+    indicator.setAttribute("aria-hidden", "true");
+
+    allMedia.forEach(() => {
+      const tick = document.createElement("span");
+      tick.className = "project-media-carousel-tick";
+      indicator.append(tick);
+    });
+
+    chrome.append(counter, indicator);
+    carousel.append(track, chrome);
     grid.append(carousel);
   } else {
     const mediaFigures = allMedia.map((media) => createProjectMediaFigure(media, basePath));

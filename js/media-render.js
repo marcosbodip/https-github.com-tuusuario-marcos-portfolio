@@ -165,6 +165,10 @@ const portfolioLazyMedia = (() => {
 
     const item = media.closest(".project-media-item");
 
+    if (media.tagName === "VIDEO") {
+      return Boolean(item?.classList.contains("is-active"));
+    }
+
     return Boolean(item?.classList.contains("is-active") || item?.classList.contains("is-hovered"));
   }
 
@@ -257,9 +261,11 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     if (mobileMediaPath) {
       video.dataset.mobileSrc = mobileMediaPath;
     }
+    if (posterPath) {
+      video.dataset.posterSrc = posterPath;
+    }
     if (options.poster && posterPath) {
       video.poster = posterPath;
-      video.dataset.posterSrc = posterPath;
     }
     video.dataset.lazyAutoplay = "true";
     if (media.loopTrim) {
