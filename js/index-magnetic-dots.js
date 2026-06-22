@@ -100,9 +100,9 @@ if (magneticDotsGrid) {
       dot.y += (targetY - dot.y) * settings.ease;
       dot.influence += (influence - dot.influence) * 0.19;
 
-      const hoverScaleBoost = hoverInfluence * 0.34;
+      const hoverScaleBoost = hoverInfluence * 0.12;
       const size = settings.dotSize + dot.influence * 2.45 + hoverScaleBoost;
-      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.06);
+      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.03);
       context.fillRect(dot.x - size / 2, dot.y - size / 2, size, size);
     });
 

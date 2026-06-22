@@ -21,6 +21,8 @@ if (canBrushTitles) {
   titleBrushTargets.forEach((title) => {
     title.classList.add("title-brush");
     title.dataset.brushText = title.innerText || title.textContent;
+    const aboutHeading = title.matches(".about-hey-line") ? title.closest(".about-heading") : null;
+    const aboutHeyWrap = title.matches(".about-hey-line") ? title.closest(".about-hey-wrap") : null;
     const brush = {
       currentX: 0,
       currentY: 0,
@@ -60,6 +62,33 @@ if (canBrushTitles) {
         brush.frame = requestAnimationFrame(animateBrush);
       }
     };
+
+    if (aboutHeading && aboutHeyWrap) {
+      let collapseAboutHeyTimer = 0;
+      const activateAboutHey = () => {
+        if (collapseAboutHeyTimer) {
+          window.clearTimeout(collapseAboutHeyTimer);
+          collapseAboutHeyTimer = 0;
+        }
+
+        aboutHeading.classList.add("is-hey-expanded");
+      };
+      const deactivateAboutHey = () => {
+        if (collapseAboutHeyTimer) {
+          window.clearTimeout(collapseAboutHeyTimer);
+        }
+
+        collapseAboutHeyTimer = window.setTimeout(() => {
+          aboutHeading.classList.remove("is-hey-expanded");
+          collapseAboutHeyTimer = 0;
+        }, 120);
+      };
+
+      title.addEventListener("pointerenter", activateAboutHey);
+      title.addEventListener("pointermove", activateAboutHey);
+      aboutHeyWrap.addEventListener("pointerenter", activateAboutHey);
+      aboutHeading.addEventListener("pointerleave", deactivateAboutHey);
+    }
 
     const moveBrush = (event) => {
       const rect = title.getBoundingClientRect();

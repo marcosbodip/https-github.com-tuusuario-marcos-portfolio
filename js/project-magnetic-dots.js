@@ -181,7 +181,8 @@ if (magneticProjectRoot) {
           baseY: y,
           x,
           y,
-          influence: 0
+          influence: 0,
+          scaleInfluence: 0
         });
       }
     }
@@ -197,6 +198,7 @@ if (magneticProjectRoot) {
       let targetX = dot.baseX;
       let targetY = dot.baseY;
       let influence = 0;
+      let scaleInfluence = 0;
       let colorMix = 0;
       let hoverInfluence = 0;
 
@@ -215,6 +217,7 @@ if (magneticProjectRoot) {
           targetY += dy * pointerInfluence * pointerPull * pointerDrift;
           hoverInfluence = Math.max(hoverInfluence, pointerInfluence);
           influence = Math.max(influence, pointerInfluence * 0.82);
+          scaleInfluence = Math.max(scaleInfluence, pointerInfluence * 0.82);
         }
       }
 
@@ -231,15 +234,23 @@ if (magneticProjectRoot) {
               (dot.baseX / Math.max(width, 1)) * Math.PI * 2.6 + introWave.progress * Math.PI * 3.2
             );
             const waveInfluence = waveFalloff * waveRipple * introWave.strength;
+            const waveScaleProgress = Math.max(0, Math.min(1, (introWave.progress - 0.08) / 0.5));
+            const waveScaleRamp = waveScaleProgress * waveScaleProgress * (3 - 2 * waveScaleProgress);
+            const waveScaleFactor = 0.3 + waveScaleRamp * 0.7;
             const pointerWaveShield = Math.pow(1 - Math.min(1, hoverInfluence * 1.4), 2);
             const visibleWaveInfluence = waveInfluence * pointerWaveShield;
 
             targetX += Math.sin(dot.baseY * 0.018 + introWave.progress * Math.PI * 6.1) * visibleWaveInfluence * 7;
             targetY += visibleWaveInfluence * 11;
             influence = Math.max(influence, Math.min(1.04, visibleWaveInfluence * 0.92));
+            scaleInfluence = Math.max(
+              scaleInfluence,
+              Math.min(1.04, visibleWaveInfluence * 0.92 * waveScaleFactor)
+            );
+            const delayedColorProgress = Math.max(0, Math.min(1, (introWave.progress - 0.66) / 0.34));
             colorMix = Math.max(
               colorMix,
-              Math.min(1, Math.pow(introWave.progress, 1.18) * 0.92 + visibleWaveInfluence * 0.08) * pointerWaveShield
+              Math.min(1, Math.pow(delayedColorProgress, 1.3) * 0.96 + visibleWaveInfluence * 0.04) * pointerWaveShield
             );
           }
         }
@@ -248,14 +259,15 @@ if (magneticProjectRoot) {
       dot.x += (targetX - dot.x) * settings.ease;
       dot.y += (targetY - dot.y) * settings.ease;
       dot.influence += (influence - dot.influence) * 0.19;
+      dot.scaleInfluence += (scaleInfluence - dot.scaleInfluence) * 0.19;
 
       if (isInsideMediaRect(dot.x, dot.y, mediaRects)) {
         return;
       }
 
-      const hoverScaleBoost = hoverInfluence * 0.34;
-      const size = settings.dotSize + dot.influence * 2.45 + hoverScaleBoost;
-      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.06);
+      const hoverScaleBoost = hoverInfluence * 0.12;
+      const size = settings.dotSize + dot.scaleInfluence * 2.45 + hoverScaleBoost;
+      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.03);
       context.fillStyle = colorMix > 0.01 ? mixDotColor(colorMix) : `rgb(${baseDotColor[0]} ${baseDotColor[1]} ${baseDotColor[2]})`;
       context.fillRect(dot.x - size / 2, dot.y - size / 2, size, size);
     });
