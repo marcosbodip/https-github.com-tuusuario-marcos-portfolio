@@ -504,11 +504,11 @@ async function shouldRegenerateFile(sourcePath, targetPath) {
 
 function getProjectMediaItems(project) {
   return [
-    project?.media?.cover,
-    project?.media?.main,
-    ...(project?.media?.secondary || []),
-    ...(project?.media?.hidden || [])
-  ].filter((item) => item?.file);
+    { item: project?.media?.cover, role: "cover" },
+    { item: project?.media?.main, role: "main" },
+    ...(project?.media?.secondary || []).map((item) => ({ item, role: "secondary" })),
+    ...(project?.media?.hidden || []).map((item) => ({ item, role: "hidden" }))
+  ].filter(({ item }) => item?.file);
 }
 
 async function runFfmpeg(args, timeout = 600000) {
@@ -522,34 +522,46 @@ async function runFfmpeg(args, timeout = 600000) {
   return `${stdout || ""}${stderr || ""}`.trim();
 }
 
-async function encodeDesktopVideo(sourcePath, targetPath) {
+function getVideoAudioArgs({ preserveAudio = false, bitrate = "128k" } = {}) {
+  if (!preserveAudio) {
+    return ["-an"];
+  }
+
+  return [
+    "-map", "0:a:0?",
+    "-c:a", "aac",
+    "-b:a", bitrate
+  ];
+}
+
+async function encodeDesktopVideo(sourcePath, targetPath, options = {}) {
   await runFfmpeg([
     "-y",
     "-i", sourcePath,
     "-map", "0:v:0",
-    "-an",
     "-vf", "scale=w='trunc(min(1920,iw)/2)*2':h=-2",
     "-c:v", "libx264",
     "-preset", "medium",
     "-crf", "25",
     "-pix_fmt", "yuv420p",
     "-movflags", "+faststart",
+    ...getVideoAudioArgs({ preserveAudio: options.preserveAudio, bitrate: "128k" }),
     targetPath
   ]);
 }
 
-async function encodeMobileVideo(sourcePath, targetPath) {
+async function encodeMobileVideo(sourcePath, targetPath, options = {}) {
   await runFfmpeg([
     "-y",
     "-i", sourcePath,
     "-map", "0:v:0",
-    "-an",
     "-vf", "scale=w='trunc(min(860,iw)/2)*2':h=-2",
     "-c:v", "libx264",
     "-preset", "medium",
     "-crf", "30",
     "-pix_fmt", "yuv420p",
     "-movflags", "+faststart",
+    ...getVideoAudioArgs({ preserveAudio: options.preserveAudio, bitrate: "96k" }),
     targetPath
   ]);
 }
@@ -585,7 +597,7 @@ async function optimizeProjectVideos(projects) {
       continue;
     }
 
-    for (const item of getProjectMediaItems(project)) {
+    for (const { item, role } of getProjectMediaItems(project)) {
       if (!isVideoFile(item.file)) {
         continue;
       }
@@ -600,9 +612,10 @@ async function optimizeProjectVideos(projects) {
       const posterPath = safeProjectFile(slug, posterFile);
       const sourceIsDesktop = sourceFile === desktopFile;
       const sourceExists = await pathExists(sourcePath);
+      const preserveAudio = role === "main";
 
       if (!sourceIsDesktop && sourceExists && await shouldRegenerateFile(sourcePath, desktopPath)) {
-        await encodeDesktopVideo(sourcePath, desktopPath);
+        await encodeDesktopVideo(sourcePath, desktopPath, { preserveAudio });
         optimized.desktop += 1;
       }
 
@@ -613,7 +626,7 @@ async function optimizeProjectVideos(projects) {
       }
 
       if (await shouldRegenerateFile(desktopSourcePath, mobilePath)) {
-        await encodeMobileVideo(desktopSourcePath, mobilePath);
+        await encodeMobileVideo(desktopSourcePath, mobilePath, { preserveAudio });
         optimized.mobile += 1;
       }
 

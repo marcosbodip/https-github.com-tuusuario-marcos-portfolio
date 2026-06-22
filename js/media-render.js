@@ -3,6 +3,55 @@ const portfolioLazyMedia = (() => {
   const visibleMedia = new WeakSet();
   const seamlessLoopVideos = new WeakSet();
 
+  function canVideoPlayWithSound(video) {
+    return video?.dataset.allowAudio === "true";
+  }
+
+  function isVideoSoundEnabled(video) {
+    return canVideoPlayWithSound(video) && video?.dataset.audioEnabled === "true";
+  }
+
+  function applyVideoSoundState(video) {
+    if (!video) {
+      return;
+    }
+
+    const shouldMute = !isVideoSoundEnabled(video);
+    video.defaultMuted = shouldMute;
+    video.muted = shouldMute;
+
+    if (shouldMute) {
+      video.setAttribute("muted", "");
+      return;
+    }
+
+    video.removeAttribute("muted");
+  }
+
+  function setVideoSoundState(video, soundEnabled) {
+    if (!video) {
+      return false;
+    }
+
+    video.dataset.audioEnabled = soundEnabled && canVideoPlayWithSound(video) ? "true" : "false";
+    applyVideoSoundState(video);
+    return isVideoSoundEnabled(video);
+  }
+
+  function syncVideoSoundState(target, source) {
+    if (!target) {
+      return false;
+    }
+
+    if (source?.dataset.allowAudio === "true") {
+      target.dataset.allowAudio = "true";
+    }
+
+    target.dataset.audioEnabled = source?.dataset.audioEnabled === "true" ? "true" : "false";
+    applyVideoSoundState(target);
+    return isVideoSoundEnabled(target);
+  }
+
   function setupSeamlessLoop(video) {
     if (!video || seamlessLoopVideos.has(video)) {
       return;
@@ -84,17 +133,18 @@ const portfolioLazyMedia = (() => {
 
   function prepareAutoplayVideo(video) {
     video.autoplay = true;
-    video.defaultMuted = true;
-    video.muted = true;
+    if (video.dataset.audioEnabled !== "true") {
+      video.dataset.audioEnabled = "false";
+    }
     video.loop = true;
     video.playsInline = true;
     video.controls = false;
     video.setAttribute("autoplay", "");
-    video.setAttribute("muted", "");
     video.setAttribute("loop", "");
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
     video.removeAttribute("controls");
+    applyVideoSoundState(video);
     setupSeamlessLoop(video);
   }
 
@@ -218,7 +268,15 @@ const portfolioLazyMedia = (() => {
     observer.observe(media);
   }
 
-  return { load, observe, prepareAutoplayVideo, requestVideoAutoplay };
+  return {
+    isVideoSoundEnabled,
+    load,
+    observe,
+    prepareAutoplayVideo,
+    requestVideoAutoplay,
+    setVideoSoundState,
+    syncVideoSoundState
+  };
 })();
 
 window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;
@@ -263,6 +321,9 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     }
     if (posterPath) {
       video.dataset.posterSrc = posterPath;
+    }
+    if (media.allowAudio) {
+      video.dataset.allowAudio = "true";
     }
     if (options.poster && posterPath) {
       video.poster = posterPath;

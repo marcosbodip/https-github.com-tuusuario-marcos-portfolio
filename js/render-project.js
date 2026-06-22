@@ -127,17 +127,41 @@ function getComposition(projectData = {}) {
   return "smart-grid";
 }
 
+const mainAudioDisabledProjectSlugs = new Set([
+  "ambar-beer",
+  "la-pirana",
+  "space"
+]);
+
+function isProjectMainAudioEnabled(projectData = {}) {
+  return projectData.mainAudioEnabled !== false
+    && !mainAudioDisabledProjectSlugs.has(projectData.slug);
+}
+
 function createProjectMediaFigure(media, basePath) {
   const figure = document.createElement("figure");
   const mediaClass = media.isMain ? "project-final-media" : "project-extra-media";
   figure.className = `project-media-item ${mediaClass} ${getMediaRatioClass(media)}`;
   const declaredRatio = getDeclaredMediaRatioValue(media);
+  const isVideo = media.type === "video" || /\.(mp4|webm|mov)$/i.test(media.file || "");
+  const allowMainAudio = media.allowAudio === true;
 
   if (declaredRatio > 0) {
     figure.style.setProperty("--media-ratio", String(declaredRatio));
   }
 
-  figure.append(createMediaElement(media, basePath, "", { poster: true }));
+  if (media.isMain) {
+    figure.dataset.mainMedia = "true";
+  }
+
+  if (media.isMain && isVideo && allowMainAudio) {
+    figure.dataset.audioEligible = "true";
+  }
+
+  figure.append(createMediaElement({
+    ...media,
+    allowAudio: media.isMain && isVideo && allowMainAudio
+  }, basePath, "", { poster: true }));
   return figure;
 }
 
@@ -145,6 +169,7 @@ function renderProjectMedia(projectData, gallery) {
   const basePath = `/assets/projects/${projectData.slug}`;
   const grid = document.createElement("div");
   const composition = getComposition(projectData);
+  const allowMainAudio = isProjectMainAudioEnabled(projectData);
   grid.className = [
     "project-media-grid",
     `project-media-grid-${projectData.layout || "auto"}`,
@@ -152,7 +177,7 @@ function renderProjectMedia(projectData, gallery) {
   ].join(" ");
 
   const allMedia = [
-    { ...projectData.media.main, isMain: true },
+    { ...projectData.media.main, isMain: true, allowAudio: allowMainAudio },
     ...(projectData.media.secondary || [])
   ].filter((media) => media?.file);
 

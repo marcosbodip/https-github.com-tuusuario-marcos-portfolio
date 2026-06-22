@@ -133,12 +133,18 @@ window.PORTFOLIO_PROJECTS = [
         "alt": "Nissan Micra x Aitana Bonmati"
       },
       "main": {
-        "file": "main_optimized.mp4",
+        "file": "secondary-04_optimized.mp4",
         "type": "video",
         "ratio": "wide",
         "alt": "Nissan Micra x Aitana Bonmati main media"
       },
       "secondary": [
+        {
+          "file": "main_optimized.mp4",
+          "type": "video",
+          "alt": "Nissan Micra 3D main piece",
+          "ratio": "wide"
+        },
         {
           "file": "secondary-01_optimized.mp4",
           "type": "video",
@@ -156,12 +162,6 @@ window.PORTFOLIO_PROJECTS = [
           "type": "video",
           "alt": "Nissan Micra 3D extra 03",
           "ratio": "wide"
-        },
-        {
-          "file": "secondary-04_optimized.mp4",
-          "type": "video",
-          "alt": "Nissan Micra full film",
-          "ratio": "full-row"
         }
       ]
     }
@@ -175,6 +175,7 @@ window.PORTFOLIO_PROJECTS = [
     "cardCategory": "Product visualization / CGI",
     "cardType": "product-visualization-cgi",
     "layout": "auto",
+    "mainAudioEnabled": false,
     "mediaLayout": {
       "composition": "carousel"
     },
@@ -948,6 +949,7 @@ window.PORTFOLIO_PROJECTS = [
     "cardCategory": "CGI",
     "cardType": "cgi",
     "layout": "auto",
+    "mainAudioEnabled": false,
     "mediaLayout": {
       "composition": "carousel"
     },
@@ -1042,6 +1044,7 @@ window.PORTFOLIO_PROJECTS = [
     "cardCategory": "CGI / Compositing",
     "cardType": "cgi-compositing",
     "layout": "auto",
+    "mainAudioEnabled": false,
     "mediaLayout": {
       "composition": "carousel"
     },

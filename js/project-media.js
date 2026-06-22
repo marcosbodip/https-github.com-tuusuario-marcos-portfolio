@@ -3,6 +3,12 @@ const bottomCarouselWheelImmediateThreshold = 30;
 const bottomCarouselWheelDiscreteDelta = 80;
 const bottomCarouselWheelDiscreteCooldown = 110;
 const bottomCarouselWheelCarryLimit = 0.35;
+const bottomCarouselTrackpadThreshold = 92;
+const bottomCarouselTrackpadImmediateThreshold = 120;
+const bottomCarouselTrackpadCooldown = 170;
+const bottomCarouselTrackpadCarryLimit = 0.12;
+const bottomCarouselTrackpadIntensityCap = 2.2;
+const bottomCarouselTrackpadCadenceCap = 0.3;
 const bottomCarouselWheelIdleReset = 180;
 const carouselQueueStepLimit = 2;
 const carouselMomentumMin = 1;
@@ -15,10 +21,13 @@ const carouselMomentumDecay = 0.76;
 const carouselMotionReleaseRatio = 0.46;
 const carouselMotionReleaseMin = 110;
 const continuousCarouselCopyCount = 5;
+const carouselExpandedSoundToggleInsetMin = 14;
+const carouselExpandedSoundToggleInsetMax = 24;
 const bottomCarouselWheelState = {
   accumulatedDelta: 0,
   lastEventTime: 0,
   discreteLockUntil: 0,
+  trackpadLockUntil: 0,
   resetTimer: 0
 };
 const continuousCarouselRecenterTimers = new WeakMap();
@@ -41,6 +50,134 @@ function playVideo(video) {
   }
 
   window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+}
+
+function isProjectAudioTarget(video) {
+  return video?.dataset.allowAudio === "true";
+}
+
+function isProjectAudioEnabled(video) {
+  return window.PORTFOLIO_MEDIA_LAZY?.isVideoSoundEnabled?.(video) === true;
+}
+
+function videoSourceMatches(video, sourcePath) {
+  if (!video || !sourcePath) {
+    return false;
+  }
+
+  const activeSource = video.currentSrc || video.src || video.dataset.src || "";
+  return activeSource === sourcePath || activeSource.endsWith(sourcePath);
+}
+
+function ensureProjectAudioSource(video) {
+  if (!isProjectAudioTarget(video)) {
+    return;
+  }
+
+  const desktopSource = video.dataset.desktopSrc || "";
+
+  if (!desktopSource || videoSourceMatches(video, desktopSource)) {
+    return;
+  }
+
+  video.dataset.src = desktopSource;
+  video.src = desktopSource;
+  video.load?.();
+}
+
+function setProjectPrimaryVideoSound(video, soundEnabled) {
+  if (!isProjectAudioTarget(video)) {
+    return false;
+  }
+
+  document.querySelectorAll("video[data-allow-audio='true']").forEach((candidate) => {
+    window.PORTFOLIO_MEDIA_LAZY?.setVideoSoundState?.(candidate, soundEnabled && candidate === video);
+  });
+
+  if (soundEnabled) {
+    ensureProjectAudioSource(video);
+    window.PORTFOLIO_MEDIA_LAZY?.load(video);
+    window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+  }
+
+  return isProjectAudioEnabled(video);
+}
+
+function updateProjectVideoSoundButton(button, video) {
+  if (!button || !video) {
+    return;
+  }
+
+  const enabled = isProjectAudioEnabled(video);
+  button.textContent = "";
+  button.dataset.soundState = enabled ? "on" : "off";
+  button.setAttribute("aria-label", enabled ? "Mute project audio" : "Enable project audio");
+  button.setAttribute("aria-pressed", enabled ? "true" : "false");
+  button.title = enabled ? "Sound on" : "Sound off";
+}
+
+function refreshProjectVideoSoundButtons() {
+  document.querySelectorAll(".project-video-sound-toggle").forEach((button) => {
+    const figure = button.closest(".project-media-item");
+    const video = figure?.querySelector("video[data-allow-audio='true']");
+    updateProjectVideoSoundButton(button, video);
+  });
+}
+
+function attachProjectVideoSoundButton(figure) {
+  if (!figure || figure.dataset.audioEligible !== "true" || figure.querySelector(".project-video-sound-toggle")) {
+    return;
+  }
+
+  const video = figure.querySelector("video[data-allow-audio='true']");
+  const carousel = figure.closest(".project-media-carousel");
+
+  if (!video) {
+    return;
+  }
+
+  const button = document.createElement("button");
+  button.className = "project-video-sound-toggle";
+  button.type = "button";
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setProjectPrimaryVideoSound(video, !isProjectAudioEnabled(video));
+    refreshProjectVideoSoundButtons();
+    requestCarouselSoundTogglePositionSync(carousel);
+  });
+
+  const syncButtonState = () => {
+    refreshProjectVideoSoundButtons();
+    requestCarouselSoundTogglePositionSync(carousel);
+  };
+
+  video.addEventListener("volumechange", syncButtonState);
+  video.addEventListener("emptied", syncButtonState);
+  video.addEventListener("loadedmetadata", syncButtonState);
+
+  figure.append(button);
+  updateProjectVideoSoundButton(button, video);
+  requestCarouselSoundTogglePositionSync(carousel);
+}
+
+function setupProjectVideoSoundControls() {
+  document.querySelectorAll(".project-media-item[data-audio-eligible='true']").forEach(attachProjectVideoSoundButton);
+  refreshProjectVideoSoundButtons();
+}
+
+function getCarouselSoundToggleAtPoint(carousel, clientX, clientY) {
+  return Array.from(carousel.querySelectorAll(".project-video-sound-toggle")).find((button) => {
+    const styles = window.getComputedStyle(button);
+
+    if (styles.pointerEvents === "none" || Number.parseFloat(styles.opacity || "1") <= 0.02) {
+      return false;
+    }
+
+    const rect = button.getBoundingClientRect();
+    return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  }) || null;
 }
 
 const mediaRatioProbeCache = new Map();
@@ -424,6 +561,10 @@ function getDetailVideoSource(video) {
   const defaultSource = currentSource || video.dataset.src || video.dataset.mobileSrc || desktopSource;
   const targetPixels = window.innerWidth * (window.devicePixelRatio || 1);
 
+  if (video.dataset.audioEnabled === "true" && desktopSource) {
+    return desktopSource;
+  }
+
   if (desktopSource && targetPixels >= 1180) {
     return desktopSource;
   }
@@ -458,6 +599,11 @@ function createProjectMediaDetailAsset(media, frame) {
 
     if (media.dataset.loopTrim) {
       video.dataset.loopTrim = media.dataset.loopTrim;
+    }
+
+    if (media.dataset.allowAudio === "true") {
+      video.dataset.allowAudio = "true";
+      window.PORTFOLIO_MEDIA_LAZY?.syncVideoSoundState?.(video, media);
     }
 
     window.PORTFOLIO_MEDIA_LAZY?.prepareAutoplayVideo(video);
@@ -763,11 +909,32 @@ function resetBottomCarouselWheelState() {
   bottomCarouselWheelState.accumulatedDelta = 0;
   bottomCarouselWheelState.lastEventTime = 0;
   bottomCarouselWheelState.discreteLockUntil = 0;
+  bottomCarouselWheelState.trackpadLockUntil = 0;
 
   if (bottomCarouselWheelState.resetTimer) {
     window.clearTimeout(bottomCarouselWheelState.resetTimer);
     bottomCarouselWheelState.resetTimer = 0;
   }
+}
+
+function isLikelyTrackpadWheelEvent(event, wheelDelta) {
+  if (event.deltaMode !== 0) {
+    return false;
+  }
+
+  const absoluteDeltaY = Math.abs(wheelDelta);
+  const absoluteDeltaX = Math.abs(event.deltaX || 0);
+
+  if (absoluteDeltaY <= 0) {
+    return false;
+  }
+
+  if (absoluteDeltaX > 0.01) {
+    return true;
+  }
+
+  const roundedDeltaY = Math.round(absoluteDeltaY);
+  return Math.abs(absoluteDeltaY - roundedDeltaY) > 0.01 || absoluteDeltaY < 72;
 }
 
 function clearContinuousCarouselRecenterTimer(carousel) {
@@ -931,7 +1098,8 @@ function handleProjectPageBottomWheel(event) {
   }
 
   const wheelDelta = event.deltaMode === 1 ? event.deltaY * 24 : event.deltaY;
-  const isDiscreteWheelPulse = event.deltaMode === 1 || wheelDelta >= bottomCarouselWheelDiscreteDelta;
+  const isTrackpadGesture = isLikelyTrackpadWheelEvent(event, wheelDelta);
+  const isDiscreteWheelPulse = !isTrackpadGesture && (event.deltaMode === 1 || wheelDelta >= bottomCarouselWheelDiscreteDelta);
 
   bottomCarouselWheelState.lastEventTime = now;
 
@@ -955,17 +1123,32 @@ function handleProjectPageBottomWheel(event) {
     bottomCarouselWheelState.accumulatedDelta = 0;
     bottomCarouselWheelState.discreteLockUntil = now + bottomCarouselWheelDiscreteCooldown;
   } else {
+    if (isTrackpadGesture && now < bottomCarouselWheelState.trackpadLockUntil) {
+      event.preventDefault();
+      return;
+    }
+
+    const threshold = isTrackpadGesture ? bottomCarouselTrackpadThreshold : bottomCarouselWheelThreshold;
+    const immediateThreshold = isTrackpadGesture
+      ? bottomCarouselTrackpadImmediateThreshold
+      : bottomCarouselWheelImmediateThreshold;
+    const carryLimit = isTrackpadGesture ? bottomCarouselTrackpadCarryLimit : bottomCarouselWheelCarryLimit;
+
     bottomCarouselWheelState.accumulatedDelta += wheelDelta;
 
-    if (bottomCarouselWheelState.accumulatedDelta >= bottomCarouselWheelThreshold) {
+    if (bottomCarouselWheelState.accumulatedDelta >= threshold) {
       stepsToQueue = 1;
       bottomCarouselWheelState.accumulatedDelta = Math.min(
-        bottomCarouselWheelState.accumulatedDelta - bottomCarouselWheelThreshold,
-        bottomCarouselWheelThreshold * bottomCarouselWheelCarryLimit
+        bottomCarouselWheelState.accumulatedDelta - threshold,
+        threshold * carryLimit
       );
-    } else if (wheelDelta >= bottomCarouselWheelImmediateThreshold) {
+    } else if (wheelDelta >= immediateThreshold) {
       stepsToQueue = 1;
       bottomCarouselWheelState.accumulatedDelta = 0;
+    }
+
+    if (stepsToQueue > 0 && isTrackpadGesture) {
+      bottomCarouselWheelState.trackpadLockUntil = now + bottomCarouselTrackpadCooldown;
     }
   }
 
@@ -978,14 +1161,17 @@ function handleProjectPageBottomWheel(event) {
 
   event.preventDefault();
 
-  const magnitudeBoost = Math.max(1, wheelDelta / (bottomCarouselWheelThreshold * 0.72));
+  const referenceThreshold = isTrackpadGesture ? bottomCarouselTrackpadThreshold : bottomCarouselWheelThreshold;
+  const magnitudeBoost = Math.max(1, wheelDelta / (referenceThreshold * 0.72));
   const cadenceBoost = elapsedSinceLastWheel < 140
-    ? clampNumber((140 - elapsedSinceLastWheel) / 140, 0, 1) * 0.72
+    ? clampNumber((140 - elapsedSinceLastWheel) / 140, 0, 1) *
+      (isTrackpadGesture ? bottomCarouselTrackpadCadenceCap : 0.72)
     : 0;
+  const rawIntensity = magnitudeBoost + cadenceBoost + Math.max(0, stepsToQueue - 1) * 0.28;
   const intensity = clampNumber(
-    magnitudeBoost + cadenceBoost + Math.max(0, stepsToQueue - 1) * 0.28,
+    isTrackpadGesture ? rawIntensity * 0.82 : rawIntensity,
     carouselMomentumMin,
-    carouselMomentumMax
+    isTrackpadGesture ? bottomCarouselTrackpadIntensityCap : carouselMomentumMax
   );
 
   requestCarouselScroll(carousel, 1, {
@@ -1341,7 +1527,12 @@ function setCarouselViewer(carousel, shouldExpand) {
     syncCarouselPlayback(carousel);
     window.requestAnimationFrame(() => {
       carousel.classList.add("is-viewer-ready");
+      requestCarouselSoundTogglePositionSync(carousel);
+      window.setTimeout(() => {
+        requestCarouselSoundTogglePositionSync(carousel);
+      }, 520);
     });
+    requestCarouselSoundTogglePositionSync(carousel);
     return;
   }
 
@@ -1350,6 +1541,7 @@ function setCarouselViewer(carousel, shouldExpand) {
     carousel.classList.add("is-viewer-ready");
     lockCarouselViewerScroll(window.scrollX, window.scrollY);
     syncCarouselPlayback(carousel);
+    requestCarouselSoundTogglePositionSync(carousel);
     return;
   }
 
@@ -1365,11 +1557,13 @@ function setCarouselViewer(carousel, shouldExpand) {
     restoreScroll();
     window.requestAnimationFrame(restoreScroll);
     window.setTimeout(restoreScroll, 80);
+    requestCarouselSoundTogglePositionSync(carousel);
     return;
   }
 
   unlockCarouselViewerScroll();
   syncCarouselPlayback(carousel);
+  requestCarouselSoundTogglePositionSync(carousel);
 }
 
 function getMediaVisibleRect(media) {
@@ -1405,6 +1599,84 @@ function getMediaVisibleRect(media) {
     width: visibleWidth,
     height: rect.height
   };
+}
+
+function clearProjectVideoSoundTogglePosition(item) {
+  const button = item?.querySelector(".project-video-sound-toggle");
+
+  if (!button) {
+    return;
+  }
+
+  button.style.removeProperty("--project-sound-toggle-right");
+  button.style.removeProperty("--project-sound-toggle-bottom");
+}
+
+function updateProjectVideoSoundTogglePosition(item) {
+  const button = item?.querySelector(".project-video-sound-toggle");
+  const media = item?.querySelector("video[data-allow-audio='true']");
+
+  if (!button || !media) {
+    return;
+  }
+
+  const itemRect = item.getBoundingClientRect();
+  const visibleRect = getMediaVisibleRect(media);
+
+  if (!itemRect.width || !itemRect.height || !visibleRect.width || !visibleRect.height) {
+    clearProjectVideoSoundTogglePosition(item);
+    return;
+  }
+
+  const inset = clampNumber(
+    Math.min(visibleRect.width, visibleRect.height) * 0.035,
+    carouselExpandedSoundToggleInsetMin,
+    carouselExpandedSoundToggleInsetMax
+  );
+  const right = Math.max(12, itemRect.right - visibleRect.right + inset);
+  const bottom = Math.max(12, itemRect.bottom - visibleRect.bottom + inset);
+
+  button.style.setProperty("--project-sound-toggle-right", `${right.toFixed(2)}px`);
+  button.style.setProperty("--project-sound-toggle-bottom", `${bottom.toFixed(2)}px`);
+}
+
+function syncCarouselSoundTogglePosition(carousel) {
+  if (!carousel) {
+    return;
+  }
+
+  const items = getCarouselItems(carousel);
+  items.forEach(clearProjectVideoSoundTogglePosition);
+
+  if (!carousel.classList.contains("is-expanded")) {
+    return;
+  }
+
+  const activeItem = items.find((item) => item.classList.contains("is-active"))
+    || items.find((item) => Number(item.dataset.carouselOffset || 0) === 0);
+
+  if (!activeItem) {
+    return;
+  }
+
+  updateProjectVideoSoundTogglePosition(activeItem);
+}
+
+function requestCarouselSoundTogglePositionSync(carousel) {
+  if (!carousel) {
+    return;
+  }
+
+  const frameId = Number(carousel.dataset.soundToggleSyncFrame || 0);
+
+  if (frameId) {
+    window.cancelAnimationFrame(frameId);
+  }
+
+  carousel.dataset.soundToggleSyncFrame = String(window.requestAnimationFrame(() => {
+    delete carousel.dataset.soundToggleSyncFrame;
+    syncCarouselSoundTogglePosition(carousel);
+  }));
 }
 
 function isPointInsideRect(x, y, rect) {
@@ -1664,6 +1936,7 @@ function renderCarousel(carousel) {
 
   syncCarouselChrome(carousel, logicalCount, activeLogicalIndex);
   syncCarouselPlayback(carousel);
+  requestCarouselSoundTogglePositionSync(carousel);
 }
 
 function setCarouselIndex(carousel, index) {
@@ -1838,6 +2111,16 @@ function setupProjectCarousel(carousel) {
       return;
     }
 
+    const soundToggle = event.target.closest(".project-video-sound-toggle")
+      || getCarouselSoundToggleAtPoint(carousel, event.clientX, event.clientY);
+
+    if (soundToggle) {
+      if (!event.target.closest(".project-video-sound-toggle")) {
+        soundToggle.click();
+      }
+      return;
+    }
+
     const item = getCarouselItemAtPoint(carousel, event.clientX, event.clientY);
 
     if (!item) {
@@ -1994,6 +2277,7 @@ function scheduleMobileProjectVideoSync() {
 }
 
 setupMobileProjectVideoPlayback();
+setupProjectVideoSoundControls();
 scheduleMobileProjectVideoSync();
 
 function autoplayInitialProjectVideos() {

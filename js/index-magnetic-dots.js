@@ -76,25 +76,33 @@ if (magneticDotsGrid) {
       let targetX = dot.baseX;
       let targetY = dot.baseY;
       let influence = 0;
+      let hoverInfluence = 0;
 
       if (pointer.active) {
         const dx = pointer.x - dot.baseX;
         const dy = pointer.y - dot.baseY;
         const distance = Math.hypot(dx, dy);
+        const pointerRadius = settings.radius * 0.94;
+        const pointerPull = settings.pull * 0.98;
+        const pointerDrift = 1.04;
+        const pointerEase = 0.94;
 
-        if (distance < settings.radius) {
-          influence = Math.pow(1 - distance / settings.radius, 1.8);
-          targetX = dot.baseX + dx * influence * settings.pull;
-          targetY = dot.baseY + dy * influence * settings.pull;
+        if (distance < pointerRadius) {
+          const pointerInfluence = Math.pow(1 - distance / pointerRadius, 1.8) * pointerEase;
+          targetX += dx * pointerInfluence * pointerPull * pointerDrift;
+          targetY += dy * pointerInfluence * pointerPull * pointerDrift;
+          hoverInfluence = Math.max(hoverInfluence, pointerInfluence);
+          influence = Math.max(influence, pointerInfluence * 0.82);
         }
       }
 
       dot.x += (targetX - dot.x) * settings.ease;
       dot.y += (targetY - dot.y) * settings.ease;
-      dot.influence += (influence - dot.influence) * 0.18;
+      dot.influence += (influence - dot.influence) * 0.19;
 
-      const size = settings.dotSize + dot.influence * 2.15;
-      context.globalAlpha = 0.34 + dot.influence * 0.58;
+      const hoverScaleBoost = hoverInfluence * 0.34;
+      const size = settings.dotSize + dot.influence * 2.45 + hoverScaleBoost;
+      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.06);
       context.fillRect(dot.x - size / 2, dot.y - size / 2, size, size);
     });
 

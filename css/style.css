@@ -684,16 +684,6 @@ video {
   user-select: none;
 }
 
-.about-pointcloud-shell::before {
-  content: "";
-  position: absolute;
-  inset: clamp(24px, 5vw, 82px) 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  opacity: 0.42;
-  pointer-events: none;
-}
-
 .about-pointcloud-canvas,
 .about-bust-canvas {
   position: absolute;
@@ -1547,6 +1537,7 @@ video {
 
 .project-gallery {
   padding-top: 18px;
+  scroll-margin-top: clamp(16px, 3vw, 28px);
 }
 
 .project-media-grid {
@@ -1596,6 +1587,73 @@ video {
   overflow: visible;
   background: transparent;
   transition: transform 0.45s ease, z-index 0s linear 0.15s;
+}
+
+.project-video-sound-toggle {
+  position: absolute;
+  right: var(--project-sound-toggle-right, 16px);
+  bottom: var(--project-sound-toggle-bottom, 16px);
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--project-sound-toggle-size, 28px);
+  height: var(--project-sound-toggle-size, 28px);
+  padding: 0;
+  border: 1px solid rgba(242, 238, 231, 0.18);
+  border-radius: 999px;
+  background: rgba(8, 8, 7, 0.56);
+  color: var(--text);
+  backdrop-filter: blur(16px);
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.86;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-video-sound-toggle::before {
+  content: "";
+  width: var(--project-sound-toggle-icon-size, 13px);
+  height: var(--project-sound-toggle-icon-size, 13px);
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: var(--project-sound-toggle-icon-size, 13px) var(--project-sound-toggle-icon-size, 13px);
+}
+
+.project-video-sound-toggle[aria-pressed="true"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4.75 9.35H8.1L12.95 5.2C13.58 4.66 14.55 5.11 14.55 5.94V18.06C14.55 18.89 13.58 19.34 12.95 18.8L8.1 14.65H4.75C4.2 14.65 3.75 14.2 3.75 13.65V10.35C3.75 9.8 4.2 9.35 4.75 9.35Z' fill='%23F2EEE7'/%3E%3Cpath d='M17.05 9.2C18.03 9.84 18.65 10.87 18.65 12C18.65 13.13 18.03 14.16 17.05 14.8' stroke='%23F2EEE7' stroke-width='1.85' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M19.35 6.85C21 8.08 22.05 9.96 22.05 12C22.05 14.04 21 15.92 19.35 17.15' stroke='%23F2EEE7' stroke-width='1.85' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.project-video-sound-toggle[aria-pressed="false"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4.75 9.35H8.1L12.95 5.2C13.58 4.66 14.55 5.11 14.55 5.94V18.06C14.55 18.89 13.58 19.34 12.95 18.8L8.1 14.65H4.75C4.2 14.65 3.75 14.2 3.75 13.65V10.35C3.75 9.8 4.2 9.35 4.75 9.35Z' fill='%23F2EEE7'/%3E%3Cpath d='M17.6 8.7L21.35 15.3' stroke='%23F2EEE7' stroke-width='2.15' stroke-linecap='round'/%3E%3Cpath d='M21.35 8.7L17.6 15.3' stroke='%23F2EEE7' stroke-width='2.15' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.project-video-sound-toggle:hover,
+.project-video-sound-toggle:focus-visible {
+  opacity: 1;
+  transform: translateY(-1px);
+  background: rgba(8, 8, 7, 0.72);
+  border-color: rgba(242, 238, 231, 0.34);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+.project-video-sound-toggle:focus-visible {
+  outline: 1px solid rgba(242, 238, 231, 0.48);
+  outline-offset: 2px;
+}
+
+.project-media-carousel-track .project-media-item:not(.is-active):not([data-carousel-offset="0"]) .project-video-sound-toggle,
+.project-media-carousel-track .project-media-item[aria-hidden="true"] .project-video-sound-toggle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.project-media-carousel.is-expanded .project-media-carousel-track .project-media-item.is-active .project-video-sound-toggle,
+.project-media-carousel.is-expanded .project-media-carousel-track .project-media-item[data-carousel-offset="0"] .project-video-sound-toggle {
+  --project-sound-toggle-size: 35px;
+  --project-sound-toggle-icon-size: 15px;
 }
 
 .project-final-media,
@@ -3424,6 +3482,16 @@ video {
   .details-list div {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .project-video-sound-toggle {
+    --project-sound-toggle-right: 12px;
+    --project-sound-toggle-bottom: 12px;
+    --project-sound-toggle-size: 26px;
+  }
+
+  .project-video-sound-toggle::before {
+    --project-sound-toggle-icon-size: 12px;
   }
 
   .text-column {
