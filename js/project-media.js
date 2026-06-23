@@ -85,14 +85,65 @@ function ensureProjectAudioSource(video) {
   video.load?.();
 }
 
+function setProjectVideoOutputMuted(video, muted) {
+  if (!video) {
+    return;
+  }
+
+  video.defaultMuted = muted;
+  video.muted = muted;
+
+  if (muted) {
+    video.setAttribute("muted", "");
+    return;
+  }
+
+  video.removeAttribute("muted");
+}
+
+function shouldProjectAudioOutput(video) {
+  if (!isProjectAudioTarget(video) || video?.dataset.audioEnabled !== "true") {
+    return false;
+  }
+
+  const item = video.closest(".project-media-item");
+  const carousel = item?.closest(".project-media-carousel");
+
+  if (!carousel) {
+    return true;
+  }
+
+  return item?.classList.contains("is-active") === true;
+}
+
+function syncProjectAudioOutput(video) {
+  if (!isProjectAudioTarget(video)) {
+    return;
+  }
+
+  if (shouldProjectAudioOutput(video)) {
+    ensureProjectAudioSource(video);
+    window.PORTFOLIO_MEDIA_LAZY?.setVideoSoundState?.(video, true);
+    return;
+  }
+
+  setProjectVideoOutputMuted(video, true);
+}
+
+function syncAllProjectAudioOutput() {
+  document.querySelectorAll("video[data-allow-audio='true']").forEach(syncProjectAudioOutput);
+}
+
 function setProjectPrimaryVideoSound(video, soundEnabled) {
   if (!isProjectAudioTarget(video)) {
     return false;
   }
 
   document.querySelectorAll("video[data-allow-audio='true']").forEach((candidate) => {
-    window.PORTFOLIO_MEDIA_LAZY?.setVideoSoundState?.(candidate, soundEnabled && candidate === video);
+    window.PORTFOLIO_MEDIA_LAZY?.setVideoSoundState?.(candidate, soundEnabled);
   });
+
+  syncAllProjectAudioOutput();
 
   if (soundEnabled) {
     ensureProjectAudioSource(video);
@@ -1299,6 +1350,8 @@ function syncCarouselVideo(item, shouldLoad, shouldWarm, shouldPlay) {
       window.PORTFOLIO_MEDIA_LAZY?.load(video);
     }
 
+    syncProjectAudioOutput(video);
+
     return;
   }
 
@@ -1316,6 +1369,7 @@ function syncCarouselVideo(item, shouldLoad, shouldWarm, shouldPlay) {
 
   if (shouldPlay || shouldWarm) {
     playVideo(video);
+    syncProjectAudioOutput(video);
 
     if (shouldPlay) {
       requestProjectVideoPosterReveal(video);
@@ -1330,6 +1384,7 @@ function syncCarouselVideo(item, shouldLoad, shouldWarm, shouldPlay) {
     video.pause();
   }
 
+  syncProjectAudioOutput(video);
   setProjectVideoPosterVisible(video, true);
 }
 
@@ -2261,10 +2316,12 @@ function syncMobileProjectVideos() {
 
     if (video === activeVideo) {
       playVideo(video);
+      syncProjectAudioOutput(video);
       return;
     }
 
     video.pause();
+    syncProjectAudioOutput(video);
   });
 }
 

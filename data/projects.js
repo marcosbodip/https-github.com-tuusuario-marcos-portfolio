@@ -1,5 +1,74 @@
 window.PORTFOLIO_PROJECTS = [
   {
+    "slug": "gucci-altitude",
+    "title": "Gucci Altitude",
+    "category": "VFX",
+    "summary": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon.",
+    "description": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon across the winter sportswear campaign.",
+    "cardCategory": "VFX",
+    "cardType": "vfx",
+    "layout": "auto",
+    "mainAudioEnabled": false,
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "VFX Artist",
+      "Type": "Client Project",
+      "Tools": "C4D / Nuke"
+    },
+    "concept": [
+      "Gucci Altitude was developed around Gucci's first winter sportswear collection, created in partnership with HEAD and introduced through ambassador Jannik Sinner.",
+      "Directed by STILLZ and produced by CANADA, the campaign places the collection inside a cold alpine world shaped by snow, technical styling and a sharp mountain horizon.",
+      "My contribution focused on replacing the original blizzard reflections in the goggles, rebuilding the lens reflections so the mountain skyline could read clearly and the horizon would stay clean and controlled in the final shots."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Client - Gucci",
+      "Collaboration - Gucci x HEAD",
+      "Direction - STILLZ",
+      "Production - CANADA",
+      "VFX Creative Studio - Groove",
+      "Ambassador - Jannik Sinner",
+      "CG - Marcos Bodí",
+      "Compositing - Alain Laza"
+    ],
+    "media": {
+      "cover": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "alt": "Gucci Altitude"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "ratio": "landscape",
+        "alt": "Gucci Altitude main media"
+      },
+      "secondary": [
+        {
+          "file": "secondary-01_optimized.mp4",
+          "type": "video",
+          "alt": "Gucci Altitude visor portrait clip",
+          "ratio": "landscape"
+        },
+        {
+          "file": "secondary-02_optimized.mp4",
+          "type": "video",
+          "alt": "Gucci Altitude mountain reflection portrait clip",
+          "ratio": "landscape"
+        },
+        {
+          "file": "secondary-03.jpg",
+          "type": "image",
+          "alt": "Gucci Altitude alpine still",
+          "ratio": "wide"
+        }
+      ]
+    }
+  },
+  {
     "slug": "adolfo-dominguez-mango-palmarosa",
     "title": "AD - Mango Palmarosa",
     "category": "CGI / AI / Postproduction",
