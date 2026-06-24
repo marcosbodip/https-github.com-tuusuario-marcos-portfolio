@@ -2,6 +2,8 @@
 
 Portfolio personal estatico en HTML, CSS y JavaScript.
 
+Para la rutina de trabajo entre el Mac y el ordenador de la oficina, revisa `WORKFLOW.md`.
+
 ## Estructura
 
 - `index.html`: home con el grid de proyectos.
@@ -96,6 +98,17 @@ data/projects.backup.js
 ```
 
 `admin.html` y `js/admin.js` pueden quedarse en el repo para uso local. Si el hosting los publica tambien, las acciones de guardado no funcionaran contra Vercel/Netlify directamente; el flujo real de publicacion pasa por el admin local y Git.
+
+## Trabajo entre ordenadores
+
+La forma recomendada de trabajar este portfolio en dos equipos es:
+
+1. Una copia local del repo en cada ordenador.
+2. GitHub como fuente compartida.
+3. `main` para publicacion.
+4. Ramas separadas para pruebas.
+
+Antes de empezar en cualquier equipo, trae lo ultimo de GitHub. Al terminar, sube tus cambios para que el otro ordenador pueda seguir desde el mismo punto.
 
 ## Checklist previa
 

@@ -12,6 +12,18 @@ Admin local en tu ordenador
 
 Asi evitamos subir videos grandes a traves de Functions, que suelen tener limites de payload y tiempo.
 
+## Flujo entre ordenadores
+
+Para trabajar desde varios equipos sin comprometer el repo:
+
+- usa una copia local del proyecto en cada ordenador;
+- usa GitHub como punto central;
+- usa `main` como rama publica;
+- trae lo ultimo antes de empezar en cada equipo;
+- sube los cambios al terminar.
+
+Dropbox puede servir como backup de materiales, pero no es la forma recomendada de sincronizar una carpeta Git activa entre dos ordenadores.
+
 ## 1. GitHub
 
 El proyecto debe vivir en un repositorio GitHub conectado a Vercel o Netlify.
