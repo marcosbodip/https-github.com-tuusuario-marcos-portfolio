@@ -479,8 +479,13 @@ function setupIndexVideoPoster(video, poster) {
 
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
   projectGrid.innerHTML = "";
+  const indexProjects = [...window.PORTFOLIO_PROJECTS];
 
-  window.PORTFOLIO_PROJECTS
+  if (indexProjects.length > 1) {
+    [indexProjects[0], indexProjects[1]] = [indexProjects[1], indexProjects[0]];
+  }
+
+  indexProjects
     .filter((project) => !project.hidden)
     .forEach((project, index) => {
       const card = document.createElement("a");
