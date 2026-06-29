@@ -17,7 +17,7 @@ if (magneticProjectRoot) {
   let height = 0;
   let animationFrame = 0;
   let baseDotColor = [242, 238, 231];
-  let accentDotColor = [255, 106, 0];
+  let accentDotColor = [255, 59, 48];
 
   canvas.className = "magnetic-dots";
   canvas.setAttribute("aria-hidden", "true");
@@ -247,10 +247,10 @@ if (magneticProjectRoot) {
               scaleInfluence,
               Math.min(1.04, visibleWaveInfluence * 0.92 * waveScaleFactor)
             );
-            const delayedColorProgress = Math.max(0, Math.min(1, (introWave.progress - 0.66) / 0.34));
+            const delayedColorProgress = Math.max(0, Math.min(1, (introWave.progress - 0.38) / 0.42));
             colorMix = Math.max(
               colorMix,
-              Math.min(1, Math.pow(delayedColorProgress, 1.3) * 0.96 + visibleWaveInfluence * 0.04) * pointerWaveShield
+              Math.min(1, Math.pow(delayedColorProgress, 1.05) * 0.9 + visibleWaveInfluence * 0.16) * pointerWaveShield
             );
           }
         }
@@ -282,6 +282,7 @@ if (magneticProjectRoot) {
     pointer.active = true;
   }
 
+  updateDotPalette();
   resizeCanvas();
   drawDots();
 

@@ -15,8 +15,9 @@
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const source = canvas.dataset.src || "assets/about/marcos-bust.glb";
-  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff6a00";
-  const accentRgb = getColorRgb(accent);
+  let accentRgb = getColorRgb(
+    getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
+  );
   const gl = canvas.getContext("webgl", {
     alpha: true,
     antialias: true,
@@ -77,6 +78,12 @@
   let texture = null;
   let hasTexture = false;
   let pointBudget = null;
+
+  function syncAccentColor() {
+    accentRgb = getColorRgb(
+      getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
+    );
+  }
 
   const vertexShader = `
     precision mediump float;
@@ -967,7 +974,6 @@
       draw();
     }
   });
-
   init().catch((error) => {
     console.error("About bust viewer failed:", error);
     canvas.dataset.error = error.message || "unknown";

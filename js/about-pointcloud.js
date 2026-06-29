@@ -9,8 +9,9 @@
   const shell = canvas.closest(".about-pointcloud-shell") || canvas;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const imageSource = canvas.dataset.src || "";
-  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff6a00";
-  const accentRgb = getColorRgb(accent);
+  let accentRgb = getColorRgb(
+    getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
+  );
   const mouse = {
     active: false,
     x: 0,
@@ -46,6 +47,12 @@
     const value = Math.sin(seed * 12.9898) * 43758.5453;
     return value - Math.floor(value);
   };
+
+  function syncAccentColor() {
+    accentRgb = getColorRgb(
+      getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
+    );
+  }
 
   function createFallbackSource() {
     const offscreen = document.createElement("canvas");

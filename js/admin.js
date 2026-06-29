@@ -1303,26 +1303,6 @@ function getPreviewProjects(project) {
   });
 }
 
-const accentThemeBootstrap = `<script>
-  (() => {
-    const validAccents = ["orange", "blue", "lime"];
-    const params = new URLSearchParams(window.location.search);
-    const requestedAccent = params.get("accent");
-    const storedAccent = window.localStorage.getItem("site-accent");
-    const accent = validAccents.includes(requestedAccent)
-      ? requestedAccent
-      : validAccents.includes(storedAccent)
-        ? storedAccent
-        : "orange";
-
-    document.documentElement.dataset.accent = accent;
-
-    if (validAccents.includes(requestedAccent)) {
-      window.localStorage.setItem("site-accent", requestedAccent);
-    }
-  })();
-<\/script>`;
-
 function buildProjectPreviewDocument(project) {
   const baseHref = new URL(".", window.location.href).href;
   const previewProject = withPreviewUrls(project);
@@ -1332,14 +1312,13 @@ function buildProjectPreviewDocument(project) {
   const description = escapeAttribute(previewProject.description || previewProject.summary || "Project by Marcos Bodi.");
 
   return `<!doctype html>
-<html lang="en" data-accent="orange">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <base href="${escapeAttribute(baseHref)}" />
   <title>${escapeAttribute(previewProject.title || "Project")} - Marcos Bodi</title>
   <meta name="description" content="${description}" />
-  ${accentThemeBootstrap}
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="admin-preview-body">
@@ -1375,14 +1354,13 @@ function buildIndexPreviewDocument(project) {
   const projectJson = JSON.stringify(previewProjects);
 
   return `<!doctype html>
-<html lang="en" data-accent="orange">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <base href="${escapeAttribute(baseHref)}" />
   <title>Index preview - Marcos Bodi</title>
   <meta name="description" content="Portfolio index preview." />
-  ${accentThemeBootstrap}
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="admin-preview-body">

@@ -20,7 +20,8 @@ const adminSessionSecret = process.env.ADMIN_SESSION_SECRET || randomBytes(32).t
 const autoGitPush = process.env.AUTO_GIT_PUSH === "true";
 const execFileAsync = promisify(execFile);
 const localFfmpegPath = resolve(rootDir, ".tools", "ffmpeg", "ffmpeg-8.1.1-essentials_build", "bin", "ffmpeg.exe");
-const ffmpegPath = process.env.FFMPEG_PATH || localFfmpegPath;
+const configuredFfmpegPath = process.env.FFMPEG_PATH || "";
+let resolvedFfmpegPathPromise = null;
 const videoExtensions = new Set([".mp4", ".mov", ".webm"]);
 
 const mimeTypes = {
@@ -512,14 +513,52 @@ function getProjectMediaItems(project) {
 }
 
 async function runFfmpeg(args, timeout = 600000) {
-  const { stdout, stderr } = await execFileAsync(ffmpegPath, args, {
-    cwd: rootDir,
-    timeout,
-    windowsHide: true,
-    maxBuffer: 1024 * 1024 * 16
-  });
+  const ffmpegPath = await resolveFfmpegPath();
+  let output;
 
+  try {
+    output = await execFileAsync(ffmpegPath, args, {
+      cwd: rootDir,
+      timeout,
+      windowsHide: true,
+      maxBuffer: 1024 * 1024 * 16
+    });
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      throw new Error(
+        configuredFfmpegPath
+          ? `FFmpeg not found at ${configuredFfmpegPath}`
+          : "FFmpeg not found. Install ffmpeg on the system or set FFMPEG_PATH."
+      );
+    }
+
+    throw error;
+  }
+
+  const { stdout, stderr } = output;
   return `${stdout || ""}${stderr || ""}`.trim();
+}
+
+async function resolveFfmpegPath() {
+  if (!resolvedFfmpegPathPromise) {
+    resolvedFfmpegPathPromise = (async () => {
+      if (configuredFfmpegPath) {
+        if (await pathExists(configuredFfmpegPath)) {
+          return configuredFfmpegPath;
+        }
+
+        throw new Error(`FFmpeg not found at ${configuredFfmpegPath}`);
+      }
+
+      if (await pathExists(localFfmpegPath)) {
+        return localFfmpegPath;
+      }
+
+      return "ffmpeg";
+    })();
+  }
+
+  return resolvedFfmpegPathPromise;
 }
 
 function getVideoAudioArgs({ preserveAudio = false, bitrate = "128k" } = {}) {
@@ -579,9 +618,7 @@ async function createVideoPoster(sourcePath, targetPath) {
 }
 
 async function optimizeProjectVideos(projects) {
-  if (!(await pathExists(ffmpegPath))) {
-    throw new Error(`FFmpeg not found at ${ffmpegPath}`);
-  }
+  await resolveFfmpegPath();
 
   const optimized = {
     desktop: 0,
@@ -1043,9 +1080,11 @@ async function handleRequest(request, response) {
 
 await mkdir(projectsAssetsDir, { recursive: true });
 
+const host = process.env.HOST || "127.0.0.1";
+
 createServer((request, response) => {
   handleRequest(request, response);
-}).listen(port, () => {
+}).listen(port, host, () => {
   console.log(`Portfolio admin running at http://localhost:${port}`);
   console.log(adminCode ? "Admin access enabled" : "Admin access disabled: set ADMIN_CODE to enable it");
   console.log(autoGitPush ? "Auto Git push enabled" : "Auto Git push disabled");

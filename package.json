@@ -1,7 +1,8 @@
 {
   "scripts": {
     "generate:seo": "node scripts/seo-pages.mjs",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "start:codex": "/Users/marcosbodipuchalt/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node server.mjs"
   },
   "devDependencies": {}
 }
