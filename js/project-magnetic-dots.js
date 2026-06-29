@@ -17,7 +17,7 @@ if (magneticProjectRoot) {
   let height = 0;
   let animationFrame = 0;
   let baseDotColor = [242, 238, 231];
-  let accentDotColor = [204, 255, 0];
+  let accentDotColor = [255, 106, 0];
 
   canvas.className = "magnetic-dots";
   canvas.setAttribute("aria-hidden", "true");

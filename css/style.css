@@ -6,9 +6,21 @@
   --muted: #9f9a91;
   --line: rgba(242, 238, 231, 0.16);
   --card: #151412;
+  --accent: #ff6a00;
+  --max-width: 1920px;
+  --side-padding: clamp(20px, 2.5vw, 48px);
+}
+
+:root[data-accent="orange"] {
+  --accent: #ff6a00;
+}
+
+:root[data-accent="blue"] {
+  --accent: #00c2ff;
+}
+
+:root[data-accent="lime"] {
   --accent: #ccff00;
- --max-width: 1920px;
---side-padding: clamp(20px, 2.5vw, 48px);
 }
 
 * {

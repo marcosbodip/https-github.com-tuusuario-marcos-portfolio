@@ -9,7 +9,7 @@
   const shell = canvas.closest(".about-pointcloud-shell") || canvas;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const imageSource = canvas.dataset.src || "";
-  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ccff00";
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff6a00";
   const accentRgb = getColorRgb(accent);
   const mouse = {
     active: false,
@@ -390,7 +390,7 @@
       };
     }
 
-    return { red: 204, green: 255, blue: 0 };
+    return { red: 255, green: 106, blue: 0 };
   }
 
   function start() {

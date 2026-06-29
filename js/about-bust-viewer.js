@@ -15,7 +15,7 @@
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const source = canvas.dataset.src || "assets/about/marcos-bust.glb";
-  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ccff00";
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff6a00";
   const accentRgb = getColorRgb(accent);
   const gl = canvas.getContext("webgl", {
     alpha: true,
