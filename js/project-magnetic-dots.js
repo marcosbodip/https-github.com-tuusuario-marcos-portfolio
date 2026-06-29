@@ -103,6 +103,48 @@ if (magneticProjectRoot) {
     });
   }
 
+  function getMediaEdgeFade(x, y, mediaRects) {
+    if (!mediaRects.length) {
+      return 1;
+    }
+
+    const fadeDistance = 52;
+    let strongestMask = 0;
+
+    mediaRects.forEach((rect) => {
+      const expandedRect = {
+        left: rect.left - fadeDistance,
+        right: rect.right + fadeDistance,
+        top: rect.top - fadeDistance,
+        bottom: rect.bottom + fadeDistance
+      };
+
+      if (
+        x < expandedRect.left ||
+        x > expandedRect.right ||
+        y < expandedRect.top ||
+        y > expandedRect.bottom
+      ) {
+        return;
+      }
+
+      const distanceToRect = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+        ? 0
+        : Math.hypot(
+            x < rect.left ? rect.left - x : x > rect.right ? x - rect.right : 0,
+            y < rect.top ? rect.top - y : y > rect.bottom ? y - rect.bottom : 0
+          );
+
+      const localFade = distanceToRect <= 0
+        ? 0
+        : smoothstep(0, fadeDistance, distanceToRect);
+
+      strongestMask = Math.max(strongestMask, 1 - localFade);
+    });
+
+    return 1 - strongestMask;
+  }
+
   function getIntroWaveState(now) {
     if (prefersReducedMotion || !introSection || !gallerySection) {
       return null;
@@ -111,12 +153,7 @@ if (magneticProjectRoot) {
     const introRect = introSection.getBoundingClientRect();
     const galleryRect = gallerySection.getBoundingClientRect();
 
-    if (
-      introRect.bottom <= 0 ||
-      introRect.top >= height ||
-      introRect.bottom <= height * 0.58 ||
-      galleryRect.top <= height * 0.68
-    ) {
+    if (introRect.bottom <= 0 || introRect.top >= height) {
       return null;
     }
 
@@ -126,6 +163,13 @@ if (magneticProjectRoot) {
     const pauseDuration = 1040;
     const cycleDuration = motionDuration + pauseDuration;
     const cyclePosition = now % cycleDuration;
+    const introBottomFade = smoothstep(height * 0.44, height * 0.7, introRect.bottom);
+    const galleryTopFade = smoothstep(height * 0.54, height * 0.8, galleryRect.top);
+    const viewportFade = Math.min(introBottomFade, galleryTopFade);
+
+    if (viewportFade <= 0.001) {
+      return null;
+    }
 
     if (cyclePosition > motionDuration) {
       return {
@@ -134,12 +178,13 @@ if (magneticProjectRoot) {
         bandY: introRect.top - bandSize,
         introRect,
         progress: 1,
-        strength: 0
+        strength: 0,
+        viewportFade
       };
     }
 
     const progress = cyclePosition / motionDuration;
-    const strength = Math.pow(Math.sin(progress * Math.PI), 1.08);
+    const strength = Math.pow(Math.sin(progress * Math.PI), 1.08) * viewportFade;
 
     return {
       active: true,
@@ -147,8 +192,14 @@ if (magneticProjectRoot) {
       bandY: introRect.top - bandSize + travel * progress,
       introRect,
       progress,
-      strength
+      strength,
+      viewportFade
     };
+  }
+
+  function smoothstep(edge0, edge1, value) {
+    const t = Math.max(0, Math.min(1, (value - edge0) / Math.max(edge1 - edge0, 0.0001)));
+    return t * t * (3 - 2 * t);
   }
 
   function resizeCanvas() {
@@ -222,37 +273,55 @@ if (magneticProjectRoot) {
       }
 
       if (introWave?.active) {
-        const insideIntroBand = dot.baseY >= introWave.introRect.top - introWave.bandReach
-          && dot.baseY <= introWave.introRect.bottom + introWave.bandReach;
+        const verticalDistance = Math.abs(dot.baseY - introWave.bandY);
+        const introCenterX = introWave.introRect.left + introWave.introRect.width * 0.5;
+        const horizontalReach = introWave.introRect.width * 0.58 + introWave.bandReach * 0.9;
+        const colorVerticalReach = introWave.bandReach * 1.42;
+        const colorHorizontalReach = horizontalReach * 1.08;
+        const horizontalDistance = Math.abs(dot.baseX - introCenterX);
+        const sectionReach = introWave.bandReach * 1.35;
+        const distanceToIntroSpan = dot.baseY < introWave.introRect.top
+          ? introWave.introRect.top - dot.baseY
+          : dot.baseY > introWave.introRect.bottom
+            ? dot.baseY - introWave.introRect.bottom
+            : 0;
 
-        if (insideIntroBand) {
-          const verticalDistance = Math.abs(dot.baseY - introWave.bandY);
+        const waveVerticalFade = Math.max(0, 1 - verticalDistance / introWave.bandReach);
+        const waveHorizontalFade = Math.max(0, 1 - horizontalDistance / horizontalReach);
+        const colorVerticalFade = Math.max(0, 1 - verticalDistance / colorVerticalReach);
+        const colorHorizontalFade = Math.max(0, 1 - horizontalDistance / colorHorizontalReach);
+        const sectionFade = Math.max(0, 1 - distanceToIntroSpan / sectionReach);
 
-          if (verticalDistance < introWave.bandReach) {
-            const waveFalloff = Math.pow(1 - verticalDistance / introWave.bandReach, 1.8);
-            const waveRipple = 0.76 + 0.3 * Math.sin(
-              (dot.baseX / Math.max(width, 1)) * Math.PI * 2.6 + introWave.progress * Math.PI * 3.2
-            );
-            const waveInfluence = waveFalloff * waveRipple * introWave.strength;
-            const waveScaleProgress = Math.max(0, Math.min(1, (introWave.progress - 0.08) / 0.5));
-            const waveScaleRamp = waveScaleProgress * waveScaleProgress * (3 - 2 * waveScaleProgress);
-            const waveScaleFactor = 0.3 + waveScaleRamp * 0.7;
-            const pointerWaveShield = Math.pow(1 - Math.min(1, hoverInfluence * 1.4), 2);
-            const visibleWaveInfluence = waveInfluence * pointerWaveShield;
+        if (waveVerticalFade > 0 && waveHorizontalFade > 0 && sectionFade > 0) {
+          const waveFalloff = Math.pow(waveVerticalFade, 1.8);
+          const horizontalFalloff = Math.pow(waveHorizontalFade, 1.45);
+          const sectionFalloff = Math.pow(sectionFade, 1.85);
+          const waveRipple = 0.76 + 0.3 * Math.sin(
+            (dot.baseX / Math.max(width, 1)) * Math.PI * 2.6 + introWave.progress * Math.PI * 3.2
+          );
+          const waveInfluence = waveFalloff * horizontalFalloff * sectionFalloff * waveRipple * introWave.strength;
+          const waveScaleProgress = Math.max(0, Math.min(1, (introWave.progress - 0.08) / 0.5));
+          const waveScaleRamp = waveScaleProgress * waveScaleProgress * (3 - 2 * waveScaleProgress);
+          const waveScaleFactor = 0.3 + waveScaleRamp * 0.7;
+          const pointerWaveShield = Math.pow(1 - Math.min(1, hoverInfluence * 1.4), 2);
+          const visibleWaveInfluence = waveInfluence * pointerWaveShield;
 
-            targetX += Math.sin(dot.baseY * 0.018 + introWave.progress * Math.PI * 6.1) * visibleWaveInfluence * 7;
-            targetY += visibleWaveInfluence * 11;
-            influence = Math.max(influence, Math.min(1.04, visibleWaveInfluence * 0.92));
-            scaleInfluence = Math.max(
-              scaleInfluence,
-              Math.min(1.04, visibleWaveInfluence * 0.92 * waveScaleFactor)
-            );
-            const delayedColorProgress = Math.max(0, Math.min(1, (introWave.progress - 0.38) / 0.42));
-            colorMix = Math.max(
-              colorMix,
-              Math.min(1, Math.pow(delayedColorProgress, 1.05) * 0.9 + visibleWaveInfluence * 0.16) * pointerWaveShield
-            );
-          }
+          targetX += Math.sin(dot.baseY * 0.018 + introWave.progress * Math.PI * 6.1) * visibleWaveInfluence * 7;
+          targetY += visibleWaveInfluence * 11;
+          influence = Math.max(influence, Math.min(1.04, visibleWaveInfluence * 0.92));
+          scaleInfluence = Math.max(
+            scaleInfluence,
+            Math.min(1.04, visibleWaveInfluence * 0.92 * waveScaleFactor)
+          );
+          const delayedColorProgress = Math.max(0, Math.min(1, (introWave.progress - 0.34) / 0.5));
+          const softenedColorProgress = delayedColorProgress * delayedColorProgress * (3 - 2 * delayedColorProgress);
+          const colorFalloff = Math.pow(colorVerticalFade, 2.2) * Math.pow(colorHorizontalFade, 1.55) * Math.pow(sectionFade, 2.1);
+          const lowerWaveProgress = Math.max(0, Math.min(1, (introWave.progress - 0.58) / 0.3));
+          const lowerWaveBoost = lowerWaveProgress * lowerWaveProgress * (3 - 2 * lowerWaveProgress);
+          colorMix = Math.max(
+            colorMix,
+            Math.min(1, (softenedColorProgress * (0.72 + lowerWaveBoost * 0.16) + visibleWaveInfluence * 0.1) * colorFalloff) * pointerWaveShield
+          );
         }
       }
 
@@ -261,13 +330,14 @@ if (magneticProjectRoot) {
       dot.influence += (influence - dot.influence) * 0.19;
       dot.scaleInfluence += (scaleInfluence - dot.scaleInfluence) * 0.19;
 
-      if (isInsideMediaRect(dot.x, dot.y, mediaRects)) {
-        return;
-      }
+      const mediaEdgeFade = getMediaEdgeFade(dot.x, dot.y, mediaRects);
 
       const hoverScaleBoost = hoverInfluence * 0.12;
       const size = settings.dotSize + dot.scaleInfluence * 2.45 + hoverScaleBoost;
-      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.03);
+      context.globalAlpha = Math.min(1, 0.34 + dot.influence * 0.6 + hoverInfluence * 0.03) * mediaEdgeFade;
+      if (context.globalAlpha <= 0.002) {
+        return;
+      }
       context.fillStyle = colorMix > 0.01 ? mixDotColor(colorMix) : `rgb(${baseDotColor[0]} ${baseDotColor[1]} ${baseDotColor[2]})`;
       context.fillRect(dot.x - size / 2, dot.y - size / 2, size, size);
     });
