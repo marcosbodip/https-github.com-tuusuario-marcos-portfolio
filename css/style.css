@@ -2529,6 +2529,12 @@ video {
   z-index: var(--carousel-z);
 }
 
+.project-media-carousel-track .project-media-item:focus,
+.project-media-carousel-track .project-media-item:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .project-composition-carousel .project-media-carousel-track .project-media-item {
   justify-self: auto;
   width: var(--carousel-item-width, auto);

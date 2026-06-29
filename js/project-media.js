@@ -1604,15 +1604,25 @@ function setCarouselViewer(carousel, shouldExpand) {
     const scrollX = Number(carousel.dataset.viewerScrollX || window.scrollX);
     const scrollY = Number(carousel.dataset.viewerScrollY || window.scrollY);
     const restoreScroll = () => window.scrollTo(scrollX, scrollY);
+    const restoreCarouselLayout = () => {
+      renderCarousel(carousel);
+      requestCarouselSoundTogglePositionSync(carousel);
+    };
 
     carousel.classList.remove("is-expanded", "is-viewer-ready", "is-viewer-closing");
     unlockCarouselViewerScroll();
     delete carousel.dataset.viewerTransitionTimer;
+    restoreCarouselLayout();
     syncCarouselPlayback(carousel);
     restoreScroll();
-    window.requestAnimationFrame(restoreScroll);
-    window.setTimeout(restoreScroll, 80);
-    requestCarouselSoundTogglePositionSync(carousel);
+    window.requestAnimationFrame(() => {
+      restoreCarouselLayout();
+      restoreScroll();
+    });
+    window.setTimeout(() => {
+      restoreCarouselLayout();
+      restoreScroll();
+    }, 80);
     return;
   }
 
@@ -2005,6 +2015,40 @@ function setCarouselIndex(carousel, index) {
   renderCarousel(carousel);
 }
 
+function isEditableCarouselKeyTarget(target) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  return target.isContentEditable
+    || target.closest("[contenteditable='true']")
+    || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
+
+function navigateExpandedCarousel(carousel, direction) {
+  if (!carousel || !carousel.classList.contains("is-expanded")) {
+    return;
+  }
+
+  const count = getCarouselItemCount(carousel);
+
+  if (count <= 1) {
+    return;
+  }
+
+  const step = direction > 0 ? 1 : -1;
+
+  if (isContinuousCarousel(carousel)) {
+    carousel.dataset.carouselPhysicalIndex = String(
+      getContinuousCarouselCenteredIndex(carousel, getActiveCarouselIndex(carousel) + step)
+    );
+    renderCarousel(carousel);
+    return;
+  }
+
+  setCarouselIndex(carousel, getCarouselVirtualIndex(carousel) + step);
+}
+
 function consumeCarouselScrollQueue(carousel) {
   if (!carousel || carousel.dataset.carouselAnimating === "true" || carousel.classList.contains("is-expanded")) {
     return;
@@ -2243,9 +2287,27 @@ function setupProjectCarousel(carousel) {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && carousel.classList.contains("is-expanded")) {
-      setCarouselViewer(carousel, false);
+    if (!carousel.classList.contains("is-expanded")) {
+      return;
     }
+
+    if (event.key === "Escape") {
+      setCarouselViewer(carousel, false);
+      return;
+    }
+
+    if (
+      (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+      || event.metaKey
+      || event.ctrlKey
+      || event.altKey
+      || isEditableCarouselKeyTarget(event.target)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    navigateExpandedCarousel(carousel, event.key === "ArrowRight" ? 1 : -1);
   });
 
   window.addEventListener("resize", () => {
