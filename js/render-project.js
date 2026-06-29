@@ -258,11 +258,11 @@ if (!projectRoot || !project) {
   const intro = document.createElement("section");
   intro.className = "project-intro";
 
-  const layout = document.createElement("div");
-  layout.className = "project-intro-layout";
+  const hero = document.createElement("div");
+  hero.className = "project-intro-hero";
 
-  const mainCopy = document.createElement("div");
-  mainCopy.className = "project-copy-main";
+  const titleBlock = document.createElement("div");
+  titleBlock.className = "project-intro-title-block";
 
   const header = document.createElement("div");
   header.className = "project-intro-header";
@@ -279,6 +279,10 @@ if (!projectRoot || !project) {
   summary.textContent = project.summary;
 
   header.append(eyebrow, title, summary);
+  titleBlock.append(header);
+
+  const infoBlock = document.createElement("div");
+  infoBlock.className = "project-intro-info-block";
 
   const meta = document.createElement("section");
   meta.className = "project-copy-block project-meta";
@@ -301,33 +305,106 @@ if (!projectRoot || !project) {
   });
 
   meta.append(metaTitle, details);
-  mainCopy.append(header, meta);
+  infoBlock.append(meta);
 
-  const copyStack = document.createElement("div");
-  copyStack.className = "project-copy-stack";
+  hero.append(titleBlock, infoBlock);
 
-  const concept = document.createElement("section");
-  concept.className = "project-copy-block project-concept";
-  const conceptTitle = document.createElement("h2");
-  conceptTitle.textContent = "Concept";
-  concept.append(conceptTitle);
-  appendParagraphs(concept, project.concept || []);
+  const accordionStack = document.createElement("div");
+  accordionStack.className = "project-copy-accordion-stack";
 
-  const credits = document.createElement("section");
-  credits.className = "project-copy-block project-team";
-  const creditsTitle = document.createElement("h2");
-  creditsTitle.textContent = project.creditsTitle || "Credits";
-  credits.append(creditsTitle);
-  appendParagraphs(credits, project.credits || []);
+  const createAccordionBlock = (titleText, paragraphs, extraClassName = "") => {
+    const block = document.createElement("section");
+    block.className = `project-copy-block project-copy-accordion ${extraClassName}`.trim();
 
-  copyStack.append(concept);
+    const blockHeader = document.createElement("div");
+    blockHeader.className = "project-copy-accordion-header";
+
+    const blockTitle = document.createElement("h2");
+    blockTitle.textContent = titleText;
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "project-copy-accordion-toggle";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", `Expand ${titleText}`);
+
+    const toggleLabel = document.createElement("span");
+    toggleLabel.className = "project-copy-accordion-toggle-symbol";
+    toggleLabel.setAttribute("aria-hidden", "true");
+    toggleLabel.textContent = "+";
+    toggle.append(toggleLabel);
+
+    blockHeader.append(blockTitle, toggle);
+
+    const body = document.createElement("div");
+    body.className = "project-copy-accordion-body";
+    body.setAttribute("aria-hidden", "true");
+    body.style.height = "0px";
+
+    const content = document.createElement("div");
+    content.className = "project-copy-accordion-content";
+    appendParagraphs(content, paragraphs);
+    body.append(content);
+
+    const setExpandedState = (isOpen) => {
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      toggle.setAttribute("aria-label", `${isOpen ? "Collapse" : "Expand"} ${titleText}`);
+      toggleLabel.textContent = isOpen ? "−" : "+";
+      body.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    };
+
+    const expandBody = () => {
+      body.style.height = `${content.offsetHeight}px`;
+      window.requestAnimationFrame(() => {
+        block.classList.add("is-open");
+        setExpandedState(true);
+      });
+    };
+
+    const collapseBody = () => {
+      body.style.height = `${content.offsetHeight}px`;
+      window.requestAnimationFrame(() => {
+        block.classList.remove("is-open");
+        setExpandedState(false);
+        body.style.height = "0px";
+      });
+    };
+
+    toggle.addEventListener("click", () => {
+      const isOpen = block.classList.contains("is-open");
+      if (isOpen) {
+        collapseBody();
+        return;
+      }
+
+      expandBody();
+    });
+
+    body.addEventListener("transitionend", (event) => {
+      if (event.propertyName !== "height") {
+        return;
+      }
+
+      if (block.classList.contains("is-open")) {
+        body.style.height = "auto";
+      }
+    });
+
+    block.append(blockHeader, body);
+    return block;
+  };
+
+  const concept = createAccordionBlock("Concept", project.concept || [], "project-concept");
+
+  accordionStack.append(concept);
 
   if (project.teamEnabled !== false && project.credits?.length) {
-    copyStack.append(credits);
+    accordionStack.append(
+      createAccordionBlock(project.creditsTitle || "Credits", project.credits || [], "project-team")
+    );
   }
 
-  layout.append(mainCopy, copyStack);
-  intro.append(layout);
+  intro.append(hero, accordionStack);
 
   const gallery = document.createElement("section");
   gallery.className = "project-gallery";

@@ -2,11 +2,11 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "adolfo-dominguez-mango-palmarosa",
     "title": "AD - Mango Palmarosa",
-    "category": "CGI / AI / Postproduction",
-    "summary": "CGI, AI and postproduction for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
-    "description": "CGI, AI and postproduction for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
-    "cardCategory": "CGI / AI / Postproduction",
-    "cardType": "cgi-ai-postproduction",
+    "category": "CGI / AI / VFX",
+    "summary": "CGI, AI and VFX for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
+    "description": "CGI, AI and VFX for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
+    "cardCategory": "CGI / AI / VFX",
+    "cardType": "cgi-ai-vfx",
     "layout": "auto",
     "mediaLayout": {
       "composition": "carousel"
@@ -14,10 +14,10 @@ window.PORTFOLIO_PROJECTS = [
     "details": {
       "Role": "CG Generalist",
       "Type": "Client Project",
-      "Tools": "CGI / AI / Postproduction"
+      "Tools": "C4D"
     },
     "concept": [
-      "Created for Adolfo Domínguez's Mango Palmarosa fragrance, the project brings CGI, AI and postproduction into a warm, tactile world shaped by fruit, flowers and insects.",
+      "Created for Adolfo Domínguez's Mango Palmarosa fragrance, the project brings CGI, AI and VFX into a warm, tactile world shaped by fruit, flowers and insects.",
       "As part of Groove's VFX team, my role as CG Generalist focused on placing the digital insects throughout the scenes and lighting them to integrate naturally with the original live-action footage."
     ],
     "teamEnabled": true,
@@ -165,7 +165,7 @@ window.PORTFOLIO_PROJECTS = [
     "details": {
       "Role": "3D Artist",
       "Type": "Launch Campaign",
-      "Tools": "Blender / AI / Davinci Resolve"
+      "Tools": "Blender / AI"
     },
     "concept": [
       "A launch film for the new Nissan Micra, starring Aitana Bonmati and built around a sharp, forward-looking visual language.",
@@ -484,7 +484,7 @@ window.PORTFOLIO_PROJECTS = [
     "details": {
       "Role": "CG Artist",
       "Type": "Personal Project",
-      "Tools": "C4D Octane"
+      "Tools": "C4D"
     },
     "concept": [
       "Summer collided with pixels for Brunch Festival 25.",
