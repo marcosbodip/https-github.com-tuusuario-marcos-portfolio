@@ -16,6 +16,10 @@ const titleBrushTargets = document.querySelectorAll(
   ].join(", ")
 );
 const canBrushTitles = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const brushPositionSpring = 0.04;
+const brushPositionDamping = 0.79;
+const brushScaleSpring = 0.069;
+const brushScaleDamping = 0.75;
 
 if (canBrushTitles) {
   titleBrushTargets.forEach((title) => {
@@ -30,13 +34,20 @@ if (canBrushTitles) {
       targetY: 0,
       currentScale: 0,
       targetScale: 0,
+      velocityX: 0,
+      velocityY: 0,
+      velocityScale: 0,
       frame: null,
     };
 
     const animateBrush = () => {
-      brush.currentX += (brush.targetX - brush.currentX) * 0.22;
-      brush.currentY += (brush.targetY - brush.currentY) * 0.22;
-      brush.currentScale += (brush.targetScale - brush.currentScale) * 0.18;
+      brush.velocityX = (brush.velocityX + (brush.targetX - brush.currentX) * brushPositionSpring) * brushPositionDamping;
+      brush.velocityY = (brush.velocityY + (brush.targetY - brush.currentY) * brushPositionSpring) * brushPositionDamping;
+      brush.velocityScale = (brush.velocityScale + (brush.targetScale - brush.currentScale) * brushScaleSpring) * brushScaleDamping;
+
+      brush.currentX += brush.velocityX;
+      brush.currentY += brush.velocityY;
+      brush.currentScale += brush.velocityScale;
 
       title.style.setProperty("--brush-x", `${brush.currentX}px`);
       title.style.setProperty("--brush-y", `${brush.currentY}px`);
@@ -45,11 +56,17 @@ if (canBrushTitles) {
       if (
         Math.abs(brush.targetX - brush.currentX) > 0.1 ||
         Math.abs(brush.targetY - brush.currentY) > 0.1 ||
-        Math.abs(brush.targetScale - brush.currentScale) > 0.01
+        Math.abs(brush.targetScale - brush.currentScale) > 0.01 ||
+        Math.abs(brush.velocityX) > 0.03 ||
+        Math.abs(brush.velocityY) > 0.03 ||
+        Math.abs(brush.velocityScale) > 0.002
       ) {
         brush.frame = requestAnimationFrame(animateBrush);
       } else {
         brush.frame = null;
+        brush.velocityX = 0;
+        brush.velocityY = 0;
+        brush.velocityScale = 0;
 
         if (brush.targetScale === 0) {
           title.classList.remove("is-brushed");
@@ -109,6 +126,9 @@ if (canBrushTitles) {
       brush.targetX = brush.currentX;
       brush.targetY = brush.currentY;
       brush.currentScale = 0;
+      brush.velocityX = 0;
+      brush.velocityY = 0;
+      brush.velocityScale = 0;
       moveBrush(event);
     });
 

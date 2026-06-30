@@ -546,7 +546,7 @@ video {
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.16s ease;
+  transition: opacity 0.22s ease;
 }
 
 .title-brush.is-brushed::after {
