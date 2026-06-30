@@ -12,6 +12,53 @@ let indexVideoSyncFrame = null;
 let activeIndexCard = null;
 let indexNeighborFrame = null;
 const indexHoverScale = 1.065;
+const indexCardResizeObserver = "ResizeObserver" in window
+  ? new ResizeObserver((entries) => {
+    const cards = new Set(entries
+      .map((entry) => entry.target instanceof Element ? entry.target.closest(".project-card") : null)
+      .filter(Boolean));
+
+    cards.forEach((card) => resizeIndexCard(card));
+  })
+  : null;
+
+function getIndexCoverAspectRatio(project) {
+  const ratio = project?.media?.cover?.ratio || project?.media?.main?.ratio;
+
+  switch (ratio) {
+    case "square":
+      return "1 / 1";
+    case "portrait":
+      return "4 / 5";
+    case "wide":
+      return "16 / 9";
+    case "ultrawide":
+      return "21 / 9";
+    case "full-row":
+      return "16 / 9";
+    case "landscape":
+    default:
+      return "16 / 10";
+  }
+}
+
+function observeIndexCardSize(card) {
+  if (!indexCardResizeObserver || !card) {
+    return;
+  }
+
+  indexCardResizeObserver.observe(card);
+  const frame = card.querySelector(".index-media-frame");
+  const info = card.querySelector(".project-card-info");
+
+  if (frame) {
+    indexCardResizeObserver.observe(frame);
+  }
+
+  if (info) {
+    indexCardResizeObserver.observe(info);
+  }
+}
 
 function prepareDesktopIndexVideo(video) {
   if (!supportsIndexHover || !video) {
@@ -527,6 +574,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       const mediaFrame = document.createElement("div");
       mediaFrame.className = "index-media-frame";
+      mediaFrame.style.aspectRatio = getIndexCoverAspectRatio(project);
 
       if (media.tagName === "VIDEO") {
         const poster = document.createElement("div");
@@ -542,6 +590,8 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       projectGrid.append(card);
       setupIndexCardExpansion(card);
+      observeIndexCardSize(card);
+      resizeIndexCard(card);
 
       if (media.tagName === "VIDEO") {
         allIndexVideos.add(media);
@@ -555,6 +605,8 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
     });
 
   resizeIndexGrid();
+  window.requestAnimationFrame(resizeIndexGrid);
+  window.setTimeout(resizeIndexGrid, 180);
   window.requestAnimationFrame(primeInitialIndexVideos);
   window.setTimeout(primeInitialIndexVideos, 350);
   document.fonts?.ready.then(resizeIndexGrid);
@@ -566,10 +618,15 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
   });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
+      resizeIndexGrid();
       resumeVisibleIndexVideos();
     }
   });
-  window.addEventListener("pageshow", resumeVisibleIndexVideos);
+  window.addEventListener("load", resizeIndexGrid, { once: true });
+  window.addEventListener("pageshow", () => {
+    resizeIndexGrid();
+    resumeVisibleIndexVideos();
+  });
   window.addEventListener("pointerdown", resumeVisibleIndexVideos, { once: true });
   window.addEventListener("touchstart", resumeVisibleIndexVideos, { once: true, passive: true });
 
