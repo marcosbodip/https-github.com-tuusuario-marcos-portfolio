@@ -113,6 +113,10 @@ function shouldProjectAudioOutput(video) {
     return true;
   }
 
+  if (isMobileCarouselLayout()) {
+    return getElementVisibleRatio(video) >= 0.12;
+  }
+
   return item?.classList.contains("is-active") === true;
 }
 

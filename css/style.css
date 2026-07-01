@@ -3515,6 +3515,8 @@ video {
     object-fit: contain;
   }
 
+  .project-media-carousel-track .project-media-item:not(.is-active):not([data-carousel-offset="0"]) .project-video-sound-toggle,
+  .project-media-carousel-track .project-media-item[aria-hidden="true"] .project-video-sound-toggle,
   .project-media-carousel-track .project-media-item .project-video-sound-toggle {
     opacity: 0.86;
     pointer-events: auto;
