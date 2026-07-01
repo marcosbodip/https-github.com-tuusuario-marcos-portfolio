@@ -311,6 +311,9 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     const prefersMobileAsset = media.mobileAsset !== false;
     const sourcePath = mobileMediaPath && prefersMobileAsset && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
     video.className = className;
+    if (media.objectPosition) {
+      video.style.objectPosition = media.objectPosition;
+    }
     if (options.eager) {
       video.src = sourcePath;
     } else {
@@ -360,6 +363,9 @@ function createMediaElement(media, basePath, className = "", options = {}) {
   img.alt = media.alt || "";
   img.loading = "lazy";
   img.decoding = "async";
+  if (media.objectPosition) {
+    img.style.objectPosition = media.objectPosition;
+  }
 
   if (isGif) {
     img.src = "data:image/gif;base64,R0lGODlhAQABAAAAACw=";

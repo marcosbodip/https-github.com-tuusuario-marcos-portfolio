@@ -3557,6 +3557,14 @@ video {
     object-fit: contain;
   }
 
+  .project-media-carousel.is-expanded .project-media-carousel-track .project-media-item .project-video-sound-toggle {
+    opacity: 0.92 !important;
+    pointer-events: auto;
+    z-index: 12;
+    --project-sound-toggle-right: 16px;
+    --project-sound-toggle-bottom: 16px;
+  }
+
   .project-media-carousel::before,
   .project-media-carousel::after {
     display: none;

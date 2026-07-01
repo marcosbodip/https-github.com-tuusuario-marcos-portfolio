@@ -2380,22 +2380,16 @@ function syncMobileProjectVideos() {
   }
 
   const videos = Array.from(document.querySelectorAll(".project-media-item video"));
-  const activeVideo = videos
-    .map((video) => ({
-      video,
-      ratio: getElementVisibleRatio(video),
-      distance: getElementCenterDistance(video)
-    }))
-    .filter(({ ratio }) => ratio >= 0.08)
-    .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)[0]?.video || null;
 
   videos.forEach((video) => {
+    const shouldPlay = getElementVisibleRatio(video) >= 0.08;
+
     if (isElementNearViewport(video, 320, 520)) {
       video.preload = "metadata";
       window.PORTFOLIO_MEDIA_LAZY?.load(video);
     }
 
-    if (video === activeVideo) {
+    if (shouldPlay) {
       playVideo(video);
       requestProjectVideoPosterReveal(video);
       syncProjectAudioOutput(video);

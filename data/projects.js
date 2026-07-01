@@ -505,6 +505,7 @@ window.PORTFOLIO_PROJECTS = [
       "cover": {
         "file": "cover.png",
         "type": "image",
+        "objectPosition": "50% 42%",
         "alt": "Brunch Festival 25"
       },
       "main": {
