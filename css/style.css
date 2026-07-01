@@ -2967,6 +2967,11 @@ video {
   margin: 0;
 }
 
+.project-footer a[data-next-project-link],
+.site-footer a[data-copy-email] {
+  color: var(--text);
+}
+
 .is-hidden {
   display: none;
 }

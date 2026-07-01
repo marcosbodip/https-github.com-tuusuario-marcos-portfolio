@@ -2423,20 +2423,17 @@ function syncMobileProjectVideos() {
 
   videos.forEach((video) => {
     const visibleRatio = getElementVisibleRatio(video);
-    const shouldPlay = visibleRatio >= 0.03 || isElementNearViewport(video, 120, 260);
+    const shouldReveal = visibleRatio >= 0.03 || isElementNearViewport(video, 120, 260);
 
-    if (isElementNearViewport(video, 320, 520)) {
-      window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
-    }
+    window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
 
-    if (shouldPlay) {
-      window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+    if (shouldReveal) {
+      playVideo(video);
       requestProjectVideoPosterReveal(video);
       syncProjectAudioOutput(video);
       return;
     }
 
-    video.pause();
     setProjectVideoPosterVisible(video, true);
     syncProjectAudioOutput(video);
   });
@@ -2456,6 +2453,10 @@ scheduleMobileProjectVideoSync();
 
 function autoplayInitialProjectVideos() {
   if (isMobileCarouselLayout()) {
+    document.querySelectorAll(".project-media-item video").forEach((video) => {
+      window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+      playVideo(video);
+    });
     scheduleMobileProjectVideoSync();
     return;
   }
@@ -2481,10 +2482,28 @@ function autoplayInitialProjectVideos() {
   });
 }
 
+let hasUnlockedMobileProjectPlayback = false;
+
+function unlockMobileProjectPlayback() {
+  if (hasUnlockedMobileProjectPlayback || !isMobileCarouselLayout()) {
+    return;
+  }
+
+  hasUnlockedMobileProjectPlayback = true;
+  autoplayInitialProjectVideos();
+  window.requestAnimationFrame(autoplayInitialProjectVideos);
+  window.setTimeout(autoplayInitialProjectVideos, 220);
+}
+
 window.requestAnimationFrame(autoplayInitialProjectVideos);
 window.setTimeout(autoplayInitialProjectVideos, 350);
 window.addEventListener("pageshow", autoplayInitialProjectVideos);
-window.addEventListener("scroll", scheduleMobileProjectVideoSync, { passive: true });
+window.addEventListener("touchstart", unlockMobileProjectPlayback, { once: true, passive: true });
+window.addEventListener("pointerdown", unlockMobileProjectPlayback, { once: true, passive: true });
+window.addEventListener("scroll", () => {
+  unlockMobileProjectPlayback();
+  scheduleMobileProjectVideoSync();
+}, { passive: true });
 window.addEventListener("wheel", handleProjectPageBottomWheel, { passive: false });
 window.addEventListener("resize", scheduleMobileProjectVideoSync);
 document.addEventListener("visibilitychange", () => {
