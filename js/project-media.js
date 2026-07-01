@@ -665,6 +665,14 @@ function createProjectMediaDetailAsset(media, frame) {
       window.PORTFOLIO_MEDIA_LAZY?.syncVideoSoundState?.(video, media);
     }
 
+    if (media.dataset.desktopSrc) {
+      video.dataset.desktopSrc = media.dataset.desktopSrc;
+    }
+
+    if (media.dataset.mobileSrc) {
+      video.dataset.mobileSrc = media.dataset.mobileSrc;
+    }
+
     window.PORTFOLIO_MEDIA_LAZY?.prepareAutoplayVideo(video);
     return video;
   }
@@ -734,6 +742,7 @@ function openProjectMediaDetail(sourceMedia) {
   const frame = document.createElement("div");
   const closeButton = document.createElement("button");
   const asset = createProjectMediaDetailAsset(sourceMedia, frame);
+  let soundButton = null;
   const shouldResumeSource = sourceMedia.tagName === "VIDEO" && !sourceMedia.paused && !sourceMedia.ended;
 
   overlay.className = "project-media-detail";
@@ -745,6 +754,37 @@ function openProjectMediaDetail(sourceMedia) {
   closeButton.className = "project-media-detail-close";
   closeButton.type = "button";
   closeButton.setAttribute("aria-label", "Close media");
+
+  if (asset.tagName === "VIDEO" && asset.dataset.allowAudio === "true") {
+    soundButton = document.createElement("button");
+    soundButton.className = "project-video-sound-toggle project-media-detail-sound-toggle";
+    soundButton.type = "button";
+
+    const syncDetailSoundButton = () => {
+      updateProjectVideoSoundButton(soundButton, asset);
+    };
+
+    soundButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const enabled = setProjectPrimaryVideoSound(sourceMedia, !isProjectAudioEnabled(sourceMedia));
+      window.PORTFOLIO_MEDIA_LAZY?.syncVideoSoundState?.(asset, sourceMedia);
+
+      if (enabled) {
+        ensureProjectAudioSource(asset);
+      } else {
+        setProjectVideoOutputMuted(asset, true);
+      }
+
+      playProjectMediaDetailAsset(asset);
+      syncDetailSoundButton();
+    });
+
+    asset.addEventListener("volumechange", syncDetailSoundButton);
+    asset.addEventListener("loadedmetadata", syncDetailSoundButton);
+    syncDetailSoundButton();
+  }
 
   if (sourceMedia.tagName === "VIDEO") {
     sourceMedia.pause();
@@ -766,7 +806,7 @@ function openProjectMediaDetail(sourceMedia) {
   document.addEventListener("keydown", handleKeydown);
 
   frame.append(asset);
-  overlay.append(closeButton, frame);
+  overlay.append(closeButton, ...(soundButton ? [soundButton] : []), frame);
   document.body.append(overlay);
   document.body.classList.add("is-project-media-detail-open");
 
@@ -2382,15 +2422,15 @@ function syncMobileProjectVideos() {
   const videos = Array.from(document.querySelectorAll(".project-media-item video"));
 
   videos.forEach((video) => {
-    const shouldPlay = getElementVisibleRatio(video) >= 0.08;
+    const visibleRatio = getElementVisibleRatio(video);
+    const shouldPlay = visibleRatio >= 0.03 || isElementNearViewport(video, 120, 260);
 
     if (isElementNearViewport(video, 320, 520)) {
-      video.preload = "metadata";
-      window.PORTFOLIO_MEDIA_LAZY?.load(video);
+      window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
     }
 
     if (shouldPlay) {
-      playVideo(video);
+      window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
       requestProjectVideoPosterReveal(video);
       syncProjectAudioOutput(video);
       return;

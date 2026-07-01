@@ -368,6 +368,7 @@ video {
 }
 
 .project-media-detail-frame {
+  position: relative;
   width: min(calc(100vw - 16px), 1120px);
   height: min(calc(100dvh - 84px), 960px);
   display: flex;
@@ -3563,6 +3564,15 @@ video {
     z-index: 12;
     --project-sound-toggle-right: 16px;
     --project-sound-toggle-bottom: 16px;
+  }
+
+  .project-media-detail-sound-toggle {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 14;
+    --project-sound-toggle-size: 30px;
+    --project-sound-toggle-icon-size: 14px;
   }
 
   .project-media-carousel::before,

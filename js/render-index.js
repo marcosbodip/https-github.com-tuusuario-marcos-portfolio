@@ -547,6 +547,11 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         { deferObserve: true, poster: true, eager: isTouchIndex && index < 2 }
       );
 
+      media.style.width = "100%";
+      media.style.height = "100%";
+      media.style.objectFit = "cover";
+      media.style.objectPosition = project.media.cover?.objectPosition || "50% 50%";
+
       if (media.tagName === "VIDEO") {
         prepareDesktopIndexVideo(media);
       }
