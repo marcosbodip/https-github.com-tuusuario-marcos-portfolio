@@ -1350,6 +1350,17 @@ function syncCarouselVideo(item, shouldLoad, shouldWarm, shouldPlay) {
       window.PORTFOLIO_MEDIA_LAZY?.load(video);
     }
 
+    if (item.classList.contains("is-active")) {
+      playVideo(video);
+      requestProjectVideoPosterReveal(video);
+    } else {
+      if (!video.paused) {
+        video.pause();
+      }
+
+      setProjectVideoPosterVisible(video, true);
+    }
+
     syncProjectAudioOutput(video);
 
     return;
@@ -2378,11 +2389,13 @@ function syncMobileProjectVideos() {
 
     if (video === activeVideo) {
       playVideo(video);
+      requestProjectVideoPosterReveal(video);
       syncProjectAudioOutput(video);
       return;
     }
 
     video.pause();
+    setProjectVideoPosterVisible(video, true);
     syncProjectAudioOutput(video);
   });
 }
@@ -2438,4 +2451,3 @@ document.addEventListener("visibilitychange", () => {
     scheduleMobileProjectVideoSync();
   }
 });
-
