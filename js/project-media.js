@@ -532,7 +532,11 @@ function requestProjectVideoPosterReveal(video) {
   const item = video?.closest(".project-media-item");
   const carousel = item?.closest(".project-media-carousel");
 
-  if (!video || !item || (carousel && !item.classList.contains("is-active"))) {
+  if (!video || !item) {
+    return;
+  }
+
+  if (carousel && !isMobileCarouselLayout() && !item.classList.contains("is-active")) {
     return;
   }
 
