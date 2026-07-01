@@ -3515,6 +3515,11 @@ video {
     object-fit: contain;
   }
 
+  .project-media-carousel-track .project-media-item .project-video-sound-toggle {
+    opacity: 0.86;
+    pointer-events: auto;
+  }
+
   .project-media-carousel.is-expanded .project-media-carousel-track {
     position: fixed;
     inset: 0;

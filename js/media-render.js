@@ -308,7 +308,8 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     const mobileMediaPath = media.previewUrl ? "" : getMobileVideoPath(mediaPath);
     const posterPath = media.previewUrl ? "" : getVideoPosterPath(mediaPath);
     const video = document.createElement("video");
-    const sourcePath = mobileMediaPath && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
+    const prefersMobileAsset = media.mobileAsset !== false;
+    const sourcePath = mobileMediaPath && prefersMobileAsset && shouldUseMobileVideoAsset() ? mobileMediaPath : mediaPath;
     video.className = className;
     if (options.eager) {
       video.src = sourcePath;
@@ -316,7 +317,7 @@ function createMediaElement(media, basePath, className = "", options = {}) {
       video.dataset.src = sourcePath;
     }
     video.dataset.desktopSrc = mediaPath;
-    if (mobileMediaPath) {
+    if (mobileMediaPath && prefersMobileAsset) {
       video.dataset.mobileSrc = mobileMediaPath;
     }
     if (posterPath) {

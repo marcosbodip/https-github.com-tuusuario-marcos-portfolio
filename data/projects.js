@@ -120,11 +120,13 @@ window.PORTFOLIO_PROJECTS = [
       "cover": {
         "file": "main_optimized.mp4",
         "type": "video",
+        "mobileAsset": false,
         "alt": "Gucci Altitude"
       },
       "main": {
         "file": "main_optimized.mp4",
         "type": "video",
+        "mobileAsset": false,
         "ratio": "landscape",
         "alt": "Gucci Altitude main media"
       },
@@ -132,12 +134,14 @@ window.PORTFOLIO_PROJECTS = [
         {
           "file": "secondary-01_optimized.mp4",
           "type": "video",
+          "mobileAsset": false,
           "alt": "Gucci Altitude visor portrait clip",
           "ratio": "landscape"
         },
         {
           "file": "secondary-02_optimized.mp4",
           "type": "video",
+          "mobileAsset": false,
           "alt": "Gucci Altitude mountain reflection portrait clip",
           "ratio": "landscape"
         },
