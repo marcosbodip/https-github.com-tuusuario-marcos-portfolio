@@ -159,6 +159,7 @@ const portfolioLazyMedia = (() => {
 
   function requestVideoAutoplay(video) {
     video.preload = "auto";
+    load(video, { autoplay: false });
     playVideo(video);
 
     if (video.readyState >= 2) {
