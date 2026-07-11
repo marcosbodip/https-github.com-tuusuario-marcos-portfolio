@@ -161,7 +161,10 @@ function createProjectMediaFigure(media, basePath) {
   figure.append(createMediaElement({
     ...media,
     allowAudio: media.isMain && isVideo && allowMainAudio
-  }, basePath, "", { poster: true }));
+  }, basePath, "", {
+    poster: true,
+    responsiveSizes: "(max-width: 860px) calc(100vw - 40px), 72vw"
+  }));
   return figure;
 }
 

@@ -3,7 +3,6 @@ const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)
 const supportsIndexExpand = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1181px)").matches;
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const allIndexVideos = new Set();
-const visibleIndexCards = new Map();
 let indexVideoSyncFrame = null;
 let activeIndexCard = null;
 let indexNeighborFrame = null;
@@ -281,17 +280,18 @@ function resumeVisibleIndexVideos() {
   syncIndexVideoPlayback();
 }
 
-function getVisibleRatio(element) {
+function getVisibleMetrics(element) {
   const rect = element.getBoundingClientRect();
   const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
   const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
   const area = rect.width * rect.height;
+  const visibleArea = visibleWidth * visibleHeight;
 
   if (!area) {
-    return 0;
+    return { area: 0, ratio: 0 };
   }
 
-  return (visibleWidth * visibleHeight) / area;
+  return { area: visibleArea, ratio: visibleArea / area };
 }
 
 function syncIndexVideoPlayback() {
@@ -302,28 +302,37 @@ function syncIndexVideoPlayback() {
   }
 
   const minVisibleRatio = isTouchIndex ? 0.08 : 0.01;
-  const maxActiveVideos = isTouchIndex ? 2 : 7;
-  const activeVideos = new Set(Array.from(allIndexVideos)
+  const maxActiveVideos = isTouchIndex ? 2 : 3;
+  const activeVideoList = Array.from(allIndexVideos)
     .map((video) => ({
       video,
       card: video.closest(".project-card")
     }))
     .filter(({ card }) => Boolean(card))
-    .map(({ card, video }) => ({
-      video,
-      ratio: getVisibleRatio(card),
-      distance: Math.abs(card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2 - window.innerHeight / 2)
-    }))
+    .map(({ card, video }) => {
+      const rect = card.getBoundingClientRect();
+      const visibility = getVisibleMetrics(card);
+
+      return {
+        video,
+        area: visibility.area,
+        ratio: visibility.ratio,
+        distance: Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2)
+      };
+    })
     .filter(({ ratio }) => ratio >= minVisibleRatio)
-    .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)
+    .sort((left, right) => right.area - left.area || right.ratio - left.ratio || left.distance - right.distance)
     .slice(0, maxActiveVideos)
-    .map(({ video }) => video));
+    .map(({ video }) => video);
+  const activeVideos = new Set(activeVideoList);
 
   activeVideos.forEach(queueIndexVideoPlayback);
 
   allIndexVideos.forEach((video) => {
-    if (!activeVideos.has(video) && !video.paused) {
-      video.pause();
+    if (!activeVideos.has(video)) {
+      if (!video.paused) {
+        video.pause();
+      }
     }
   });
 }
@@ -337,18 +346,6 @@ function scheduleIndexVideoSync() {
 }
 
 function primeInitialIndexVideos() {
-  const videos = Array.from(allIndexVideos);
-  const preloadMargin = 260;
-
-  videos.forEach((video) => {
-    const rect = video.getBoundingClientRect();
-    const isNearViewport = rect.bottom >= -preloadMargin && rect.top <= window.innerHeight + preloadMargin;
-
-    if (isNearViewport) {
-      window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: false });
-    }
-  });
-
   scheduleIndexVideoSync();
 }
 
@@ -363,13 +360,10 @@ const indexCardObserver = "IntersectionObserver" in window
       }
 
       if (entry.isIntersecting) {
-        visibleIndexCards.set(card, video);
-        window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: false });
         scheduleIndexVideoSync();
         return;
       }
 
-      visibleIndexCards.delete(card);
       stopIndexVideoPlayback(video);
       scheduleIndexVideoSync();
     });
@@ -385,7 +379,6 @@ function observeIndexVideoCard(card, video) {
   }
 
   if (!indexCardObserver) {
-    visibleIndexCards.set(card, video);
     scheduleIndexVideoSync();
     return;
   }
@@ -473,7 +466,12 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
         project.media.cover,
         `assets/projects/${project.slug}`,
         "project-media",
-        { deferObserve: true, poster: true, eager: isTouchIndex && index < 2 }
+        {
+          deferObserve: true,
+          poster: true,
+          eager: isTouchIndex && index < 2,
+          responsiveSizes: "(max-width: 860px) calc(100vw - 40px), (max-width: 1180px) calc(50vw - 36px), calc(33vw - 44px)"
+        }
       );
 
       media.style.width = "100%";

@@ -151,7 +151,9 @@ function getOptimizedVideoFileName(fileName) {
 }
 
 function isGeneratedMediaDerivative(fileName = "") {
-  return /_mobile\.mp4$/i.test(fileName) || /_poster\.jpe?g$/i.test(fileName);
+  return /_mobile\.mp4$/i.test(fileName) ||
+    /_poster\.jpe?g$/i.test(fileName) ||
+    /_responsive-(640|1080)\.webp$/i.test(fileName);
 }
 
 function isSupersededSourceVideo(fileName, availableFiles = []) {
@@ -1519,9 +1521,12 @@ async function saveProjectsFile() {
   projectAssetSlugs = projects.map((item) => item.slug || "");
   await refreshFolderMedia();
   const optimization = data.optimization || {};
-  const optimizedCount = (optimization.desktop || 0) + (optimization.mobile || 0) + (optimization.posters || 0);
+  const optimizedCount = (optimization.desktop || 0) +
+    (optimization.mobile || 0) +
+    (optimization.posters || 0) +
+    (optimization.responsiveImages || 0);
   const optimizationMessage = optimizedCount
-    ? ` Optimized ${optimization.desktop || 0} desktop, ${optimization.mobile || 0} mobile, ${optimization.posters || 0} poster.`
+    ? ` Optimized ${optimization.desktop || 0} desktop, ${optimization.mobile || 0} mobile, ${optimization.posters || 0} poster, ${optimization.responsiveImages || 0} responsive image.`
     : "";
   setStatus(`${data.warning || data.publishMessage || "Site saved. Assets cleaned."}${optimizationMessage}`, data.warning ? "warning" : "");
 }

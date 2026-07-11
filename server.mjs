@@ -23,6 +23,8 @@ const localFfmpegPath = resolve(rootDir, ".tools", "ffmpeg", "ffmpeg-8.1.1-essen
 const configuredFfmpegPath = process.env.FFMPEG_PATH || "";
 let resolvedFfmpegPathPromise = null;
 const videoExtensions = new Set([".mp4", ".mov", ".webm"]);
+const imageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const responsiveImageWidths = [640, 1080];
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -208,6 +210,40 @@ function getStaticCacheControl(requestPath) {
   return "no-store";
 }
 
+function parseByteRange(rangeHeader, fileSize) {
+  if (!rangeHeader?.startsWith("bytes=") || fileSize <= 0) {
+    return null;
+  }
+
+  const [rangeValue] = rangeHeader.slice(6).split(",");
+  const [startValue, endValue] = rangeValue.trim().split("-");
+  let start;
+  let end;
+
+  if (!startValue) {
+    const suffixLength = Number.parseInt(endValue, 10);
+
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) {
+      return { invalid: true };
+    }
+
+    start = Math.max(0, fileSize - suffixLength);
+    end = fileSize - 1;
+  } else {
+    start = Number.parseInt(startValue, 10);
+    end = endValue ? Number.parseInt(endValue, 10) : fileSize - 1;
+  }
+
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start >= fileSize || end < start) {
+    return { invalid: true };
+  }
+
+  return {
+    start,
+    end: Math.min(end, fileSize - 1)
+  };
+}
+
 function cleanSlug(slug) {
   const value = decodeURIComponent(slug || "").trim();
 
@@ -282,6 +318,13 @@ function getProjectMediaFiles(project) {
   const usedFiles = new Set(files);
 
   for (const file of files) {
+    if (isImageFile(file)) {
+      responsiveImageWidths.forEach((width) => {
+        usedFiles.add(getResponsiveImageFileName(file, width));
+      });
+      continue;
+    }
+
     if (!isVideoFile(file)) {
       continue;
     }
@@ -297,6 +340,10 @@ function getProjectMediaFiles(project) {
 
 function isVideoFile(fileName = "") {
   return videoExtensions.has(extname(fileName).toLowerCase());
+}
+
+function isImageFile(fileName = "") {
+  return imageExtensions.has(extname(fileName).toLowerCase());
 }
 
 function getFileStem(fileName = "") {
@@ -317,7 +364,22 @@ function getPosterFileName(fileName = "") {
   return `${getFileStem(fileName)}_poster.jpg`;
 }
 
+function getResponsiveImageFileName(fileName = "", width) {
+  return `${getFileStem(fileName)}_responsive-${width}.webp`;
+}
+
+function isResponsiveImageDerivative(fileName = "") {
+  return /_responsive-(640|1080)\.webp$/i.test(fileName);
+}
+
 function getAssetFamilyFiles(fileName = "") {
+  if (isImageFile(fileName)) {
+    return [
+      fileName,
+      ...responsiveImageWidths.map((width) => getResponsiveImageFileName(fileName, width))
+    ];
+  }
+
   if (!isVideoFile(fileName)) {
     return [fileName];
   }
@@ -452,7 +514,8 @@ async function resolveMissingProjectAssets(projects, assetSlugMap = []) {
 
     const { files } = await listProjectFiles(project.slug);
     const availableFiles = new Set(files);
-    const usedFiles = Array.from(getProjectMediaFiles(project));
+    const usedFiles = Array.from(getProjectMediaFiles(project))
+      .filter((file) => !isResponsiveImageDerivative(file));
     const preferredSlugs = [
       sourceByTargetSlug.get(project.slug),
       project.slug
@@ -590,14 +653,17 @@ async function encodeDesktopVideo(sourcePath, targetPath, options = {}) {
 }
 
 async function encodeMobileVideo(sourcePath, targetPath, options = {}) {
+  const maxWidth = options.highQuality ? 1080 : 860;
+  const crf = options.highQuality ? "27" : "30";
+
   await runFfmpeg([
     "-y",
     "-i", sourcePath,
     "-map", "0:v:0",
-    "-vf", "scale=w='trunc(min(860,iw)/2)*2':h=-2",
+    "-vf", `scale=w='trunc(min(${maxWidth},iw)/2)*2':h=-2`,
     "-c:v", "libx264",
     "-preset", "medium",
-    "-crf", "30",
+    "-crf", crf,
     "-pix_fmt", "yuv420p",
     "-movflags", "+faststart",
     ...getVideoAudioArgs({ preserveAudio: options.preserveAudio, bitrate: "96k" }),
@@ -613,6 +679,20 @@ async function createVideoPoster(sourcePath, targetPath) {
     "-frames:v", "1",
     "-vf", "scale=w='trunc(min(1280,iw)/2)*2':h=-2",
     "-q:v", "4",
+    targetPath
+  ], 180000);
+}
+
+async function encodeResponsiveImage(sourcePath, targetPath, width, quality = 82) {
+  await runFfmpeg([
+    "-y",
+    "-i", sourcePath,
+    "-frames:v", "1",
+    "-vf", `scale=${width}:-2:flags=lanczos`,
+    "-c:v", "libwebp",
+    "-quality", String(quality),
+    "-compression_level", "5",
+    "-preset", "picture",
     targetPath
   ], 180000);
 }
@@ -663,7 +743,10 @@ async function optimizeProjectVideos(projects) {
       }
 
       if (await shouldRegenerateFile(desktopSourcePath, mobilePath)) {
-        await encodeMobileVideo(desktopSourcePath, mobilePath, { preserveAudio });
+        await encodeMobileVideo(desktopSourcePath, mobilePath, {
+          preserveAudio,
+          highQuality: role === "cover"
+        });
         optimized.mobile += 1;
       }
 
@@ -681,6 +764,49 @@ async function optimizeProjectVideos(projects) {
   }
 
   return optimized;
+}
+
+async function optimizeProjectImages(projects) {
+  const optimizedSources = new Set();
+  let responsive = 0;
+
+  for (const project of projects) {
+    const slug = project?.slug;
+
+    if (!slug) {
+      continue;
+    }
+
+    for (const { item, role } of getProjectMediaItems(project)) {
+      if (!isImageFile(item.file)) {
+        continue;
+      }
+
+      const sourceKey = `${slug}/${item.file}`;
+
+      if (optimizedSources.has(sourceKey)) {
+        continue;
+      }
+
+      optimizedSources.add(sourceKey);
+      const sourcePath = safeProjectFile(slug, item.file);
+
+      if (!(await pathExists(sourcePath))) {
+        continue;
+      }
+
+      for (const width of responsiveImageWidths) {
+        const targetPath = safeProjectFile(slug, getResponsiveImageFileName(item.file, width));
+
+        if (await shouldRegenerateFile(sourcePath, targetPath)) {
+          await encodeResponsiveImage(sourcePath, targetPath, width, role === "cover" ? 90 : 82);
+          responsive += 1;
+        }
+      }
+    }
+  }
+
+  return responsive;
 }
 
 async function mergeProjectDirs(fromDir, toDir) {
@@ -836,12 +962,31 @@ async function serveStatic(request, response, pathname) {
       return;
     }
 
-    response.writeHead(200, {
+    const byteRange = parseByteRange(request.headers.range, fileStat.size);
+
+    if (byteRange?.invalid) {
+      response.writeHead(416, {
+        "Content-Range": `bytes */${fileStat.size}`,
+        "Accept-Ranges": "bytes"
+      });
+      response.end();
+      return;
+    }
+
+    const contentLength = byteRange ? byteRange.end - byteRange.start + 1 : fileStat.size;
+    const headers = {
       "Content-Type": mimeTypes[extname(filePath).toLowerCase()] || "application/octet-stream",
-      "Content-Length": fileStat.size,
+      "Content-Length": contentLength,
+      "Accept-Ranges": "bytes",
       "Cache-Control": getStaticCacheControl(requestPath)
-    });
-    createReadStream(filePath).pipe(response);
+    };
+
+    if (byteRange) {
+      headers["Content-Range"] = `bytes ${byteRange.start}-${byteRange.end}/${fileStat.size}`;
+    }
+
+    response.writeHead(byteRange ? 206 : 200, headers);
+    createReadStream(filePath, byteRange ? { start: byteRange.start, end: byteRange.end } : undefined).pipe(response);
   } catch (error) {
     if (error.code === "ENOENT") {
       sendError(response, 404, "Not found");
@@ -1035,6 +1180,7 @@ async function handleRequest(request, response) {
       await prepareProjectAssetFolders(projects, assetSlugMap);
       await resolveMissingProjectAssets(projects, assetSlugMap);
       const optimization = await optimizeProjectVideos(projects);
+      optimization.responsiveImages = await optimizeProjectImages(projects);
 
       const assetError = await validateProjectAssets(projects);
 

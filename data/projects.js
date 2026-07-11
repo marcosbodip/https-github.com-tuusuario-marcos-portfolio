@@ -118,7 +118,7 @@ window.PORTFOLIO_PROJECTS = [
     ],
     "media": {
       "cover": {
-        "file": "main_optimized.mp4",
+        "file": "cover_optimized.mp4",
         "type": "video",
         "alt": "Gucci Altitude"
       },

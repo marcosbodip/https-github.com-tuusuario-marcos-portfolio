@@ -624,7 +624,7 @@ function getDetailVideoSource(video) {
     return desktopSource;
   }
 
-  if (desktopSource && targetPixels >= 1180) {
+  if (desktopSource && targetPixels >= 720) {
     return desktopSource;
   }
 
@@ -683,7 +683,7 @@ function createProjectMediaDetailAsset(media, frame) {
   image.className = "project-media-detail-asset";
   image.alt = media.alt || "";
   image.decoding = "async";
-  image.src = media.currentSrc || media.src || media.dataset.src || "";
+  image.src = media.dataset.originalSrc || media.currentSrc || media.src || media.dataset.src || "";
   return image;
 }
 
@@ -809,6 +809,7 @@ function openProjectMediaDetail(sourceMedia) {
   overlay.append(closeButton, ...(soundButton ? [soundButton] : []), frame);
   document.body.append(overlay);
   document.body.classList.add("is-project-media-detail-open");
+  scheduleMobileProjectVideoSync();
 
   activeProjectMediaDetail = {
     asset,
@@ -954,6 +955,12 @@ function prepareClonedCarouselMedia(item) {
 
 function expandContinuousCarouselTrack(carousel) {
   if (carousel.dataset.carouselLoopPrepared === "true") {
+    return;
+  }
+
+  // Mobile renders the carousel as a vertical stack, so loop clones only add
+  // duplicate media downloads without contributing to the visible layout.
+  if (isMobileCarouselLayout()) {
     return;
   }
 
@@ -1393,24 +1400,7 @@ function syncCarouselVideo(item, shouldLoad, shouldWarm, shouldPlay) {
   if (isMobileCarouselLayout()) {
     video.autoplay = true;
     video.setAttribute("autoplay", "");
-
-    if (shouldLoad) {
-      window.PORTFOLIO_MEDIA_LAZY?.load(video);
-    }
-
-    if (item.classList.contains("is-active")) {
-      playVideo(video);
-      requestProjectVideoPosterReveal(video);
-    } else {
-      if (!video.paused) {
-        video.pause();
-      }
-
-      setProjectVideoPosterVisible(video, true);
-    }
-
     syncProjectAudioOutput(video);
-
     return;
   }
 
@@ -1459,7 +1449,7 @@ function syncCarouselLazyMedia(item, shouldLoad) {
 
 function shouldCarouselItemLoad(item) {
   if (isMobileCarouselLayout()) {
-    return isElementNearViewport(item, 320, 520);
+    return isElementNearViewport(item, 320, 420);
   }
 
   const offset = Math.abs(Number(item.dataset.carouselOffset || 0));
@@ -2394,12 +2384,12 @@ const mobileProjectVideoObserver = "IntersectionObserver" in window
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.preload = "metadata";
-        window.PORTFOLIO_MEDIA_LAZY?.load(entry.target);
+        window.PORTFOLIO_MEDIA_LAZY?.load(entry.target, { autoplay: false });
       }
     });
     scheduleMobileProjectVideoSync();
   }, {
-    rootMargin: "360px 0px",
+    rootMargin: "420px 0px",
     threshold: [0, 0.08, 0.24, 0.5]
   })
   : null;
@@ -2420,20 +2410,40 @@ function syncMobileProjectVideos() {
   }
 
   const videos = Array.from(document.querySelectorAll(".project-media-item video"));
+  const hasOpenMediaDetail = document.body.classList.contains("is-project-media-detail-open");
 
   videos.forEach((video) => {
-    const visibleRatio = getElementVisibleRatio(video);
-    const shouldReveal = visibleRatio >= 0.03 || isElementNearViewport(video, 120, 260);
+    if (hasOpenMediaDetail) {
+      video.autoplay = false;
+      video.removeAttribute("autoplay");
+      if (!video.paused) {
+        video.pause();
+      }
+      setProjectVideoPosterVisible(video, true);
+      syncProjectAudioOutput(video);
+      return;
+    }
 
-    window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
+    const visibleRatio = getElementVisibleRatio(video);
+    const shouldPreload = isElementNearViewport(video, 320, 420);
+    const shouldReveal = visibleRatio >= 0.03 || isElementNearViewport(video, 120, 140);
+
+    if (shouldPreload) {
+      video.preload = "metadata";
+      window.PORTFOLIO_MEDIA_LAZY?.load(video, { autoplay: false });
+    }
 
     if (shouldReveal) {
+      window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
       playVideo(video);
       requestProjectVideoPosterReveal(video);
       syncProjectAudioOutput(video);
       return;
     }
 
+    if (!video.paused) {
+      video.pause();
+    }
     setProjectVideoPosterVisible(video, true);
     syncProjectAudioOutput(video);
   });
@@ -2453,7 +2463,16 @@ scheduleMobileProjectVideoSync();
 
 function autoplayInitialProjectVideos() {
   if (isMobileCarouselLayout()) {
+    if (document.body.classList.contains("is-project-media-detail-open")) {
+      scheduleMobileProjectVideoSync();
+      return;
+    }
+
     document.querySelectorAll(".project-media-item video").forEach((video) => {
+      if (!isElementNearViewport(video, 180, 140)) {
+        return;
+      }
+
       window.PORTFOLIO_MEDIA_LAZY?.requestVideoAutoplay(video);
       playVideo(video);
     });

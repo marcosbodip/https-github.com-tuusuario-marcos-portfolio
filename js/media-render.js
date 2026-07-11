@@ -302,6 +302,22 @@ function getVideoPosterPath(mediaPath) {
   return mediaPath.replace(/\.(mp4|webm|mov)$/i, "_poster.jpg");
 }
 
+const responsiveImageWidths = [640, 1080];
+
+function getResponsiveImagePath(mediaPath, width) {
+  return mediaPath.replace(/\.[^.?#]+(?=([?#].*)?$)/, `_responsive-${width}.webp`);
+}
+
+function applyResponsiveImageSources(image, mediaPath, sizes) {
+  const candidates = responsiveImageWidths.map((width) => {
+    return `${encodeURI(getResponsiveImagePath(mediaPath, width))} ${width}w`;
+  });
+
+  image.srcset = candidates.join(", ");
+  image.sizes = sizes || "(max-width: 860px) calc(100vw - 40px), 72vw";
+  image.dataset.originalSrc = mediaPath;
+}
+
 function createMediaElement(media, basePath, className = "", options = {}) {
   const mediaPath = media.previewUrl || `${basePath}/${media.file}`;
 
@@ -377,6 +393,9 @@ function createMediaElement(media, basePath, className = "", options = {}) {
       portfolioLazyMedia.observe(img);
     }
   } else {
+    if (!media.previewUrl) {
+      applyResponsiveImageSources(img, mediaPath, options.responsiveSizes);
+    }
     img.src = mediaPath;
   }
 
