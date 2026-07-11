@@ -340,6 +340,9 @@ function createMediaElement(media, basePath, className = "", options = {}) {
     if (mobileMediaPath && prefersMobileAsset) {
       video.dataset.mobileSrc = mobileMediaPath;
     }
+    if (media.mobileAudio) {
+      video.dataset.mobileAudio = "true";
+    }
     if (posterPath) {
       video.dataset.posterSrc = posterPath;
     }

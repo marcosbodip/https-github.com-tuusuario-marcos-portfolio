@@ -244,7 +244,7 @@ window.PORTFOLIO_PROJECTS = [
     "cardCategory": "Product visualization / CGI",
     "cardType": "product-visualization-cgi",
     "layout": "auto",
-    "mainAudioEnabled": false,
+    "mainAudioEnabled": true,
     "mediaLayout": {
       "composition": "carousel"
     },
@@ -273,6 +273,7 @@ window.PORTFOLIO_PROJECTS = [
       "main": {
         "file": "main_optimized.mp4",
         "type": "video",
+        "mobileAudio": true,
         "ratio": "portrait",
         "alt": "DanideVito Furnitures main media"
       },

@@ -75,8 +75,12 @@ function ensureProjectAudioSource(video) {
   }
 
   const desktopSource = video.dataset.desktopSrc || "";
+  const mobileSource = video.dataset.mobileSrc || "";
+  const usesMobileAudioSource = video.dataset.mobileAudio === "true"
+    && mobileSource
+    && videoSourceMatches(video, mobileSource);
 
-  if (!desktopSource || videoSourceMatches(video, desktopSource)) {
+  if (!desktopSource || videoSourceMatches(video, desktopSource) || usesMobileAudioSource) {
     return;
   }
 
@@ -621,6 +625,14 @@ function getDetailVideoSource(video) {
   const targetPixels = window.innerWidth * (window.devicePixelRatio || 1);
 
   if (video.dataset.audioEnabled === "true" && desktopSource) {
+    if (
+      video.dataset.mobileAudio === "true"
+      && video.dataset.mobileSrc
+      && videoSourceMatches(video, video.dataset.mobileSrc)
+    ) {
+      return video.dataset.mobileSrc;
+    }
+
     return desktopSource;
   }
 
@@ -671,6 +683,10 @@ function createProjectMediaDetailAsset(media, frame) {
 
     if (media.dataset.mobileSrc) {
       video.dataset.mobileSrc = media.dataset.mobileSrc;
+    }
+
+    if (media.dataset.mobileAudio === "true") {
+      video.dataset.mobileAudio = "true";
     }
 
     window.PORTFOLIO_MEDIA_LAZY?.prepareAutoplayVideo(video);
