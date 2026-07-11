@@ -280,18 +280,17 @@ function resumeVisibleIndexVideos() {
   syncIndexVideoPlayback();
 }
 
-function getVisibleMetrics(element) {
+function getVisibleRatio(element) {
   const rect = element.getBoundingClientRect();
   const visibleWidth = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0));
   const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
   const area = rect.width * rect.height;
-  const visibleArea = visibleWidth * visibleHeight;
 
   if (!area) {
-    return { area: 0, ratio: 0 };
+    return 0;
   }
 
-  return { area: visibleArea, ratio: visibleArea / area };
+  return (visibleWidth * visibleHeight) / area;
 }
 
 function syncIndexVideoPlayback() {
@@ -302,26 +301,20 @@ function syncIndexVideoPlayback() {
   }
 
   const minVisibleRatio = isTouchIndex ? 0.08 : 0.01;
-  const maxActiveVideos = isTouchIndex ? 2 : 3;
+  const maxActiveVideos = isTouchIndex ? 2 : 7;
   const activeVideoList = Array.from(allIndexVideos)
     .map((video) => ({
       video,
       card: video.closest(".project-card")
     }))
     .filter(({ card }) => Boolean(card))
-    .map(({ card, video }) => {
-      const rect = card.getBoundingClientRect();
-      const visibility = getVisibleMetrics(card);
-
-      return {
-        video,
-        area: visibility.area,
-        ratio: visibility.ratio,
-        distance: Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2)
-      };
-    })
+    .map(({ card, video }) => ({
+      video,
+      ratio: getVisibleRatio(card),
+      distance: Math.abs(card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2 - window.innerHeight / 2)
+    }))
     .filter(({ ratio }) => ratio >= minVisibleRatio)
-    .sort((left, right) => right.area - left.area || right.ratio - left.ratio || left.distance - right.distance)
+    .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)
     .slice(0, maxActiveVideos)
     .map(({ video }) => video);
   const activeVideos = new Set(activeVideoList);
