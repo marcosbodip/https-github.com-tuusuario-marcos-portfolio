@@ -2,6 +2,8 @@
 
 Portfolio personal estatico en HTML, CSS y JavaScript.
 
+Antes de modificar el proyecto con Codex, revisa `AGENTS.md`.
+
 Para la rutina de trabajo entre el Mac y el ordenador de la oficina, revisa `WORKFLOW.md`.
 
 ## Estructura
