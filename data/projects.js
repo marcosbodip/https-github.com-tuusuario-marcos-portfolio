@@ -671,6 +671,8 @@ window.PORTFOLIO_PROJECTS = [
       "cover": {
         "file": "smooth (editado)_optimized.mp4",
         "type": "video",
+        "indexAspectRatio": "1080 / 932",
+        "objectFit": "contain",
         "alt": "Kuurth Imagery"
       },
       "main": {

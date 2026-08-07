@@ -18,6 +18,12 @@ const indexCardResizeObserver = "ResizeObserver" in window
   : null;
 
 function getIndexCoverAspectRatio(project) {
+  const indexAspectRatio = project?.media?.cover?.indexAspectRatio;
+
+  if (indexAspectRatio) {
+    return indexAspectRatio;
+  }
+
   const ratio = project?.media?.cover?.ratio || project?.media?.main?.ratio;
 
   switch (ratio) {
@@ -469,8 +475,9 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       media.style.width = "100%";
       media.style.height = "100%";
-      media.style.objectFit = "cover";
+      media.style.objectFit = project.media.cover?.objectFit || "cover";
       media.style.objectPosition = project.media.cover?.objectPosition || "50% 50%";
+      media.style.transform = `scale(${project.media.cover?.indexScale || 1})`;
 
       if (media.tagName === "VIDEO") {
         prepareDesktopIndexVideo(media);
@@ -503,8 +510,14 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       if (media.tagName === "VIDEO") {
         const poster = document.createElement("div");
+        const coverFit = project.media.cover?.objectFit || "cover";
+        const coverScale = project.media.cover?.indexScale || 1;
         poster.className = "index-video-poster";
         poster.setAttribute("aria-hidden", "true");
+        poster.style.backgroundSize = coverFit === "contain" && coverScale !== 1
+          ? `${coverScale * 100}% auto`
+          : coverFit;
+        poster.style.backgroundPosition = project.media.cover?.objectPosition || "50% 50%";
         setupIndexVideoPoster(media, poster);
         mediaFrame.append(media, poster);
       } else {
