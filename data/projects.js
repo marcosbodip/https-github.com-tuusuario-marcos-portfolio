@@ -164,7 +164,7 @@ window.PORTFOLIO_PROJECTS = [
     },
     "details": {
       "Role": "3D Artist",
-      "Type": "Launch Campaign",
+      "Type": "Client Project",
       "Tools": "Blender / AI"
     },
     "concept": [
@@ -484,7 +484,7 @@ window.PORTFOLIO_PROJECTS = [
     },
     "details": {
       "Role": "CG Artist",
-      "Type": "Personal Project",
+      "Type": "Client Project",
       "Tools": "C4D"
     },
     "concept": [
