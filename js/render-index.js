@@ -447,11 +447,12 @@ function setupIndexVideoPoster(video, poster) {
 
 if (projectGrid && window.PORTFOLIO_PROJECTS) {
   projectGrid.innerHTML = "";
-  const indexProjects = [...window.PORTFOLIO_PROJECTS];
+  const indexProjects = [...window.PORTFOLIO_PROJECTS].sort((left, right) => {
+    const leftOrder = Number.isFinite(left.indexOrder) ? left.indexOrder : Number.MAX_SAFE_INTEGER;
+    const rightOrder = Number.isFinite(right.indexOrder) ? right.indexOrder : Number.MAX_SAFE_INTEGER;
 
-  if (indexProjects.length > 1) {
-    [indexProjects[0], indexProjects[1]] = [indexProjects[1], indexProjects[0]];
-  }
+    return leftOrder === rightOrder ? 0 : leftOrder - rightOrder;
+  });
 
   indexProjects
     .filter((project) => !project.hidden)
@@ -497,7 +498,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       info.className = "project-card-info";
 
       const title = document.createElement("h2");
-      title.textContent = project.title;
+      title.textContent = project.cardTitle || project.title;
 
       const category = document.createElement("p");
       category.textContent = project.cardCategory || project.category;

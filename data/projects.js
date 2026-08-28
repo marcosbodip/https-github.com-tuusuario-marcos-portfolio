@@ -1,6 +1,7 @@
 window.PORTFOLIO_PROJECTS = [
   {
     "slug": "adolfo-dominguez-mango-palmarosa",
+    "indexOrder": 2,
     "title": "AD - Mango Palmarosa",
     "category": "CGI / AI / VFX",
     "summary": "CGI, AI and VFX for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
@@ -82,7 +83,76 @@ window.PORTFOLIO_PROJECTS = [
     }
   },
   {
+    "slug": "pattern-of-thought",
+    "indexOrder": 1,
+    "title": "Pattern of Thought",
+    "cardTitle": "Claude x Atlassian Williams",
+    "titleLayout": "single-line",
+    "category": "CGI / VFX",
+    "summary": "A cinematic CGI film for Claude and Atlassian Williams F1 Team, visualising the thinking behind every lap.",
+    "description": "A cinematic CGI film for Claude and Atlassian Williams F1 Team, visualising the thinking behind every lap.",
+    "cardCategory": "CGI / VFX",
+    "cardType": "cgi-vfx",
+    "layout": "auto",
+    "mainAudioEnabled": false,
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "CG Artist",
+      "Type": "Client Project",
+      "Tools": "C4D / EmberGen"
+    },
+    "concept": [
+      "Created for Claude and Atlassian Williams F1 Team, Pattern of Thought visualises the thinking behind every lap through a fast, monochrome CGI sequence.",
+      "My contribution focused on smoke simulations, lighting and shot animation, shaping an atmospheric sense of speed, precision and computational flow."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Client - Claude / Atlassian Williams F1 Team",
+      "VFX Studio - Groove Studio",
+      "CG Artists - Marcos Bodí / Javi Polo",
+      "Compositing - Alain Laza"
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "ratio": "wide",
+        "alt": "Pattern of Thought for Claude and Atlassian Williams F1 Team"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "ratio": "wide",
+        "alt": "Pattern of Thought campaign film"
+      },
+      "secondary": [
+        {
+          "file": "bts-01_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "Pattern of Thought smoke simulation breakdown"
+        },
+        {
+          "file": "bts-02_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "Pattern of Thought Cinema 4D scene breakdown"
+        },
+        {
+          "file": "bts-03_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "Pattern of Thought lighting and animation breakdown"
+        }
+      ]
+    }
+  },
+  {
     "slug": "ponds-bright-miracle-serum",
+    "indexOrder": 5,
     "title": "POND'S Jellyfish",
     "titleLayout": "single-line",
     "category": "Product visualization / CGI",
@@ -150,6 +220,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "gucci-altitude",
+    "indexOrder": 3,
     "title": "Gucci Altitude",
     "category": "VFX",
     "summary": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon.",
@@ -219,6 +290,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "nissan-micra",
+    "indexOrder": 4,
     "title": "Nissan Micra x Aitana Bonmati",
     "category": "VFX / CGI / AI",
     "summary": "VFX, 3D and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
