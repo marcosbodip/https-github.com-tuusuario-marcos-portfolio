@@ -84,7 +84,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "pattern-of-thought",
-    "indexOrder": 1,
+    "indexOrder": 4,
     "title": "Pattern of Thought",
     "cardTitle": "Claude x Atlassian Williams",
     "titleLayout": "single-line",
@@ -220,7 +220,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "gucci-altitude",
-    "indexOrder": 3,
+    "indexOrder": 1,
     "title": "Gucci Altitude",
     "category": "VFX",
     "summary": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon.",
@@ -290,7 +290,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "nissan-micra",
-    "indexOrder": 4,
+    "indexOrder": 3,
     "title": "Nissan Micra x Aitana Bonmati",
     "category": "VFX / CGI / AI",
     "summary": "VFX, 3D and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
