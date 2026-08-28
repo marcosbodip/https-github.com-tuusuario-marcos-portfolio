@@ -276,6 +276,9 @@ if (!projectRoot || !project) {
 
   const title = document.createElement("h1");
   title.textContent = project.title;
+  if (project.titleLayout === "single-line") {
+    title.classList.add("project-title-single-line");
+  }
 
   const summary = document.createElement("p");
   summary.className = "project-summary";

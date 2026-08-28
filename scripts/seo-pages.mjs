@@ -220,6 +220,9 @@ function renderProjectStaticHtml(project = {}) {
     : "";
   const details = renderDetailsList(project.details);
   const concept = renderConcept(project);
+  const titleClass = project.titleLayout === "single-line"
+    ? ' class="project-title-single-line"'
+    : "";
   const descriptionBlock = descriptionHtml ? `\n        ${descriptionHtml}` : "";
 
   return `<section class="project-intro">
@@ -227,7 +230,7 @@ function renderProjectStaticHtml(project = {}) {
       <div class="project-copy-main">
         <div class="project-intro-header">
           <p class="eyebrow">${escapeHtml(project.category || project.cardCategory || "Project")}</p>
-          <h1>${escapeHtml(project.title || "Project")}</h1>
+          <h1${titleClass}>${escapeHtml(project.title || "Project")}</h1>
           <p class="project-summary">${escapeHtml(summary)}</p>
         </div>${descriptionBlock}
       </div>

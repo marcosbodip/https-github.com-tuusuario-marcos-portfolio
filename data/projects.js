@@ -82,6 +82,73 @@ window.PORTFOLIO_PROJECTS = [
     }
   },
   {
+    "slug": "ponds-bright-miracle-serum",
+    "title": "POND'S Jellyfish",
+    "titleLayout": "single-line",
+    "category": "Product visualization / CGI",
+    "summary": "A playful CGI product film for POND'S, shaped around a delicate world of animated jellyfish.",
+    "description": "A playful CGI product film for POND'S, shaped around a delicate world of animated jellyfish.",
+    "cardCategory": "Product visualization / CGI",
+    "cardType": "product-visualization-cgi",
+    "layout": "auto",
+    "mainAudioEnabled": false,
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "CG Artist",
+      "Type": "Client Project",
+      "Tools": "C4D"
+    },
+    "concept": [
+      "Created for the launch of POND'S Bright Miracle Serum, the film introduces the product through a soft and playful visual world.",
+      "The jellyfish become the central motion element of the campaign, combining fluid animation and translucent materials to give the product reveal a light, delicate and engaging rhythm."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Client - POND'S",
+      "Creative Direction - Mirai International",
+      "VFX Studio - Groove Studio",
+      "CG Artists - Marcos Bodí / Álex Luque",
+      "Compositing - Alain Laza"
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "indexAspectRatio": "1920 / 1012",
+        "alt": "POND'S Jellyfish campaign"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "ratio": "wide",
+        "alt": "POND'S Bright Miracle Serum campaign film"
+      },
+      "secondary": [
+        {
+          "file": "breakdown-01_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "POND'S jellyfish animation breakdown 01"
+        },
+        {
+          "file": "breakdown-02_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "POND'S jellyfish animation breakdown 02"
+        },
+        {
+          "file": "bts_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "POND'S jellyfish Cinema 4D behind the scenes"
+        }
+      ]
+    }
+  },
+  {
     "slug": "gucci-altitude",
     "title": "Gucci Altitude",
     "category": "VFX",
