@@ -278,6 +278,12 @@ video {
   opacity: 1;
 }
 
+@media (min-width: 1181px) {
+  .project-card.has-index-column {
+    grid-column: var(--index-column);
+  }
+}
+
 .index-media-frame {
   position: relative;
   overflow: hidden;

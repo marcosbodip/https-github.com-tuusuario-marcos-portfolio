@@ -462,6 +462,11 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
       card.href = `/projects/${encodeURIComponent(project.slug)}.html`;
       card.dataset.category = project.cardType || "";
 
+      if (Number.isInteger(project.indexColumn)) {
+        card.classList.add("has-index-column");
+        card.style.setProperty("--index-column", String(project.indexColumn));
+      }
+
       const media = createMediaElement(
         project.media.cover,
         `assets/projects/${project.slug}`,

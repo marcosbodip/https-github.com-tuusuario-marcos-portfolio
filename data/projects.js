@@ -85,6 +85,7 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "pattern-of-thought",
     "indexOrder": 4,
+    "indexColumn": 1,
     "title": "Pattern of Thought",
     "cardTitle": "Claude x Atlassian Williams",
     "titleLayout": "single-line",
@@ -153,6 +154,7 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "ponds-bright-miracle-serum",
     "indexOrder": 5,
+    "indexColumn": 3,
     "title": "POND'S Jellyfish",
     "titleLayout": "single-line",
     "category": "Product visualization / CGI",
