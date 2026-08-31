@@ -8,7 +8,7 @@ let indexVideoSyncFrame = null;
 let activeIndexCard = null;
 let indexNeighborFrame = null;
 const indexHoverScale = 1.065;
-const desktopIndexGap = 18;
+const indexGridGap = 25;
 const indexCardResizeObserver = "ResizeObserver" in window
   ? new ResizeObserver((entries) => {
     if (entries.some((entry) => entry.target instanceof Element && entry.target.closest(".project-card"))) {
@@ -89,7 +89,7 @@ function resizeIndexCard(card) {
   card.style.gridRowStart = "auto";
   card.style.gridRowEnd = "auto";
   const cardHeight = card.getBoundingClientRect().height;
-  const span = Math.ceil((cardHeight + rowGap) / (rowHeight + rowGap));
+  const span = Math.ceil((cardHeight + indexGridGap + rowGap) / (rowHeight + rowGap));
   card.style.gridRowEnd = `span ${Math.max(1, span)}`;
 }
 
@@ -114,7 +114,7 @@ function layoutDesktopIndexGrid() {
     card.style.gridRowEnd = "auto";
 
     const cardHeight = card.getBoundingClientRect().height;
-    const span = Math.max(1, Math.ceil(cardHeight + desktopIndexGap));
+    const span = Math.max(1, Math.ceil(cardHeight + indexGridGap));
 
     card.style.gridRowEnd = `span ${span}`;
     nextRows[columnIndex] = startRow + span;
