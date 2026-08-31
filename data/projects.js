@@ -2,6 +2,7 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "adolfo-dominguez-mango-palmarosa",
     "indexOrder": 2,
+    "indexColumn": 2,
     "title": "AD - Mango Palmarosa",
     "category": "CGI / AI / VFX",
     "summary": "CGI, AI and VFX for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
@@ -223,6 +224,7 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "gucci-altitude",
     "indexOrder": 1,
+    "indexColumn": 1,
     "title": "Gucci Altitude",
     "category": "VFX",
     "summary": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon.",
@@ -293,6 +295,7 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "nissan-micra",
     "indexOrder": 3,
+    "indexColumn": 3,
     "title": "Nissan Micra x Aitana Bonmati",
     "category": "VFX / CGI / AI",
     "summary": "VFX, 3D and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
@@ -378,6 +381,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "danidevito-furnitures",
+    "indexColumn": 2,
     "title": "DanideVito Furnitures",
     "category": "Product visualization / CGI",
     "summary": "A visual exploration of furniture through clean composition, material detail and sculptural lighting.",
@@ -442,6 +446,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "ambar-beer",
+    "indexColumn": 1,
     "title": "Ambar Beer Motion",
     "category": "Product visualization / CGI",
     "summary": "A CGI product motion piece created for Ambar’s “Morena” beer campaign, bringing a dynamic and crafted visual approach to the product.",
@@ -531,6 +536,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "meta-heart",
+    "indexColumn": 3,
     "title": "Meta Heart",
     "category": "CGI / Simulation",
     "summary": "An experimental CGI study exploring the tension between organic emotion and procedural simulation, shaping a digital heart through physics, motion and controlled chaos.",
@@ -613,6 +619,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "brunch-festival-25",
+    "indexColumn": 1,
     "title": "Brunch Festival 25",
     "category": "CGI",
     "summary": "Summer collided with pixels in an Instagram promo created for Brunch Festival, bringing the Forum stage to life as a digital playground.",
@@ -682,6 +689,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "the-wait",
+    "indexColumn": 2,
     "title": "The Wait",
     "category": "Direction / AI",
     "summary": "An experimental video project shot in Paris, blending live-action footage with NeRF-based processing to capture the city through a fragmented and dreamlike visual language.",
@@ -786,6 +794,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "kuurth",
+    "indexColumn": 3,
     "title": "Kuurth Imagery",
     "category": "Creative Direction / CGI",
     "summary": "A series of creative image proposals and final 3D artworks developed for Kuurth, an emerging jewelry brand with a bold and contemporary visual identity.",
@@ -857,6 +866,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "glitchy-ravens",
+    "indexColumn": 2,
     "title": "Glitchy Ravens",
     "category": "Creative Direction / CGI",
     "summary": "A digital imagery and motion study exploring ravens trapped between organic life, circuitry and screen-based distortion.",
@@ -915,6 +925,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "brunch-forum",
+    "indexColumn": 1,
     "title": "Brunch Festival 26'",
     "category": "IA / Edit",
     "summary": "A CGI-driven campaign piece for Brunch Festival 26, built around the energy of the festival experience and translated into a bold, surreal and digitally crafted visual language.",
@@ -1009,6 +1020,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "lv-bag",
+    "indexColumn": 2,
     "title": "Louis Vuitton",
     "category": "Product visualization / CGI",
     "summary": "A creative product visualization study reimagining luxury fashion objects through minimal composition, refined materials and controlled motion.",
@@ -1097,6 +1109,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "groove-logo",
+    "indexColumn": 3,
     "title": "Groove Logo",
     "category": "CGI / Simulation",
     "summary": "A 3D animation piece created to support the new visual identity of VFX studio Groove Studio.",
@@ -1157,6 +1170,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "la-pirana",
+    "indexColumn": 1,
     "title": "La Piraña Sunglasses",
     "category": "CGI",
     "summary": "3D asset production for the promotional poster of “Paca, La Piraña”, an Atresmedia series directed by Los Javis.",
@@ -1252,6 +1266,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "space",
+    "indexColumn": 2,
     "title": "3D Space RnD",
     "category": "CGI / Compositing",
     "summary": "A CGI visual exploring space-inspired environments, atmospheric motion and immersive digital imagery for a next-generation club experience.",
@@ -1311,6 +1326,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "dron",
+    "indexColumn": 3,
     "title": "Dron Takeoff",
     "category": "CGI / Simulation",
     "summary": "A collaborative 3D animation piece exploring the takeoff of a drone through cinematic motion, detailed look development and sound-driven impact.",

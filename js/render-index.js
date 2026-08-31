@@ -1,19 +1,19 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const supportsIndexExpand = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1181px)").matches;
+const usesDesktopIndexColumns = window.matchMedia("(min-width: 1181px)");
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const allIndexVideos = new Set();
 let indexVideoSyncFrame = null;
 let activeIndexCard = null;
 let indexNeighborFrame = null;
 const indexHoverScale = 1.065;
+const desktopIndexGap = 18;
 const indexCardResizeObserver = "ResizeObserver" in window
   ? new ResizeObserver((entries) => {
-    const cards = new Set(entries
-      .map((entry) => entry.target instanceof Element ? entry.target.closest(".project-card") : null)
-      .filter(Boolean));
-
-    cards.forEach((card) => resizeIndexCard(card));
+    if (entries.some((entry) => entry.target instanceof Element && entry.target.closest(".project-card"))) {
+      resizeIndexGrid();
+    }
   })
   : null;
 
@@ -85,10 +85,40 @@ function resizeIndexCard(card) {
     return;
   }
 
+  card.style.gridColumn = "";
+  card.style.gridRowStart = "auto";
   card.style.gridRowEnd = "auto";
   const cardHeight = card.getBoundingClientRect().height;
   const span = Math.ceil((cardHeight + rowGap) / (rowHeight + rowGap));
   card.style.gridRowEnd = `span ${Math.max(1, span)}`;
+}
+
+function canUseDesktopIndexColumns() {
+  return usesDesktopIndexColumns.matches
+    && (projectGrid?.children.length || 0) > 0;
+}
+
+function layoutDesktopIndexGrid() {
+  const nextRows = [1, 1, 1];
+
+  Array.from(projectGrid.children).forEach((card) => {
+    const requestedColumn = Number.parseInt(card.dataset.indexColumn || "", 10);
+    const columnIndex = Number.isInteger(requestedColumn) && requestedColumn >= 1 && requestedColumn <= 3
+      ? requestedColumn - 1
+      : nextRows.indexOf(Math.min(...nextRows));
+    const column = columnIndex + 1;
+    const startRow = nextRows[columnIndex];
+
+    card.style.gridColumn = String(column);
+    card.style.gridRowStart = String(startRow);
+    card.style.gridRowEnd = "auto";
+
+    const cardHeight = card.getBoundingClientRect().height;
+    const span = Math.max(1, Math.ceil(cardHeight + desktopIndexGap));
+
+    card.style.gridRowEnd = `span ${span}`;
+    nextRows[columnIndex] = startRow + span;
+  });
 }
 
 function resizeIndexGrid() {
@@ -96,7 +126,11 @@ function resizeIndexGrid() {
     return;
   }
 
-  Array.from(projectGrid.children).forEach(resizeIndexCard);
+  if (canUseDesktopIndexColumns()) {
+    layoutDesktopIndexGrid();
+  } else {
+    Array.from(projectGrid.children).forEach(resizeIndexCard);
+  }
   updateIndexNeighborOffsets(activeIndexCard);
 }
 
@@ -464,6 +498,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
 
       if (Number.isInteger(project.indexColumn)) {
         card.classList.add("has-index-column");
+        card.dataset.indexColumn = String(project.indexColumn);
         card.style.setProperty("--index-column", String(project.indexColumn));
       }
 
