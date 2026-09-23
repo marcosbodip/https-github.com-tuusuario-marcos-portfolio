@@ -121,8 +121,10 @@ if (magneticProjectRoot) {
     const pauseDuration = 1040;
     const cycleDuration = motionDuration + pauseDuration;
     const cyclePosition = now % cycleDuration;
-    const introBottomFade = smoothstep(height * 0.46, height * 0.76, introRect.bottom);
-    const galleryTopFade = smoothstep(height * 0.5, height * 0.82, galleryRect.top);
+    const exitFadeStart = Math.min(height * 0.1, 96);
+    const exitFadeEnd = Math.min(height * 0.48, 520);
+    const introBottomFade = smoothstep(exitFadeStart, exitFadeEnd, introRect.bottom);
+    const galleryTopFade = smoothstep(exitFadeStart, exitFadeEnd, galleryRect.top);
     const viewportFade = Math.min(introBottomFade, galleryTopFade);
 
     if (viewportFade <= 0.001) {
