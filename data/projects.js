@@ -700,7 +700,7 @@ window.PORTFOLIO_PROJECTS = [
   {
     "slug": "brunch-festival-25",
     "indexColumn": 1,
-    "title": "Brunch Festival 25",
+    "title": "Brunch Festival 25'",
     "category": "CGI",
     "summary": "Summer collided with pixels in an Instagram promo created for Brunch Festival, bringing the Forum stage to life as a digital playground.",
     "description": "Summer collided with pixels in an Instagram promo created for Brunch Festival, bringing the Forum stage to life as a digital playground.",
