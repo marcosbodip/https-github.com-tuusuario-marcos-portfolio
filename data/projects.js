@@ -380,6 +380,86 @@ window.PORTFOLIO_PROJECTS = [
     }
   },
   {
+    "slug": "brunch-electronik-rocambolesc",
+    "indexOrder": 6,
+    "indexColumn": 2,
+    "title": "Brunch! Reset Experience",
+    "cardTitle": "Brunch Electronik x Rocambolesc",
+    "category": "Product visualization / CGI / AI",
+    "summary": "A hybrid CGI and AI product film created for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca.",
+    "description": "A hybrid CGI and AI product film created for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca.",
+    "cardCategory": "CGI / AI",
+    "cardType": "cgi-ai",
+    "layout": "auto",
+    "mainAudioEnabled": false,
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "CG / AI Artist",
+      "Type": "Client Project",
+      "Tools": "Blender / LiquiGen / AI"
+    },
+    "concept": [
+      "Created for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca, the piece presents Brunch! Reset Experience through a playful product world shaped by soft textures, toppings and fluid transitions.",
+      "The workflow combined controlled CGI in Blender with liquid simulation in LiquiGen. AI-assisted animation was then used selectively for several shots, guided by CG start and end frames to keep the product, lighting and visual language consistent."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Team",
+    "credits": [
+      "Client - Brunch Electronik",
+      "Collaboration - Rocambolesc / Jordi Roca",
+      "CG / AI - Marcos Bodí"
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "ratio": "portrait",
+        "indexAspectRatio": "9 / 16",
+        "alt": "Brunch Electronik x Rocambolesc Reset Experience"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "ratio": "portrait",
+        "alt": "Brunch! Reset Experience campaign film"
+      },
+      "secondary": [
+        {
+          "file": "breakdown_optimized.mp4",
+          "type": "video",
+          "ratio": "portrait",
+          "alt": "Brunch! Reset Experience CGI and AI breakdown"
+        },
+        {
+          "file": "still-01.jpg",
+          "type": "image",
+          "ratio": "portrait",
+          "alt": "Floating toppings from the Brunch! Reset Experience campaign"
+        },
+        {
+          "file": "still-02.jpg",
+          "type": "image",
+          "ratio": "portrait",
+          "alt": "Brunch Electronik Festival 2026 ribbons"
+        },
+        {
+          "file": "still-03.jpg",
+          "type": "image",
+          "ratio": "portrait",
+          "alt": "Red syrup animation from the Brunch! Reset Experience campaign"
+        },
+        {
+          "file": "still-04.jpg",
+          "type": "image",
+          "ratio": "portrait",
+          "alt": "Pink ice cream and toppings detail"
+        }
+      ]
+    }
+  },
+  {
     "slug": "danidevito-furnitures",
     "indexColumn": 2,
     "title": "DanideVito Furnitures",
@@ -446,7 +526,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "ambar-beer",
-    "indexColumn": 1,
+    "indexColumn": 3,
     "title": "Ambar Beer Motion",
     "category": "Product visualization / CGI",
     "summary": "A CGI product motion piece created for Ambar’s “Morena” beer campaign, bringing a dynamic and crafted visual approach to the product.",
@@ -1266,7 +1346,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "space",
-    "indexColumn": 2,
+    "indexColumn": 1,
     "title": "3D Space RnD",
     "category": "CGI / Compositing",
     "summary": "A CGI visual exploring space-inspired environments, atmospheric motion and immersive digital imagery for a next-generation club experience.",
