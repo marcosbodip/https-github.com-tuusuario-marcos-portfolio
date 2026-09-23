@@ -90,11 +90,11 @@ window.PORTFOLIO_PROJECTS = [
     "title": "Pattern of Thought",
     "cardTitle": "Claude x Atlassian Williams",
     "titleLayout": "single-line",
-    "category": "VFX",
+    "category": "CGI",
     "summary": "A cinematic CGI film for Claude and Atlassian Williams F1 Team, visualising the thinking behind every lap.",
     "description": "A cinematic CGI film for Claude and Atlassian Williams F1 Team, visualising the thinking behind every lap.",
-    "cardCategory": "VFX",
-    "cardType": "vfx",
+    "cardCategory": "CGI",
+    "cardType": "cgi",
     "layout": "auto",
     "mainAudioEnabled": false,
     "mediaLayout": {
@@ -158,11 +158,11 @@ window.PORTFOLIO_PROJECTS = [
     "indexColumn": 3,
     "title": "POND'S Jellyfish",
     "titleLayout": "single-line",
-    "category": "CGI",
+    "category": "VFX",
     "summary": "A playful CGI product film for POND'S, shaped around a delicate world of animated jellyfish.",
     "description": "A playful CGI product film for POND'S, shaped around a delicate world of animated jellyfish.",
-    "cardCategory": "CGI",
-    "cardType": "cgi",
+    "cardCategory": "VFX",
+    "cardType": "vfx",
     "layout": "auto",
     "mainAudioEnabled": false,
     "mediaLayout": {
@@ -297,11 +297,11 @@ window.PORTFOLIO_PROJECTS = [
     "indexOrder": 3,
     "indexColumn": 3,
     "title": "Nissan Micra x Aitana Bonmati",
-    "category": "VFX / AI",
-    "summary": "VFX, 3D and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
-    "description": "VFX, 3D and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
-    "cardCategory": "VFX / AI",
-    "cardType": "vfx-ai",
+    "category": "CGI / AI",
+    "summary": "CGI and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
+    "description": "CGI and AI work for the launch of the new Nissan Micra, starring Aitana Bonmati for Nissan Spain and TBWA.",
+    "cardCategory": "CGI / AI",
+    "cardType": "cgi-ai",
     "layout": "auto",
     "mediaLayout": {
       "composition": "carousel"
@@ -313,7 +313,7 @@ window.PORTFOLIO_PROJECTS = [
     },
     "concept": [
       "A launch film for the new Nissan Micra, starring Aitana Bonmati and built around a sharp, forward-looking visual language.",
-      "The work combines VFX, 3D and AI-driven imagery to support a campaign world where automotive design, sport and digital craft meet in a clean, high-energy piece for Nissan Spain and TBWA."
+      "The work combines CGI and AI-driven imagery to support a campaign world where automotive design, sport and digital craft meet in a clean, high-energy piece for Nissan Spain and TBWA."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
