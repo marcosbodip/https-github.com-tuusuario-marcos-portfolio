@@ -77,6 +77,11 @@ function resizeIndexCard(card) {
     return;
   }
 
+  if (canUseDesktopIndexColumns()) {
+    layoutDesktopIndexGrid();
+    return;
+  }
+
   const gridStyles = window.getComputedStyle(projectGrid);
   const rowHeight = Number.parseFloat(gridStyles.gridAutoRows);
   const rowGap = Number.parseFloat(gridStyles.rowGap);
