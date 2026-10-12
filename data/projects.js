@@ -460,6 +460,98 @@ window.PORTFOLIO_PROJECTS = [
     }
   },
   {
+    "slug": "procedural-lamps",
+    "indexOrder": 7,
+    "indexColumn": 1,
+    "title": "Procedural Lamps",
+    "category": "CGI",
+    "summary": "A personal CGI study exploring procedural lamp forms, cloth dynamics and cinematic architectural lighting.",
+    "description": "A personal CGI study exploring procedural lamp forms, cloth dynamics and cinematic architectural lighting.",
+    "summaryLayout": "wide",
+    "cardCategory": "CGI",
+    "cardType": "cgi",
+    "layout": "auto",
+    "mainAudioEnabled": true,
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "CG Artist",
+      "Type": "Personal Project",
+      "Tools": "Blender / Nuke"
+    },
+    "concept": [
+      "Procedural Lamps is a personal R&D project exploring how Geometry Nodes can generate and art-direct a family of hanging light forms inside a cinematic architectural space.",
+      "Built in Blender, the study combines procedural systems, experimental cloth dynamics and thin-wall shading, with final compositing in Nuke."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Credits",
+    "credits": [
+      "CGI - Marcos Bodí",
+      "SFX - Mario Ramirez / @thankyourami"
+    ],
+    "creditLinks": [
+      {
+        "label": "@thankyourami",
+        "url": "https://www.instagram.com/thankyourami/?hl=es"
+      }
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "ratio": "wide",
+        "indexAspectRatio": "16 / 9",
+        "alt": "Procedural Lamps installation at sunset"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "ratio": "wide",
+        "mobileAudio": true,
+        "alt": "Procedural Lamps final film"
+      },
+      "secondary": [
+        {
+          "file": "breakdown_optimized.mp4",
+          "type": "video",
+          "ratio": "wide",
+          "alt": "Procedural Lamps Geometry Nodes and cloth dynamics breakdown"
+        },
+        {
+          "file": "still-01.jpg",
+          "type": "image",
+          "ratio": "wide",
+          "alt": "Procedural hanging lamps in a warm architectural interior"
+        },
+        {
+          "file": "still-03.jpg",
+          "type": "image",
+          "ratio": "wide",
+          "alt": "Sunset view through the procedural lamp structure"
+        },
+        {
+          "file": "still-04.jpg",
+          "type": "image",
+          "ratio": "wide",
+          "alt": "Close architectural view of the hanging lamp forms"
+        },
+        {
+          "file": "still-05.jpg",
+          "type": "image",
+          "ratio": "wide",
+          "alt": "Procedural lamps suspended inside a circular space"
+        },
+        {
+          "file": "still-06.jpg",
+          "type": "image",
+          "ratio": "wide",
+          "alt": "Detailed view of the cloth-driven lamp forms"
+        }
+      ]
+    }
+  },
+  {
     "slug": "danidevito-furnitures",
     "indexColumn": 2,
     "title": "DanideVito Furnitures",

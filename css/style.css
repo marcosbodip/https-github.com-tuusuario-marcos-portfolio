@@ -1598,6 +1598,21 @@ video {
   line-height: 1.16;
 }
 
+.project-intro .project-summary.project-summary-wide {
+  max-width: 760px;
+}
+
+.project-copy-accordion-content a {
+  color: inherit;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+.project-copy-accordion-content a:hover {
+  color: var(--text);
+}
+
 .project-copy-accordion {
   padding-top: 16px;
   border-top: 1px solid var(--line);

@@ -74,10 +74,37 @@ function updateNextProjectLink(currentProject) {
   nextProjectLink.setAttribute("aria-label", `Next project: ${nextProject.title || nextProject.slug}`);
 }
 
-function appendParagraphs(container, paragraphs) {
+function appendParagraphs(container, paragraphs, links = []) {
   paragraphs.forEach((paragraph) => {
     const p = document.createElement("p");
-    p.textContent = paragraph;
+    const matchingLinks = links
+      .filter((link) => link?.label && link?.url && paragraph.includes(link.label))
+      .sort((left, right) => paragraph.indexOf(left.label) - paragraph.indexOf(right.label));
+
+    if (!matchingLinks.length) {
+      p.textContent = paragraph;
+      container.append(p);
+      return;
+    }
+
+    let cursor = 0;
+    matchingLinks.forEach((link) => {
+      const linkStart = paragraph.indexOf(link.label, cursor);
+
+      if (linkStart < 0) {
+        return;
+      }
+
+      p.append(document.createTextNode(paragraph.slice(cursor, linkStart)));
+      const anchor = document.createElement("a");
+      anchor.href = link.url;
+      anchor.target = "_blank";
+      anchor.rel = "noreferrer";
+      anchor.textContent = link.label;
+      p.append(anchor);
+      cursor = linkStart + link.label.length;
+    });
+    p.append(document.createTextNode(paragraph.slice(cursor)));
     container.append(p);
   });
 }
@@ -282,6 +309,9 @@ if (!projectRoot || !project) {
 
   const summary = document.createElement("p");
   summary.className = "project-summary";
+  if (project.summaryLayout === "wide") {
+    summary.classList.add("project-summary-wide");
+  }
   summary.textContent = project.summary;
 
   header.append(eyebrow, title, summary);
@@ -318,7 +348,7 @@ if (!projectRoot || !project) {
   const accordionStack = document.createElement("div");
   accordionStack.className = "project-copy-accordion-stack";
 
-  const createAccordionBlock = (titleText, paragraphs, extraClassName = "") => {
+  const createAccordionBlock = (titleText, paragraphs, extraClassName = "", links = []) => {
     const block = document.createElement("section");
     block.className = `project-copy-block project-copy-accordion ${extraClassName}`.trim();
 
@@ -349,7 +379,7 @@ if (!projectRoot || !project) {
 
     const content = document.createElement("div");
     content.className = "project-copy-accordion-content";
-    appendParagraphs(content, paragraphs);
+    appendParagraphs(content, paragraphs, links);
     body.append(content);
 
     const setExpandedState = (isOpen) => {
@@ -406,7 +436,12 @@ if (!projectRoot || !project) {
 
   if (project.teamEnabled !== false && project.credits?.length) {
     accordionStack.append(
-      createAccordionBlock(project.creditsTitle || "Credits", project.credits || [], "project-team")
+      createAccordionBlock(
+        project.creditsTitle || "Credits",
+        project.credits || [],
+        "project-team",
+        project.creditLinks || []
+      )
     );
   }
 
