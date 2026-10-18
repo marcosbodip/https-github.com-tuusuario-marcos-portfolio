@@ -580,7 +580,7 @@ function requestProjectVideoPosterReveal(video) {
   window.requestAnimationFrame(reveal);
 }
 
-const mobileCarouselLayout = window.matchMedia("(max-width: 860px)");
+const mobileCarouselLayout = window.matchMedia("(max-width: 860px), (pointer: coarse) and (orientation: landscape) and (max-height: 600px)");
 let activeProjectMediaDetail = null;
 
 function isMobileCarouselLayout() {
@@ -724,6 +724,7 @@ function closeProjectMediaDetail() {
   }
 
   activeProjectMediaDetail = null;
+  detail.cleanupImmersive();
   detail.overlay.classList.remove("is-open");
   document.body.classList.remove("is-project-media-detail-open");
   document.removeEventListener("keydown", detail.handleKeydown);
@@ -760,6 +761,7 @@ function openProjectMediaDetail(sourceMedia) {
   const asset = createProjectMediaDetailAsset(sourceMedia, frame);
   let soundButton = null;
   const shouldResumeSource = sourceMedia.tagName === "VIDEO" && !sourceMedia.paused && !sourceMedia.ended;
+  const canImmerse = getMediaRatio(sourceMedia) > 1.15;
 
   overlay.className = "project-media-detail";
   overlay.setAttribute("role", "dialog");
@@ -770,6 +772,33 @@ function openProjectMediaDetail(sourceMedia) {
   closeButton.className = "project-media-detail-close";
   closeButton.type = "button";
   closeButton.setAttribute("aria-label", "Close media");
+
+  const exitImmersive = () => {
+    overlay.classList.remove("is-immersive");
+    if (document.fullscreenElement === overlay) {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
+  const handleFullscreenChange = () => {
+    if (document.fullscreenElement !== overlay) {
+      overlay.classList.remove("is-immersive");
+    }
+  };
+  const toggleImmersive = () => {
+    if (!canImmerse) {
+      return;
+    }
+    if (overlay.classList.contains("is-immersive")) {
+      exitImmersive();
+      return;
+    }
+    overlay.classList.add("is-immersive");
+    // Keep the same tap-to-return interaction where element fullscreen is supported.
+    if (overlay.requestFullscreen && document.fullscreenEnabled) {
+      overlay.requestFullscreen().catch(() => {});
+    }
+  };
+  document.addEventListener("fullscreenchange", handleFullscreenChange);
 
   if (asset.tagName === "VIDEO" && asset.dataset.allowAudio === "true") {
     soundButton = document.createElement("button");
@@ -808,16 +837,27 @@ function openProjectMediaDetail(sourceMedia) {
 
   const handleKeydown = (event) => {
     if (event.key === "Escape") {
-      closeProjectMediaDetail();
+      if (overlay.classList.contains("is-immersive")) {
+        exitImmersive();
+      } else {
+        closeProjectMediaDetail();
+      }
     }
   };
 
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) {
-      closeProjectMediaDetail();
+      if (overlay.classList.contains("is-immersive")) {
+        exitImmersive();
+      } else {
+        closeProjectMediaDetail();
+      }
     }
   });
-  frame.addEventListener("click", (event) => event.stopPropagation());
+  frame.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleImmersive();
+  });
   closeButton.addEventListener("click", closeProjectMediaDetail);
   document.addEventListener("keydown", handleKeydown);
 
@@ -829,6 +869,10 @@ function openProjectMediaDetail(sourceMedia) {
 
   activeProjectMediaDetail = {
     asset,
+    cleanupImmersive: () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      exitImmersive();
+    },
     handleKeydown,
     overlay,
     shouldResumeSource,
@@ -2271,7 +2315,7 @@ function setupProjectCarousel(carousel) {
   });
 
   carousel.addEventListener("click", (event) => {
-    if (isMobileCarouselLayout()) {
+    if (shouldUseMobileProjectMediaDetail()) {
       return;
     }
 

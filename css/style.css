@@ -412,6 +412,40 @@ video {
   height: 100%;
 }
 
+.project-media-detail.is-immersive {
+  padding: 0;
+  background: #000;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.project-media-detail.is-immersive .project-media-detail-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.project-media-detail.is-immersive .project-media-detail-asset {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+}
+
+.project-media-detail.is-immersive .project-media-detail-close,
+.project-media-detail.is-immersive .project-media-detail-sound-toggle {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.project-media-detail-sound-toggle {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 14;
+  --project-sound-toggle-size: 30px;
+  --project-sound-toggle-icon-size: 14px;
+}
+
 .project-media-detail-close {
   -webkit-appearance: none;
   appearance: none;
@@ -449,6 +483,49 @@ video {
 
 .project-media-detail-close::after {
   transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+@media (min-width: 861px) and (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+  .project-media-carousel,
+  .project-media-carousel-track {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .project-media-carousel-track {
+    gap: 18px;
+    height: auto;
+    padding-inline: 0;
+    overflow: visible;
+  }
+
+  .project-media-carousel-track .project-media-item {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    overflow: visible;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  .project-media-carousel-track .project-media-item img,
+  .project-media-carousel-track .project-media-item video {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+  }
+
+  .project-media-carousel[data-carousel-loop-mode="continuous"] .project-media-item[data-carousel-copy-index]:not([data-carousel-copy-index="1"]),
+  .project-media-carousel-chrome,
+  .project-media-carousel::before,
+  .project-media-carousel::after {
+    display: none;
+  }
 }
 
 .placeholder-media {
