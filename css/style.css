@@ -789,6 +789,12 @@ video {
   padding: clamp(76px, 8.5vw, 132px) 0 clamp(54px, 7vw, 110px) var(--side-padding);
 }
 
+.about-description {
+  font-size: clamp(18px, 1.4vw, 21px);
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
 .about-pointcloud-shell {
   position: relative;
   z-index: 1;

@@ -5,8 +5,8 @@ window.PORTFOLIO_PROJECTS = [
     "indexColumn": 2,
     "title": "AD - Mango Palmarosa",
     "category": "VFX / AI",
-    "summary": "CGI, AI and VFX for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
-    "description": "CGI, AI and VFX for Mango Palmarosa, a fragrance campaign created for Adolfo Domínguez.",
+    "summary": "CG placement and lighting of digital insects for Adolfo Domínguez's Mango Palmarosa fragrance campaign, as part of Groove's VFX team.",
+    "description": "Marcos Bodí's CG placement and lighting work for Adolfo Domínguez's Mango Palmarosa campaign, created with Groove's VFX team.",
     "cardCategory": "VFX / AI",
     "cardType": "vfx-ai",
     "layout": "auto",
@@ -91,8 +91,8 @@ window.PORTFOLIO_PROJECTS = [
     "cardTitle": "Claude x Atlassian Williams",
     "titleLayout": "single-line",
     "category": "CGI",
-    "summary": "A cinematic CGI film for Claude and Atlassian Williams F1 Team, visualising the thinking behind every lap.",
-    "description": "A cinematic CGI film for Claude and Atlassian Williams F1 Team, visualising the thinking behind every lap.",
+    "summary": "Smoke simulation, lighting and shot animation for Claude and Atlassian Williams F1 Team, created with Groove Studio.",
+    "description": "Smoke simulation, lighting and shot animation by Marcos Bodí for Claude and Atlassian Williams F1 Team, with Groove Studio.",
     "cardCategory": "CGI",
     "cardType": "cgi",
     "layout": "auto",
@@ -227,8 +227,8 @@ window.PORTFOLIO_PROJECTS = [
     "indexColumn": 1,
     "title": "Gucci Altitude",
     "category": "VFX",
-    "summary": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon.",
-    "description": "VFX work for Gucci in collaboration with HEAD, focused on replacing the goggle reflections to reveal a clean alpine horizon across the winter sportswear campaign.",
+    "summary": "CG reflection work for Gucci's campaign with HEAD, rebuilding the alpine horizon reflected in the goggles.",
+    "description": "CG reflection work by Marcos Bodí for Gucci's campaign with HEAD, rebuilding the alpine horizon reflected in the goggles.",
     "cardCategory": "VFX",
     "cardType": "vfx",
     "layout": "auto",
@@ -386,8 +386,8 @@ window.PORTFOLIO_PROJECTS = [
     "title": "Brunch! Reset Experience",
     "cardTitle": "Brunch Electronik x Rocambolesc",
     "category": "CGI / AI",
-    "summary": "A hybrid CGI and AI product film created for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca.",
-    "description": "A hybrid CGI and AI product film created for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca.",
+    "summary": "Product animation and liquid simulation for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca, combining CGI with selected AI-assisted shots.",
+    "description": "Art direction, CGI and liquid simulation by Marcos Bodí for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca, with selected AI-assisted shots.",
     "cardCategory": "CGI / AI",
     "cardType": "cgi-ai",
     "layout": "auto",
@@ -396,20 +396,21 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "CG / AI Artist",
+      "Role": "Art Direction / CGI / AI",
       "Type": "Client Project",
       "Tools": "Blender / LiquiGen / AI"
     },
     "concept": [
       "Created for Brunch Electronik's collaboration with Rocambolesc and Jordi Roca, the piece presents Brunch! Reset Experience through a playful product world shaped by soft textures, toppings and fluid transitions.",
-      "The workflow combined controlled CGI in Blender with liquid simulation in LiquiGen. AI-assisted animation was then used selectively for several shots, guided by CG start and end frames to keep the product, lighting and visual language consistent."
+      "I defined the shot choices, material looks and movement, developing the visual treatment through CGI, liquid simulation and selected AI-assisted shots.",
+      "The workflow combined controlled CGI in Blender with liquid simulation in LiquiGen. AI-assisted animation was used selectively, guided by CG start and end frames to keep the product and lighting consistent."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
     "credits": [
       "Client - Brunch Electronik",
       "Collaboration - Rocambolesc / Jordi Roca",
-      "CG / AI - Marcos Bodí"
+      "Art Direction / CG / AI - Marcos Bodí"
     ],
     "media": {
       "cover": {
@@ -465,8 +466,8 @@ window.PORTFOLIO_PROJECTS = [
     "indexColumn": 1,
     "title": "Procedural Lamps",
     "category": "CGI",
-    "summary": "A personal CGI study exploring procedural lamp forms, cloth dynamics and cinematic architectural lighting.",
-    "description": "A personal CGI study exploring procedural lamp forms, cloth dynamics and cinematic architectural lighting.",
+    "summary": "A personal study in light, form and motion, exploring procedural lamps through CGI and cloth simulation.",
+    "description": "A personal CGI study by Marcos Bodí exploring procedural lamps, cloth simulation and architectural lighting in Blender, with compositing in Nuke.",
     "summaryLayout": "wide",
     "cardCategory": "CGI",
     "cardType": "cgi",
@@ -476,18 +477,18 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "CG Artist",
+      "Role": "Art Direction / CGI",
       "Type": "Personal Project",
       "Tools": "Blender / Nuke"
     },
     "concept": [
-      "Procedural Lamps is a personal R&D project exploring how Geometry Nodes can generate and art-direct a family of hanging light forms inside a cinematic architectural space.",
-      "Built in Blender, the study combines procedural systems, experimental cloth dynamics and thin-wall shading, with final compositing in Nuke."
+      "I developed the concept and visual treatment for this personal study of hanging lamps, exploring form and motion through Geometry Nodes and cloth simulation in Blender.",
+      "Lighting and materials explore the transition from sunset to an illuminated installation, with final compositing in Nuke."
     ],
     "teamEnabled": true,
     "creditsTitle": "Credits",
     "credits": [
-      "CGI - Marcos Bodí",
+      "Art Direction / CGI - Marcos Bodí",
       "SFX - Mario Ramirez / @thankyourami"
     ],
     "creditLinks": [
@@ -566,18 +567,18 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "3D Generalist / Editor",
+      "Role": "Art Direction / CGI / Editing",
       "Type": "Client Project",
       "Tools": "Blender / DaVinci Resolve"
     },
     "concept": [
       "A CGI furniture project built around the idea of turning furniture into a visual object of desire.",
-      "Through sculptural lighting, restrained composition and a careful treatment of materials, the piece creates a cinematic environment where each object feels intentional, tactile and elevated."
+      "I defined the shot choices, material looks and movement, and carried that visual treatment through the CGI production and edit."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
     "credits": [
-      "CG - Marcos Bodi",
+      "Art Direction / CG / Editing - Marcos Bodi",
       "Sound Design - Mario Ramirez",
       "Client - DaniDevito"
     ],
@@ -630,14 +631,13 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "CGI Artist",
+      "Role": "CGI / Motion Design",
       "Type": "Client Project",
       "Tools": "Blender"
     },
     "concept": [
       "Ambar Beer Motion was created as part of Ambar’s campaign for “Morena”, a new beer release with a strong product identity.",
-      "The piece approaches the bottle not just as a static packaging object, but as the center of a dynamic visual system. Through CGI, motion and controlled composition, the project gives the product a more energetic and crafted presence — highlighting its shape, materiality and campaign character.",
-      "The goal was to create a visual asset that could extend the language of the campaign into motion, making the product feel bold, immediate and visually distinctive."
+      "Working from the supplied campaign direction, I developed the camera movement and the design of the background elements as part of the CGI and motion work."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
@@ -720,19 +720,18 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "Director / CGI Artist",
+      "Role": "Art Direction / CGI",
       "Type": "Personal Project",
       "Tools": "Blender / Nuke / Davinci Resolve"
     },
     "concept": [
       "Meta Heart explores the idea of giving emotional form to something entirely digital.",
-      "Built through simulation, the project transforms the heart into a procedural object — a body shaped by forces, motion and controlled instability. In a world that does not physically exist, chaos becomes material, and numbers become a way of sculpting something that feels alive.",
-      "The piece sits between organic symbolism and computational process, using simulation not only as a technical tool, but as the core visual language of the work."
+      "I developed the concept and visual treatment, using simulation to explore the heart's form and movement."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
     "credits": [
-      "Creative Direction - Marcos Bodí",
+      "Art Direction / CGI - Marcos Bodí",
       "Sound Design - Mario Ramirez"
     ],
     "media": {
@@ -978,14 +977,13 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "Creative Direction / CGI / 3D Generalist",
+      "Role": "Art Direction / CGI",
       "Type": "Client Project",
       "Tools": "Blender / Davinci Resolve"
     },
     "concept": [
       "Kuurth Imagery is a collection of creative visual explorations developed to expand the brand's universe through 3D.",
-      "The project focuses on translating the attitude of an emerging jewelry label into a set of striking digital images - balancing product presence, visual tension and a more experimental approach to composition.",
-      "Rather than treating the pieces as isolated product renders, the imagery was designed to feel closer to campaign artwork: bold, atmospheric and visually distinctive."
+      "I developed the visual treatment through shot choices, material looks and movement, alongside the CGI work."
     ],
     "teamEnabled": false,
     "credits": [],
@@ -1050,14 +1048,13 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "Creative Direction / CGI",
+      "Role": "Art Direction / CGI",
       "Type": "Personal Project",
       "Tools": "C4D / Blender / Nuke / Davinci Resolve"
     },
     "concept": [
       "Glitchy Ravens explores the tension between living organisms and corrupted digital systems.",
-      "The project takes the raven as a symbolic figure — instinctive, dark and intelligent — and reimagines it through circuitry, screen noise and visual interference. Each image feels like a fragment from a damaged signal, where the bird is no longer fully organic, but not completely mechanical either.",
-      "Built around glitch textures, distorted silhouettes and electronic decay, the series turns visual noise into part of the creature’s identity."
+      "I developed the concept and visual treatment, exploring ravens through distorted silhouettes, circuitry and digital noise."
     ],
     "teamEnabled": false,
     "credits": [],
@@ -1100,8 +1097,8 @@ window.PORTFOLIO_PROJECTS = [
     "indexColumn": 1,
     "title": "Brunch Festival 26'",
     "category": "AI / Edit",
-    "summary": "A CGI-driven campaign piece for Brunch Festival 26, built around the energy of the festival experience and translated into a bold, surreal and digitally crafted visual language.",
-    "description": "A CGI-driven campaign piece for Brunch Festival 26, built around the energy of the festival experience and translated into a bold, surreal and digitally crafted visual language.",
+    "summary": "A festival location reveal for Brunch Festival 26, combining art direction, AI imagery and editing.",
+    "description": "Art direction, AI imagery and editing by Marcos Bodí for Brunch Festival 26's location reveal, directed by Alain LB with Groove Studio.",
     "cardCategory": "AI / Edit",
     "cardType": "ai-edit",
     "layout": "main-full-row",
@@ -1109,20 +1106,19 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "IA Artist / Editor",
+      "Role": "Art Direction / AI / Editing",
       "Type": "Client Project",
       "Tools": "IA / Davinci Resolve"
     },
     "concept": [
       "Brunch Festival 26 was created as an announcement piece to reveal the location of the music festival.",
-      "Rather than presenting the venue in a straightforward way, the film transforms the announcement into a surreal CGI moment — building anticipation around the place, the atmosphere and the scale of the event.",
-      "The piece approaches the festival location not only as a physical site, but as part of the experience itself: a space charged with rhythm, crowd energy and visual identity. Through CGI and post-creative direction, the campaign turns the reveal into a more cinematic and memorable moment."
+      "My contribution combined art direction, AI imagery and editing to shape a surreal reveal of the venue. Directed by Alain LB and created with Groove Studio."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
     "credits": [
       "Director - Alain LB",
-      "AI Artist - Marcos Bodí",
+      "Art Direction / AI / Editing - Marcos Bodí",
       "Post Creative Studio - Groove Studio",
       "Sound Design - Bluboi / Xa.vvv"
     ],
@@ -1195,8 +1191,8 @@ window.PORTFOLIO_PROJECTS = [
     "indexColumn": 2,
     "title": "Louis Vuitton",
     "category": "CGI",
-    "summary": "A creative product visualization study reimagining luxury fashion objects through minimal composition, refined materials and controlled motion.",
-    "description": "A creative product visualization study reimagining luxury fashion objects through minimal composition, refined materials and controlled motion.",
+    "summary": "A personal CGI study of a Louis Vuitton bag, exploring composition, materials and motion.",
+    "description": "A personal CGI study by Marcos Bodí exploring a Louis Vuitton bag through composition, materials and motion.",
     "cardCategory": "CGI",
     "cardType": "cgi",
     "layout": "auto",
@@ -1204,14 +1200,13 @@ window.PORTFOLIO_PROJECTS = [
       "composition": "carousel"
     },
     "details": {
-      "Role": "CG Artist",
-      "Type": "Creative Proposal",
+      "Role": "Art Direction / CGI",
+      "Type": "Personal Project",
       "Tools": "Blender / Davinci Resolve"
     },
     "concept": [
       "Louis Vuitton Rnd is a creative exploration of luxury product visualization, built around the idea of reducing the image to its most essential elements: form, material, motion and atmosphere.",
-      "The project reimagines how a fashion object can be presented through CGI, using minimal composition, refined shading and subtle animation to create a visual language that feels precise, elegant and restrained.",
-      "Rather than relying on a complex environment, the piece focuses on the product itself — its surfaces, reflections and movement — creating a clean and elevated interpretation of luxury imagery."
+      "I developed this personal CGI study around composition, material treatment and motion."
     ],
     "teamEnabled": false,
     "credits": [],
@@ -1452,7 +1447,7 @@ window.PORTFOLIO_PROJECTS = [
     },
     "details": {
       "Role": "CG Artist / Compositing",
-      "Type": "Creative proposal",
+      "Type": "Personal Project",
       "Tools": "Blender / Davinci Resolve"
     },
     "concept": [
@@ -1516,14 +1511,13 @@ window.PORTFOLIO_PROJECTS = [
     },
     "concept": [
       "Dron Takeoff is a collaborative 3D animation project built around a simple but powerful moment: the launch of a drone.",
-      "The piece focuses on transforming the takeoff into a more cinematic and designed sequence, using look development, movement and sound to give the object a stronger sense of weight, tension and presence.",
-      "Rather than presenting the drone as a purely technical asset, the animation treats it as the center of a short visual moment — precise, atmospheric and driven by the energy of liftoff."
+      "My contribution included smoke simulations, support with texturing and lighting, and final compositing."
     ],
     "teamEnabled": true,
     "creditsTitle": "Team",
     "credits": [
       "Animation & Edit - Mihai Serban",
-      "SFX - Marcos Bodí",
+      "CGI - Marcos Bodí",
       "Sound Design - Deseedia"
     ],
     "media": {
