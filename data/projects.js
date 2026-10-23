@@ -1596,7 +1596,7 @@ window.PORTFOLIO_PROJECTS = [
     "creditsTitle": "Team",
     "credits": [
       "Animation & Edit - Mihai Serban",
-      "CGI - Marcos Bodí",
+      "FX Simulation - Marcos Bodí",
       "Sound Design - Deseedia"
     ],
     "media": {
