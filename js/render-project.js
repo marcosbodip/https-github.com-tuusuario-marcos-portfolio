@@ -375,6 +375,7 @@ if (!projectRoot || !project) {
     const body = document.createElement("div");
     body.className = "project-copy-accordion-body";
     body.setAttribute("aria-hidden", "true");
+    body.inert = true;
     body.style.height = "0px";
 
     const content = document.createElement("div");
@@ -387,6 +388,7 @@ if (!projectRoot || !project) {
       toggle.setAttribute("aria-label", `${isOpen ? "Collapse" : "Expand"} ${titleText}`);
       toggleLabel.textContent = isOpen ? "−" : "+";
       body.setAttribute("aria-hidden", isOpen ? "false" : "true");
+      body.inert = !isOpen;
     };
 
     const expandBody = () => {

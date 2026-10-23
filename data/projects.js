@@ -181,10 +181,89 @@ window.PORTFOLIO_PROJECTS = [
     "creditsTitle": "Team",
     "credits": [
       "Client - POND'S",
-      "Creative Direction - Mirai International",
-      "VFX Studio - Groove Studio",
-      "CG Artists - Marcos Bodí / Álex Luque",
-      "Compositing - Alain Laza"
+      "Agency - Ogilvy Singapore",
+      "Directed by - YUANN @yuann0111",
+      "Produced by - Bullet Production @bulletbangkok",
+      "Offline Editor - YUANN @yuann0111",
+      "VFX - kidzfrmnowhere @kidzfrmnowhere / Null Studios @null_studios__",
+      "VFX Producer - Maria Soler Chopo @mercromiiina",
+      "VFX/CG Art Director - Jacob van Pelt @bbyjodo",
+      "VFX Studio EP - Jacob van Pelt @bbyjodo / Justin Hwang @hwangproduction",
+      "VFX Conform/Coordinator - Jacob van Pelt @bbyjodo / @valtsfx",
+      "CG Artists/Team - Marcos Bodí / Álex Luque / @mirai_international / @null_studios__ / @futharkstudios / @motionandesign / @celestrixia / @saintoasis / @digitalburial",
+      "VFX Compositing - @enskarul / @bbyjodo / @mirai_international",
+      "Matte Artist - @elvisionary",
+      "Matchmove Artist - @futharkstudios / @i_m_r_o_h_i_t__"
+    ],
+    "creditLinks": [
+      {
+        "label": "@yuann0111",
+        "url": "https://www.instagram.com/yuann0111/"
+      },
+      {
+        "label": "@bulletbangkok",
+        "url": "https://www.instagram.com/bulletbangkok/"
+      },
+      {
+        "label": "@kidzfrmnowhere",
+        "url": "https://www.instagram.com/kidzfrmnowhere/"
+      },
+      {
+        "label": "@null_studios__",
+        "url": "https://www.instagram.com/null_studios__/"
+      },
+      {
+        "label": "@mercromiiina",
+        "url": "https://www.instagram.com/mercromiiina/"
+      },
+      {
+        "label": "@bbyjodo",
+        "url": "https://www.instagram.com/bbyjodo/"
+      },
+      {
+        "label": "@hwangproduction",
+        "url": "https://www.instagram.com/hwangproduction/"
+      },
+      {
+        "label": "@valtsfx",
+        "url": "https://www.instagram.com/valtsfx/"
+      },
+      {
+        "label": "@futharkstudios",
+        "url": "https://www.instagram.com/futharkstudios/"
+      },
+      {
+        "label": "@motionandesign",
+        "url": "https://www.instagram.com/motionandesign/"
+      },
+      {
+        "label": "@celestrixia",
+        "url": "https://www.instagram.com/celestrixia/"
+      },
+      {
+        "label": "@saintoasis",
+        "url": "https://www.instagram.com/saintoasis/"
+      },
+      {
+        "label": "@digitalburial",
+        "url": "https://www.instagram.com/digitalburial/"
+      },
+      {
+        "label": "@enskarul",
+        "url": "https://www.instagram.com/enskarul/"
+      },
+      {
+        "label": "@mirai_international",
+        "url": "https://www.instagram.com/mirai_international/"
+      },
+      {
+        "label": "@elvisionary",
+        "url": "https://www.instagram.com/elvisionary/"
+      },
+      {
+        "label": "@i_m_r_o_h_i_t__",
+        "url": "https://www.instagram.com/i_m_r_o_h_i_t__/"
+      }
     ],
     "media": {
       "cover": {
