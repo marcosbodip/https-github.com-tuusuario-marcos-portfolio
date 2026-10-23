@@ -191,10 +191,14 @@ body.has-custom-cursor * {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
 
-a:hover {
-  opacity: 0.55;
+a[href]:not(.project-card):hover,
+a[href]:not(.project-card):focus-visible,
+.project-card-info h2:hover {
+  color: var(--accent);
+  opacity: 1;
 }
 
 img,
@@ -650,6 +654,12 @@ video {
 
 .title-brush.is-brushed::after {
   opacity: 1;
+}
+
+.title-brush:has(a[href]:hover)::after,
+.title-brush:has(a[href]:focus-visible)::after {
+  opacity: 0;
+  transition: none;
 }
 
 .project-copy-block h2.title-brush {
@@ -1692,8 +1702,10 @@ video {
   text-underline-offset: 0.16em;
 }
 
-.project-copy-accordion-content a:hover {
-  color: var(--text);
+.project-copy-accordion-content a:hover,
+.project-copy-accordion-content a:focus-visible {
+  color: var(--accent);
+  opacity: 1;
 }
 
 .project-copy-accordion {

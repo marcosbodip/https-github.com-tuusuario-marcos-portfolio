@@ -36,6 +36,10 @@ function clampBrushValue(value, min, max) {
 
 if (canBrushTitles) {
   titleBrushTargets.forEach((title) => {
+    if (title.closest("a[href]")) {
+      return;
+    }
+
     title.classList.add("title-brush");
     title.dataset.brushText = title.innerText || title.textContent;
     const aboutHeading = title.matches(".about-hey-line") ? title.closest(".about-heading") : null;
