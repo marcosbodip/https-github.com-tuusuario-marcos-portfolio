@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
+  color-scheme: dark;
   --bg: #080807;
   --text: #f2eee7;
   --muted: #9f9a91;
@@ -9,6 +10,100 @@
   --accent: #ff3b30;
   --max-width: 1920px;
   --side-padding: clamp(20px, 2.5vw, 48px);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f7f5;
+  --text: #080807;
+  --muted: #615e58;
+  --line: rgba(8, 8, 7, 0.16);
+  --card: #e9e8e4;
+  --accent: #e12618;
+  --bust-accent: #b51c12;
+}
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -12px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.theme-toggle::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 0.22s ease;
+}
+
+.theme-toggle:hover::before {
+  transform: scale(1.15);
+}
+
+.theme-toggle:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+:root[data-theme="light"] .project-media-detail {
+  background: rgba(247, 247, 245, 0.64);
+}
+
+:root[data-theme="light"] .project-media-detail-close {
+  border-color: var(--line);
+  background: rgba(247, 247, 245, 0.75);
+}
+
+:root[data-theme="light"] .project-media-detail.is-immersive {
+  background: #000;
+}
+
+:root[data-theme="light"] .project-media-detail.is-immersive .project-media-detail-close {
+  color: #f2eee7;
+  background: rgba(8, 8, 7, 0.5);
+}
+
+:root[data-theme="light"] .project-media-carousel.is-expanded .project-media-carousel-track {
+  background: rgba(247, 247, 245, 0.24);
+}
+
+:root[data-theme="light"] .project-media-carousel.is-expanded.is-viewer-ready .project-media-carousel-track {
+  background: rgba(247, 247, 245, 0.9);
+}
+
+:root[data-theme="light"] .project-video-sound-toggle {
+  background: rgba(247, 247, 245, 0.78);
+  border-color: var(--line);
+}
+
+:root[data-theme="light"] .project-video-sound-toggle::before {
+  filter: invert(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .site-header,
+  .theme-toggle::before {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  .site-header {
+    transition: background-color 0.24s ease, color 0.24s ease, border-color 0.24s ease;
+  }
 }
 
 * {
@@ -343,6 +438,30 @@ video {
 
 .index-video-poster.is-hidden {
   opacity: 0;
+}
+
+/* Trim the narrow black edges baked into Gucci's cover and main film. */
+video[data-desktop-src$="/gucci-altitude/cover_optimized.mp4"],
+video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
+.index-media-frame:has(> video[data-desktop-src$="/gucci-altitude/cover_optimized.mp4"]) > .index-video-poster,
+.project-media-item:has(> video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"]) > .project-video-poster {
+  clip-path: inset(0.25%);
+  scale: 1.005025126;
+}
+
+.project-media-item video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"] {
+  /* Align the crop with the film itself, including the wider fullscreen slot. */
+  width: auto !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+.project-media-item:has(> video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"]) > .project-video-poster {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1600 / 1084;
+  margin-inline: auto;
 }
 
 .project-video-poster {
@@ -800,7 +919,7 @@ video {
 }
 
 .about-description {
-  font-size: clamp(18px, 1.4vw, 21px);
+  font-size: clamp(16px, 1.25vw, 19px);
   line-height: 1.45;
   text-wrap: balance;
 }
@@ -830,6 +949,11 @@ video {
   filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 32%, transparent));
 }
 
+:root[data-theme="light"] .about-pointcloud-shell:hover .about-pointcloud-canvas,
+:root[data-theme="light"] .about-pointcloud-shell:hover .about-bust-canvas {
+  filter: none;
+}
+
 .about-email-marquee {
   display: flex;
   width: 100%;
@@ -852,7 +976,7 @@ video {
   width: max-content;
   gap: clamp(28px, 5vw, 90px);
   padding-right: clamp(28px, 5vw, 90px);
-  animation: about-email-marquee 34s linear infinite;
+  animation: about-email-marquee 90s linear infinite;
   will-change: transform;
 }
 

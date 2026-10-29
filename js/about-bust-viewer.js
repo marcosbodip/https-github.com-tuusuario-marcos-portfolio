@@ -16,8 +16,13 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const source = canvas.dataset.src || "assets/about/marcos-bust.glb";
   let accentRgb = getColorRgb(
-    getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
+    getComputedStyle(document.documentElement).getPropertyValue("--bust-accent").trim()
+      || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
   );
+  let baseRgb = getColorRgb(
+    getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#f2eee7"
+  );
+  let isLightMode = document.documentElement.dataset.theme === "light";
   const gl = canvas.getContext("webgl", {
     alpha: true,
     antialias: true,
@@ -80,10 +85,17 @@
   let pointBudget = null;
 
   function syncAccentColor() {
+    isLightMode = document.documentElement.dataset.theme === "light";
+    baseRgb = getColorRgb(
+      getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#f2eee7"
+    );
     accentRgb = getColorRgb(
-      getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
+      getComputedStyle(document.documentElement).getPropertyValue("--bust-accent").trim()
+        || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
     );
   }
+
+  window.addEventListener("portfolio:themechange", syncAccentColor);
 
   const vertexShader = `
     precision mediump float;
@@ -159,6 +171,7 @@
     uniform float uHasTexture;
     uniform float uHover;
     uniform float uAlphaScale;
+    uniform float uLightMode;
     varying float vLight;
     varying float vDepth;
     varying float vFacing;
@@ -180,10 +193,17 @@
       float cavity = pow(smoothstep(0.035, 0.62, vCavity), 0.72);
       float form = vLight * 1.26 + depthShade * 0.24 + frontalDetail * 0.12;
       float scan = 0.035 + form + detail * 0.58 - textureShadow * 0.68 - cavity * 0.86 + vRandom * 0.035 + uHover * 0.1;
-      float colorInfluence = smoothstep(0.02, 0.86, vInfluence) + smoothstep(0.35, 1.0, uHover) * 0.22;
+      float darkInfluence = smoothstep(0.02, 0.86, vInfluence) + smoothstep(0.35, 1.0, uHover) * 0.22;
+      float lightInfluence = smoothstep(0.02, 0.7, vInfluence);
+      float colorInfluence = mix(darkInfluence, lightInfluence, uLightMode);
       vec3 color = mix(uBase, uAccent, clamp(colorInfluence, 0.0, 1.0));
       float alpha = (0.016 + vLight * 0.32 + detail * 0.14 + frontalDetail * 0.1 + cavity * 0.16 + vInfluence * 0.05) * vFacing * fade * uAlphaScale;
-      gl_FragColor = vec4(color * clamp(scan, 0.025, 1.28), alpha);
+      // Keep ink coverage stable on hover; only the local color changes in light mode.
+      float lightFade = smoothstep(0.46, 0.16, length(point));
+      float lightCoverage = (0.016 + vLight * 0.32 + detail * 0.14 + frontalDetail * 0.1 + cavity * 0.16) * vFacing * lightFade * uAlphaScale;
+      float lightAlpha = clamp(lightCoverage * 2.2, 0.0, 0.94);
+      vec3 shadedColor = mix(color * clamp(scan, 0.025, 1.28), color, uLightMode);
+      gl_FragColor = vec4(shadedColor, mix(alpha, lightAlpha, uLightMode));
     }
   `;
 
@@ -831,17 +851,18 @@
     gl.uniform1f(gl.getUniformLocation(program, "uHover"), mouse.hover);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationX"), rotation.x);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationY"), rotation.y);
-    gl.uniform1f(gl.getUniformLocation(program, "uPointScale"), pointBudget?.pointScale || 1);
+    gl.uniform1f(gl.getUniformLocation(program, "uPointScale"), (pointBudget?.pointScale || 1) * (isLightMode ? 1.08 : 1));
     gl.uniform2f(
       gl.getUniformLocation(program, "uPointer"),
       (mouse.x / Math.max(view.width, 1)) * 2 - 1,
       1 - (mouse.y / Math.max(view.height, 1)) * 2
     );
     gl.uniform1f(gl.getUniformLocation(program, "uPixelRatio"), view.dpr);
-    gl.uniform3fv(gl.getUniformLocation(program, "uBase"), [242 / 255, 238 / 255, 231 / 255]);
+    gl.uniform3fv(gl.getUniformLocation(program, "uBase"), baseRgb);
     gl.uniform3fv(gl.getUniformLocation(program, "uAccent"), accentRgb);
     gl.uniform1f(gl.getUniformLocation(program, "uHasTexture"), hasTexture ? 1 : 0);
     gl.uniform1f(gl.getUniformLocation(program, "uAlphaScale"), pointBudget?.alphaScale || 1);
+    gl.uniform1f(gl.getUniformLocation(program, "uLightMode"), isLightMode ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture || createFallbackTexture());
     gl.uniform1i(gl.getUniformLocation(program, "uTexture"), 0);

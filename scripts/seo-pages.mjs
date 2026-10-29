@@ -277,6 +277,7 @@ function createProjectSeoHtml(project = {}) {
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(image)}" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script src="/js/site-theme.js"></script>
   <link rel="stylesheet" href="/css/style.css" />
   ${jsonLdScript(createPersonProfessionalServiceJsonLd())}
   ${jsonLdScript(createProjectJsonLd(project))}
@@ -287,8 +288,8 @@ function createProjectSeoHtml(project = {}) {
       <a href="/about.html">About</a>
     </nav>
     <a class="logo" href="/index.html" aria-label="Marcos Bodi home">MB</a>
-    <nav class="main-nav main-nav-social" aria-label="Social navigation">
-      <a href="https://www.instagram.com/bodimarcos/" target="_blank" rel="noreferrer">Instagram</a>
+    <nav class="main-nav main-nav-social" aria-label="Appearance">
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to light mode" aria-pressed="false" title="Switch to light mode"></button>
     </nav>
   </header>
 

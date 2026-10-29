@@ -13,6 +13,11 @@ if (magneticDotsGrid) {
   let width = 0;
   let height = 0;
   let animationFrame = 0;
+  let dotColor = getComputedStyle(document.documentElement).getPropertyValue("--text").trim();
+
+  window.addEventListener("portfolio:themechange", () => {
+    dotColor = getComputedStyle(document.documentElement).getPropertyValue("--text").trim();
+  });
 
   canvas.className = "magnetic-dots";
   canvas.setAttribute("aria-hidden", "true");
@@ -70,7 +75,7 @@ if (magneticDotsGrid) {
   function drawDots() {
     const settings = getSettings();
     context.clearRect(0, 0, width, height);
-    context.fillStyle = "#f2eee7";
+    context.fillStyle = dotColor;
 
     dots.forEach((dot) => {
       let targetX = dot.baseX;

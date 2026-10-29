@@ -293,6 +293,7 @@ if (magneticProjectRoot) {
   updateDotPalette();
   resizeCanvas();
   drawDots();
+  window.addEventListener("portfolio:themechange", updateDotPalette);
 
   if (supportsPointerMagnet) {
     window.addEventListener("pointermove", updatePointer);
