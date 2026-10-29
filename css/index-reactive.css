@@ -1,0 +1,94 @@
+@media (hover: hover) and (pointer: fine) and (min-width: 1000px) and (orientation: landscape) {
+  [data-index-reactive] .project-card {
+    position: relative;
+    isolation: isolate;
+  }
+
+  [data-index-reactive] .index-media-frame {
+    transform: none;
+    transition: none;
+    transform-origin: center;
+  }
+
+  [data-index-reactive] .index-reactive-canvas {
+    position: absolute;
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  [data-index-reactive] .project-card.is-reactive-hover {
+    z-index: 4;
+  }
+
+  [data-index-reactive] .project-card.is-reactive-pointer {
+    z-index: 5;
+  }
+
+  [data-index-reactive] .project-card.is-reactive-hover .index-media-frame {
+    overflow: visible;
+    background: transparent;
+  }
+
+  [data-index-reactive] .project-card.is-reactive-hover .index-media-frame > :not(canvas) {
+    opacity: 0;
+  }
+
+  [data-index-reactive] .project-card-info {
+    position: absolute;
+    left: var(--caption-x, 50%);
+    top: var(--caption-y, 50%);
+    width: max-content;
+    max-width: calc(100% - 32px);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-index-reactive] .project-card:hover .project-card-info,
+  [data-index-reactive] .project-card:focus-visible .project-card-info {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    transition-duration: 0.9s;
+  }
+
+  [data-index-reactive] .project-card-info h2 {
+    font-size: clamp(14px, 1.25vw, 20px);
+    line-height: 1.15;
+    text-wrap: balance;
+    color: #fff;
+  }
+
+  [data-index-reactive] .project-card-info p {
+    font-size: 11px;
+    color: #fff;
+    text-align: center;
+  }
+
+  [data-index-reactive] .project-card:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) and (min-width: 1000px) and (orientation: landscape) {
+  [data-index-reactive] .project-card-info {
+    transition: none;
+    transform: translate(-50%, -50%);
+  }
+
+}

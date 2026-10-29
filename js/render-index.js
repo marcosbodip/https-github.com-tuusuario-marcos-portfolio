@@ -1,6 +1,6 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-const supportsIndexExpand = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1181px)").matches;
+const supportsIndexExpand = !projectGrid?.hasAttribute("data-index-reactive") && window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1181px)").matches;
 const usesDesktopIndexColumns = window.matchMedia("(min-width: 1181px)");
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const allIndexVideos = new Set();
