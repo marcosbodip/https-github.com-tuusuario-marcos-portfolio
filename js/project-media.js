@@ -1768,6 +1768,39 @@ function getCarouselItemRatio(item) {
   return 1;
 }
 
+function getCompactCarouselLayout(widths, gap) {
+  const centers = [0];
+  const steps = widths.map((width, index) => (width + widths[(index + 1) % widths.length]) / 2 + gap);
+  for (let index = 1; index < widths.length; index++) centers.push(centers[index - 1] + steps[index - 1]);
+  const cycleLength = steps.reduce((sum, step) => sum + step, 0);
+  return { centers, steps, cycleLength, radius: Math.max(cycleLength / widths.length * 2.4, 400) };
+}
+
+function getCompactCarouselPose(layout, index, position) {
+  const count = layout.centers.length;
+  const start = Math.floor(position);
+  const startIndex = normalizeCarouselIndex(start, count);
+  const fraction = position - start;
+  const step = layout.steps[startIndex];
+  const previousStep = layout.steps[normalizeCarouselIndex(startIndex - 1, count)];
+  const nextStep = layout.steps[(startIndex + 1) % count];
+  // Monotone Hermite interpolation avoids velocity changes between mixed-width pieces.
+  const before = 2 * previousStep * step / (previousStep + step);
+  const after = 2 * step * nextStep / (step + nextStep);
+  const travel = fraction * (before + fraction * (3 * step - 2 * before - after
+    + fraction * (-2 * step + before + after)));
+  const origin = layout.centers[startIndex] + Math.floor(start / count) * layout.cycleLength
+    + travel;
+  const offset = getCarouselCircularOffset(index, position, count);
+  const cycle = Math.round((position + offset - index) / count);
+  const x = layout.centers[index] + cycle * layout.cycleLength - origin;
+  const angle = Math.atan(x / layout.radius);
+  // Fade only the wrap seam, so a piece never jumps visibly from one end to the other.
+  const fade = clampNumber((count / 2 - Math.abs(offset)) / 0.42, 0, 1);
+  return { x, depth: layout.radius * (Math.cos(angle) - 1), rotation: -angle * 180 / Math.PI,
+    opacity: fade * fade * (3 - 2 * fade) };
+}
+
 function syncCarouselItemFrames(carousel, items) {
   const track = carousel.querySelector(".project-media-carousel-track");
 
@@ -1786,6 +1819,7 @@ function syncCarouselItemFrames(carousel, items) {
     ? Math.min(availableWidth, viewportWidth * 0.82, 1440)
     : Math.max(0, Math.min(availableWidth, viewportWidth - 96, viewportWidth * 0.78));
   let ringCardExtent = 0;
+  const logicalFrames = new Map();
 
   items.forEach((item) => {
     const ratio = getCarouselItemRatio(item);
@@ -1806,10 +1840,17 @@ function syncCarouselItemFrames(carousel, items) {
     item.style.setProperty("--carousel-item-width", `${frameWidth.toFixed(2)}px`);
     item.style.setProperty("--carousel-item-height", `${frameHeight.toFixed(2)}px`);
     ringCardExtent = Math.max(ringCardExtent, frameWidth + frameHeight * Math.tan(Math.PI / 10));
+    logicalFrames.set(Number(item.dataset.carouselIndex), { width: frameWidth, height: frameHeight });
   });
   if (spatial) {
     // Tangent planes must fit between their neighbours, including the maximum motion skew.
     const count = getCarouselItemCount(carousel);
+    const widths = Array.from({ length: count }, (_, index) => logicalFrames.get(index)?.width || 1);
+    const narrowCount = Array.from(logicalFrames.values()).filter(({ width, height }) => width < height).length;
+    const compact = count <= 6 && narrowCount >= Math.ceil(count * 2 / 3);
+    const layout = compact ? getCompactCarouselLayout(widths, clampNumber(viewportWidth * 0.03, 28, 56)) : null;
+    carousel.dataset.carouselArrangement = compact ? "compact-arc" : "ring";
+    spatialCarouselControllers.get(carousel)?.setLayout(layout);
     const clearanceRadius = count > 2 ? ringCardExtent * 0.56 / Math.tan(Math.PI / count) : 0;
     carousel.dataset.carouselRadius = String(Math.max(carousel.clientWidth * 0.6, 480, clearanceRadius));
   }
@@ -1829,6 +1870,7 @@ function setupSpatialCarousel(carousel, track) {
   let lastWheelTime = Number.NEGATIVE_INFINITY;
   let wheelMode = false;
   let previewIndex = -1;
+  let compactLayout = null;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const enabled = () => carousel.classList.contains("is-spatial") && !carousel.classList.contains("is-expanded")
     && !isMobileCarouselLayout();
@@ -1846,10 +1888,15 @@ function setupSpatialCarousel(carousel, track) {
       const logicalIndex = Number(item.dataset.carouselIndex);
       const offset = getCarouselCircularOffset(logicalIndex, position, count);
       const angle = offset * Math.PI * 2 / count;
-      item.style.setProperty("--carousel-translate-x", `${(radius * Math.sin(angle)).toFixed(3)}px`);
-      item.style.setProperty("--carousel-depth", `${(radius * (Math.cos(angle) - 1)).toFixed(3)}px`);
-      item.style.setProperty("--carousel-rotate-y", `${(angle * 180 / Math.PI).toFixed(3)}deg`);
-      item.style.setProperty("--carousel-ring-flip", Math.cos(angle) < 0 ? "-1" : "1");
+      const pose = compactLayout ? getCompactCarouselPose(compactLayout, logicalIndex, position)
+        : { x: radius * Math.sin(angle), depth: radius * (Math.cos(angle) - 1),
+          rotation: angle * 180 / Math.PI, opacity: 1 };
+      item.style.setProperty("--carousel-translate-x", `${pose.x.toFixed(3)}px`);
+      item.style.setProperty("--carousel-depth", `${pose.depth.toFixed(3)}px`);
+      item.style.setProperty("--carousel-rotate-y", `${pose.rotation.toFixed(3)}deg`);
+      item.style.setProperty("--carousel-ring-flip", !compactLayout && Math.cos(angle) < 0 ? "-1" : "1");
+      item.style.setProperty("--carousel-ring-opacity", pose.opacity.toFixed(4));
+      item.style.visibility = pose.opacity <= 0.001 ? "hidden" : "";
       item.style.setProperty("--carousel-ring-skew", `${skew.toFixed(3)}deg`);
       item.style.setProperty("--carousel-ring-scale", scale.toFixed(4));
     });
@@ -1949,6 +1996,7 @@ function setupSpatialCarousel(carousel, track) {
 
   spatialCarouselControllers.set(carousel, {
     paint, reset,
+    setLayout(layout) { compactLayout = layout; },
     step(direction, steps = 1) { goTo(Math.round(target ?? position) + direction * steps); },
     select(index) { goTo(position + getCarouselCircularOffset(index, position, getCarouselItemCount(carousel))); }
   });
@@ -2135,6 +2183,7 @@ function renderCarousel(carousel) {
     item.dataset.carouselIndex = String(logicalIndex);
     item.dataset.carouselPhysicalIndex = String(index);
     item.dataset.carouselOffset = String(offset);
+    if (!spatial) item.style.removeProperty("visibility");
     item.style.setProperty("--carousel-offset", String(offset));
     item.classList.toggle("is-active", isActive);
     item.tabIndex = spatial ? (isNear ? 0 : -1) : (isActive || Math.abs(offset) === 1 ? 0 : -1);

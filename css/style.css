@@ -2923,7 +2923,7 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
       scaleX(var(--carousel-ring-flip, 1));
     backface-visibility: visible;
     filter: none;
-    opacity: 1;
+    opacity: var(--carousel-ring-opacity, 1);
     z-index: auto;
     transition: none;
     pointer-events: auto;
@@ -2949,7 +2949,7 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
 
   .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track.is-pointer-dragging .project-media-item {
     filter: none;
-    opacity: 1;
+    opacity: var(--carousel-ring-opacity, 1);
   }
 
   .project-media-carousel:not(.is-expanded) .project-media-item[data-carousel-offset="-1"],
