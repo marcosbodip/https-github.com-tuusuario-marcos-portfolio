@@ -47,7 +47,7 @@
         vec2 delta = p - pointer;
         float distance = length(delta * resolution) / radius;
         float falloff = exp(-distance * distance * 2.0) * strength;
-        p -= delta * falloff * 0.09;
+        p -= delta * falloff * 0.069;
         float band = floor(p.y * 140.0);
         float tick = floor(time * 15.0);
         float tear = step(0.83, hash(band + tick));
@@ -58,7 +58,7 @@
         else {
           // A soft halo blends the lens into the untouched image, with no hard rim.
           float halo = exp(-pow((distance - 0.7) / 0.38, 2.0)) * strength;
-          vec2 blur = texel * halo * 2.0;
+          vec2 blur = texel * halo * 0.8;
           vec4 colour = texture2D(image, p) * 0.4;
           colour += texture2D(image, p + vec2(blur.x, 0.0)) * 0.15;
           colour += texture2D(image, p - vec2(blur.x, 0.0)) * 0.15;
@@ -169,7 +169,11 @@
       const dx = rest[i * 2] - (active.x * 2 - 1);
       const dy = rest[i * 2 + 1] - (active.y * 2 - 1);
       const distance = Math.hypot(dx * rect.width / 2, dy * rect.height / 2) / radius;
-      const influence = Math.exp(-distance * distance * 2.0) * active.amount;
+      const edgeDistance = Math.min(1 - Math.abs(rest[i * 2]), 1 - Math.abs(rest[i * 2 + 1]));
+      const edgeT = clamp(edgeDistance / 0.32, 0, 1);
+      const edgeWeight = 1 - edgeT * edgeT * (3 - 2 * edgeT);
+      // Keep the image interior fixed; only the soft border band follows the spring.
+      const influence = Math.exp(-distance * distance * 2.0) * active.amount * edgeWeight;
       for (let axis = 0; axis < 2; axis++) {
         const index = i * 4 + axis;
         const target = rest[i * 2 + axis] + (axis ? dy : dx) * influence * 0.31;

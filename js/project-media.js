@@ -1,36 +1,18 @@
-const bottomCarouselWheelThreshold = 48;
-const bottomCarouselWheelImmediateThreshold = 30;
-const bottomCarouselWheelDiscreteDelta = 80;
-const bottomCarouselWheelDiscreteCooldown = 110;
-const bottomCarouselWheelCarryLimit = 0.35;
-const bottomCarouselTrackpadThreshold = 92;
-const bottomCarouselTrackpadImmediateThreshold = 120;
-const bottomCarouselTrackpadCooldown = 170;
-const bottomCarouselTrackpadCarryLimit = 0.12;
-const bottomCarouselTrackpadIntensityCap = 2.2;
-const bottomCarouselTrackpadCadenceCap = 0.3;
-const bottomCarouselWheelIdleReset = 180;
 const carouselQueueStepLimit = 2;
 const carouselMomentumMin = 1;
 const carouselMomentumMax = 3.8;
-const carouselMotionDurationBase = 400;
-const carouselMotionDurationFast = 180;
-const carouselFadeDurationBase = 240;
-const carouselFadeDurationFast = 120;
+const carouselMotionDurationBase = 560;
+const carouselMotionDurationFast = 320;
+const carouselFadeDurationBase = 360;
+const carouselFadeDurationFast = 180;
 const carouselMomentumDecay = 0.76;
-const carouselMotionReleaseRatio = 0.46;
+const carouselMotionReleaseRatio = 0.62;
 const carouselMotionReleaseMin = 110;
 const continuousCarouselCopyCount = 5;
 const carouselExpandedSoundToggleInsetMin = 14;
 const carouselExpandedSoundToggleInsetMax = 24;
-const bottomCarouselWheelState = {
-  accumulatedDelta: 0,
-  lastEventTime: 0,
-  discreteLockUntil: 0,
-  trackpadLockUntil: 0,
-  resetTimer: 0
-};
 const continuousCarouselRecenterTimers = new WeakMap();
+const spatialCarouselControllers = new WeakMap();
 
 function clampNumber(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -1071,37 +1053,6 @@ function expandContinuousCarouselTrack(carousel) {
   track.append(appendFragment);
 }
 
-function resetBottomCarouselWheelState() {
-  bottomCarouselWheelState.accumulatedDelta = 0;
-  bottomCarouselWheelState.lastEventTime = 0;
-  bottomCarouselWheelState.discreteLockUntil = 0;
-  bottomCarouselWheelState.trackpadLockUntil = 0;
-
-  if (bottomCarouselWheelState.resetTimer) {
-    window.clearTimeout(bottomCarouselWheelState.resetTimer);
-    bottomCarouselWheelState.resetTimer = 0;
-  }
-}
-
-function isLikelyTrackpadWheelEvent(event, wheelDelta) {
-  if (event.deltaMode !== 0) {
-    return false;
-  }
-
-  const absoluteDeltaY = Math.abs(wheelDelta);
-  const absoluteDeltaX = Math.abs(event.deltaX || 0);
-
-  if (absoluteDeltaY <= 0) {
-    return false;
-  }
-
-  if (absoluteDeltaX > 0.01) {
-    return true;
-  }
-
-  const roundedDeltaY = Math.round(absoluteDeltaY);
-  return Math.abs(absoluteDeltaY - roundedDeltaY) > 0.01 || absoluteDeltaY < 72;
-}
 
 function clearContinuousCarouselRecenterTimer(carousel) {
   const timer = continuousCarouselRecenterTimers.get(carousel);
@@ -1170,6 +1121,9 @@ function clearCarouselMomentum(carousel) {
 }
 
 function getCarouselMotionProfile(momentum = carouselMomentumMin) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return { duration: 1, fadeDuration: 1, easing: "linear" };
+  }
   const normalizedMomentum = clampNumber(
     (clampNumber(momentum, carouselMomentumMin, carouselMomentumMax) - carouselMomentumMin) /
       (carouselMomentumMax - carouselMomentumMin),
@@ -1184,7 +1138,7 @@ function getCarouselMotionProfile(momentum = carouselMomentumMin) {
     fadeDuration: Math.round(
       carouselFadeDurationBase - normalizedMomentum * (carouselFadeDurationBase - carouselFadeDurationFast)
     ),
-    easing: "cubic-bezier(0.16, 1, 0.3, 1)"
+    easing: "cubic-bezier(0.22, 0.8, 0.25, 1)"
   };
 }
 
@@ -1198,153 +1152,6 @@ function applyCarouselMotionProfile(carousel, profile = getCarouselMotionProfile
   carousel.style.setProperty("--carousel-motion-ease", profile.easing);
 }
 
-function isProjectPageScrollAtBottom() {
-  const scrollRoot = document.scrollingElement || document.documentElement;
-
-  return scrollRoot.scrollTop + window.innerHeight >= scrollRoot.scrollHeight - 2;
-}
-
-function isProjectFooterVisible() {
-  const footer = document.querySelector(".site-footer");
-
-  return Boolean(footer) && getElementVisibleRatio(footer) > 0.04;
-}
-
-function getBottomScrollCarousel() {
-  return Array.from(document.querySelectorAll(".project-page .project-media-carousel"))
-    .filter((carousel) => getCarouselItemCount(carousel) > 1 && !carousel.classList.contains("is-expanded"))
-    .map((carousel) => {
-      const track = carousel.querySelector(".project-media-carousel-track");
-      const target = track || carousel;
-
-      return {
-        carousel,
-        ratio: Math.max(getElementVisibleRatio(carousel), getElementVisibleRatio(target)),
-        distance: getElementCenterDistance(target)
-      };
-    })
-    .filter(({ ratio }) => ratio >= 0.06)
-    .sort((left, right) => right.ratio - left.ratio || left.distance - right.distance)[0]?.carousel || null;
-}
-
-function handleProjectPageBottomWheel(event) {
-  if (
-    event.defaultPrevented ||
-    event.deltaY <= 0 ||
-    event.ctrlKey ||
-    event.altKey ||
-    event.metaKey ||
-    event.shiftKey ||
-    isMobileCarouselLayout() ||
-    !document.querySelector(".project-page") ||
-    document.body.classList.contains("is-carousel-viewer-open")
-  ) {
-    return;
-  }
-
-  if (!isProjectPageScrollAtBottom() || !isProjectFooterVisible()) {
-    resetBottomCarouselWheelState();
-    return;
-  }
-
-  const carousel = getBottomScrollCarousel();
-
-  if (!carousel) {
-    resetBottomCarouselWheelState();
-    return;
-  }
-
-  const now = performance.now();
-  const elapsedSinceLastWheel = bottomCarouselWheelState.lastEventTime
-    ? now - bottomCarouselWheelState.lastEventTime
-    : Number.POSITIVE_INFINITY;
-
-  if (elapsedSinceLastWheel > bottomCarouselWheelIdleReset) {
-    bottomCarouselWheelState.accumulatedDelta = 0;
-  }
-
-  const wheelDelta = event.deltaMode === 1 ? event.deltaY * 24 : event.deltaY;
-  const isTrackpadGesture = isLikelyTrackpadWheelEvent(event, wheelDelta);
-  const isDiscreteWheelPulse = !isTrackpadGesture && (event.deltaMode === 1 || wheelDelta >= bottomCarouselWheelDiscreteDelta);
-
-  bottomCarouselWheelState.lastEventTime = now;
-
-  if (bottomCarouselWheelState.resetTimer) {
-    window.clearTimeout(bottomCarouselWheelState.resetTimer);
-  }
-
-  bottomCarouselWheelState.resetTimer = window.setTimeout(() => {
-    resetBottomCarouselWheelState();
-  }, bottomCarouselWheelIdleReset);
-
-  let stepsToQueue = 0;
-
-  if (isDiscreteWheelPulse) {
-    if (now < bottomCarouselWheelState.discreteLockUntil) {
-      event.preventDefault();
-      return;
-    }
-
-    stepsToQueue = 1;
-    bottomCarouselWheelState.accumulatedDelta = 0;
-    bottomCarouselWheelState.discreteLockUntil = now + bottomCarouselWheelDiscreteCooldown;
-  } else {
-    if (isTrackpadGesture && now < bottomCarouselWheelState.trackpadLockUntil) {
-      event.preventDefault();
-      return;
-    }
-
-    const threshold = isTrackpadGesture ? bottomCarouselTrackpadThreshold : bottomCarouselWheelThreshold;
-    const immediateThreshold = isTrackpadGesture
-      ? bottomCarouselTrackpadImmediateThreshold
-      : bottomCarouselWheelImmediateThreshold;
-    const carryLimit = isTrackpadGesture ? bottomCarouselTrackpadCarryLimit : bottomCarouselWheelCarryLimit;
-
-    bottomCarouselWheelState.accumulatedDelta += wheelDelta;
-
-    if (bottomCarouselWheelState.accumulatedDelta >= threshold) {
-      stepsToQueue = 1;
-      bottomCarouselWheelState.accumulatedDelta = Math.min(
-        bottomCarouselWheelState.accumulatedDelta - threshold,
-        threshold * carryLimit
-      );
-    } else if (wheelDelta >= immediateThreshold) {
-      stepsToQueue = 1;
-      bottomCarouselWheelState.accumulatedDelta = 0;
-    }
-
-    if (stepsToQueue > 0 && isTrackpadGesture) {
-      bottomCarouselWheelState.trackpadLockUntil = now + bottomCarouselTrackpadCooldown;
-    }
-  }
-
-  if (stepsToQueue <= 0) {
-    if (carousel.dataset.carouselAnimating === "true") {
-      event.preventDefault();
-    }
-    return;
-  }
-
-  event.preventDefault();
-
-  const referenceThreshold = isTrackpadGesture ? bottomCarouselTrackpadThreshold : bottomCarouselWheelThreshold;
-  const magnitudeBoost = Math.max(1, wheelDelta / (referenceThreshold * 0.72));
-  const cadenceBoost = elapsedSinceLastWheel < 140
-    ? clampNumber((140 - elapsedSinceLastWheel) / 140, 0, 1) *
-      (isTrackpadGesture ? bottomCarouselTrackpadCadenceCap : 0.72)
-    : 0;
-  const rawIntensity = magnitudeBoost + cadenceBoost + Math.max(0, stepsToQueue - 1) * 0.28;
-  const intensity = clampNumber(
-    isTrackpadGesture ? rawIntensity * 0.82 : rawIntensity,
-    carouselMomentumMin,
-    isTrackpadGesture ? bottomCarouselTrackpadIntensityCap : carouselMomentumMax
-  );
-
-  requestCarouselScroll(carousel, 1, {
-    steps: stepsToQueue,
-    intensity
-  });
-}
 
 function getActiveCarouselIndex(carousel) {
   const count = getCarouselItemCount(carousel);
@@ -1688,7 +1495,7 @@ function setCarouselViewer(carousel, shouldExpand) {
     carousel.classList.remove("is-viewer-closing");
     lockCarouselViewerScroll(window.scrollX, window.scrollY);
     carousel.classList.add("is-expanded");
-    syncCarouselPlayback(carousel);
+    renderCarousel(carousel);
     window.requestAnimationFrame(() => {
       carousel.classList.add("is-viewer-ready");
       requestCarouselSoundTogglePositionSync(carousel);
@@ -1858,6 +1665,12 @@ function isPointInsideRect(x, y, rect) {
 }
 
 function getCarouselItemAtPoint(carousel, x, y) {
+  if (carousel.classList.contains("is-spatial")) {
+    const hit = document.elementsFromPoint(x, y)
+      .map((element) => element.closest(".project-media-item"))
+      .find((item) => item && carousel.contains(item) && item.getAttribute("aria-hidden") !== "true");
+    return hit || null;
+  }
   const candidates = getCarouselItems(carousel)
     .filter((item) => Math.abs(Number(item.dataset.carouselOffset || 0)) <= 1)
     .map((item) => {
@@ -1968,11 +1781,15 @@ function syncCarouselItemFrames(carousel, items) {
   const availableWidth = Math.max(0, track.clientWidth - paddingX);
   const availableHeight = Math.max(0, track.clientHeight - paddingY);
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth || availableWidth;
-  const maxFrameWidth = Math.max(0, Math.min(availableWidth, viewportWidth - 96, viewportWidth * 0.78));
+  const spatial = carousel.classList.contains("is-spatial");
+  const maxFrameWidth = spatial
+    ? Math.min(availableWidth, viewportWidth * 0.82, 1440)
+    : Math.max(0, Math.min(availableWidth, viewportWidth - 96, viewportWidth * 0.78));
+  let ringCardExtent = 0;
 
   items.forEach((item) => {
     const ratio = getCarouselItemRatio(item);
-    let frameHeight = availableHeight;
+    let frameHeight = availableHeight * (spatial ? 0.94 : 1);
     let frameWidth = frameHeight * ratio;
 
     if (maxFrameWidth > 0 && frameWidth > maxFrameWidth) {
@@ -1988,10 +1805,235 @@ function syncCarouselItemFrames(carousel, items) {
 
     item.style.setProperty("--carousel-item-width", `${frameWidth.toFixed(2)}px`);
     item.style.setProperty("--carousel-item-height", `${frameHeight.toFixed(2)}px`);
+    ringCardExtent = Math.max(ringCardExtent, frameWidth + frameHeight * Math.tan(Math.PI / 10));
   });
+  if (spatial) {
+    // Tangent planes must fit between their neighbours, including the maximum motion skew.
+    const count = getCarouselItemCount(carousel);
+    const clearanceRadius = count > 2 ? ringCardExtent * 0.56 / Math.tan(Math.PI / count) : 0;
+    carousel.dataset.carouselRadius = String(Math.max(carousel.clientWidth * 0.6, 480, clearanceRadius));
+  }
+}
+
+function setupSpatialCarousel(carousel, track) {
+  let position = 0;
+  let target = 0;
+  let velocity = 0;
+  let frame = 0;
+  let previousTime = 0;
+  let lastPosition = 0;
+  let deformation = 0;
+  let tilt = 0;
+  let drag = null;
+  let suppressClickUntil = 0;
+  let lastWheelTime = Number.NEGATIVE_INFINITY;
+  let wheelMode = false;
+  let previewIndex = -1;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const enabled = () => carousel.classList.contains("is-spatial") && !carousel.classList.contains("is-expanded")
+    && !isMobileCarouselLayout();
+
+  function paint() {
+    if (!enabled()) return;
+    const count = getCarouselItemCount(carousel);
+    const radius = Number(carousel.dataset.carouselRadius) || Math.max(carousel.clientWidth * 0.6, 480);
+    const skew = reducedMotion.matches ? 0 : clampNumber(deformation * 55, -18, 18);
+    const scale = reducedMotion.matches ? 1 : 1 - Math.min(Math.abs(deformation) * 1.4, 0.12);
+    carousel.style.setProperty("--carousel-perspective", "1600px");
+    track.style.setProperty("--carousel-ring-tilt", `${tilt.toFixed(3)}deg`);
+    getCarouselItems(carousel).forEach((item) => {
+      if (item.getAttribute("aria-hidden") === "true") return;
+      const logicalIndex = Number(item.dataset.carouselIndex);
+      const offset = getCarouselCircularOffset(logicalIndex, position, count);
+      const angle = offset * Math.PI * 2 / count;
+      item.style.setProperty("--carousel-translate-x", `${(radius * Math.sin(angle)).toFixed(3)}px`);
+      item.style.setProperty("--carousel-depth", `${(radius * (Math.cos(angle) - 1)).toFixed(3)}px`);
+      item.style.setProperty("--carousel-rotate-y", `${(angle * 180 / Math.PI).toFixed(3)}deg`);
+      item.style.setProperty("--carousel-ring-flip", Math.cos(angle) < 0 ? "-1" : "1");
+      item.style.setProperty("--carousel-ring-skew", `${skew.toFixed(3)}deg`);
+      item.style.setProperty("--carousel-ring-scale", scale.toFixed(4));
+    });
+  }
+
+  function syncSelection() {
+    const count = getCarouselItemCount(carousel);
+    const nearest = normalizeCarouselIndex(Math.round(position), count);
+    if (nearest === getActiveCarouselIndex(carousel)) return;
+    if (isContinuousCarousel(carousel)) {
+      carousel.dataset.carouselPhysicalIndex = String(getContinuousCarouselCenteredIndex(carousel, nearest));
+    } else {
+      carousel.dataset.carouselVirtualIndex = String(nearest);
+    }
+    renderCarousel(carousel);
+  }
+
+  function animate(time) {
+    frame = 0;
+    if (!enabled()) { reset(); return; }
+    const dt = previousTime ? clampNumber((time - previousTime) / 16.667, 0.25, 2) : 1;
+    previousTime = time;
+    if (!drag?.moving) {
+      if (wheelMode && time - lastWheelTime >= 160) {
+        wheelMode = false;
+        target = Math.round(target);
+      }
+      if (wheelMode) {
+        const previousPosition = position;
+        position += (target - position) * (1 - Math.pow(0.76, dt));
+        velocity = (position - previousPosition) / dt;
+      } else {
+        // A critically damped settle keeps release velocity, without stepping or repeated bouncing.
+        const omega = 0.16;
+        const displacement = position - target;
+        const impulse = velocity + omega * displacement;
+        const decay = Math.exp(-omega * dt);
+        position = target + (displacement + impulse * dt) * decay;
+        velocity = (velocity - omega * impulse * dt) * decay;
+        if (Math.abs(target - position) < 0.0005 && Math.abs(velocity) < 0.0001) {
+          position = target;
+          velocity = 0;
+        }
+      }
+      tilt *= Math.pow(0.9, dt);
+    }
+    deformation += ((position - lastPosition) / dt - deformation) * (1 - Math.pow(0.75, dt));
+    lastPosition = position;
+    const nearest = normalizeCarouselIndex(Math.round(position), getCarouselItemCount(carousel));
+    if (nearest !== previewIndex) {
+      previewIndex = nearest;
+      syncCarouselChrome(carousel, getCarouselItemCount(carousel), nearest);
+    }
+    paint();
+    if (drag?.moving || wheelMode || velocity !== 0 || Math.abs(target - position) > 0.0005
+      || Math.abs(deformation) > 0.0001 || Math.abs(tilt) > 0.001) {
+      frame = requestAnimationFrame(animate);
+    } else {
+      deformation = 0;
+      tilt = 0;
+      previousTime = 0;
+      // Rebuild media/layout only after the selected piece has settled exactly in the centre.
+      syncSelection();
+      track.classList.remove("is-ring-moving");
+      paint();
+    }
+  }
+
+  function wake() {
+    track.classList.add("is-ring-moving");
+    if (!frame) { previousTime = 0; frame = requestAnimationFrame(animate); }
+  }
+
+  function goTo(next) {
+    wheelMode = false;
+    target = Math.round(next);
+    if (reducedMotion.matches) { position = target; velocity = 0; syncSelection(); paint(); }
+    else wake();
+  }
+
+  function reset() {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    previousTime = 0;
+    position = getActiveCarouselIndex(carousel);
+    lastPosition = position;
+    target = position;
+    velocity = deformation = tilt = 0;
+    wheelMode = false;
+    previewIndex = -1;
+    const pointerId = drag?.id;
+    drag = null;
+    if (pointerId !== undefined && track.hasPointerCapture(pointerId)) track.releasePointerCapture(pointerId);
+    track.classList.remove("is-pointer-dragging", "is-ring-moving");
+    track.style.removeProperty("--carousel-ring-tilt");
+  }
+
+  spatialCarouselControllers.set(carousel, {
+    paint, reset,
+    step(direction, steps = 1) { goTo(Math.round(target ?? position) + direction * steps); },
+    select(index) { goTo(position + getCarouselCircularOffset(index, position, getCarouselItemCount(carousel))); }
+  });
+
+  track.addEventListener("pointerdown", (event) => {
+    if (!enabled() || event.pointerType === "touch" || !event.isPrimary || event.button !== 0
+      || event.target.closest("button, a, input, select, textarea")
+      || getCarouselSoundToggleAtPoint(carousel, event.clientX, event.clientY)
+      || !getCarouselItemAtPoint(carousel, event.clientX, event.clientY)) return;
+    syncSelection();
+    wheelMode = false;
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, start: position,
+      last: position, time: performance.now(), moving: false };
+    target = position;
+    velocity = 0;
+  });
+  track.addEventListener("pointermove", (event) => {
+    if (!drag || drag.id !== event.pointerId || !enabled()) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    if (!drag.moving) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { drag = null; goTo(position); return; }
+      if (Math.abs(dx) < 7) return;
+      drag.moving = true;
+      track.setPointerCapture(drag.id);
+      track.classList.add("is-pointer-dragging");
+    }
+    event.preventDefault();
+    const now = performance.now();
+    position = drag.start - dx / clampNumber(track.clientWidth * 0.24, 230, 360);
+    velocity = clampNumber((position - drag.last) * 16.667 / Math.max(8, now - drag.time), -0.13, 0.13);
+    tilt = reducedMotion.matches ? 0 : clampNumber(dy * 0.08, -9, 9);
+    drag.last = position;
+    drag.time = now;
+    wake();
+  });
+  function finish(event, cancelled = false) {
+    if (!drag || (event?.pointerId !== undefined && event.pointerId !== drag.id)) return;
+    const gesture = drag;
+    drag = null;
+    if (track.hasPointerCapture(gesture.id)) track.releasePointerCapture(gesture.id);
+    track.classList.remove("is-pointer-dragging");
+    if (!gesture.moving) { goTo(position); return; }
+    suppressClickUntil = performance.now() + 450;
+    if (cancelled || performance.now() - gesture.time > 100 || reducedMotion.matches) velocity = 0;
+    target = Math.round(position + velocity * 3);
+    if (reducedMotion.matches) { goTo(target); return; }
+    wake();
+  }
+  track.addEventListener("pointerup", (event) => finish(event));
+  track.addEventListener("pointercancel", (event) => finish(event, true));
+  track.addEventListener("lostpointercapture", (event) => finish(event, true));
+  track.addEventListener("pointerleave", (event) => { if (drag && !drag.moving) finish(event, true); });
+  track.addEventListener("dragstart", (event) => { if (enabled()) event.preventDefault(); });
+  track.addEventListener("keydown", () => finish(null, true));
+  carousel.addEventListener("click", (event) => {
+    if (enabled() && event.detail > 0 && performance.now() < suppressClickUntil) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+  carousel.addEventListener("wheel", (event) => {
+    if (!enabled() || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey
+      || Math.abs(event.deltaX) < 1 || Math.abs(event.deltaX) <= Math.abs(event.deltaY) * 1.2) return;
+    event.preventDefault();
+    if (drag) return;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? track.clientWidth : 1;
+    const now = performance.now();
+    const start = wheelMode && now - lastWheelTime < 180 ? (target ?? position) : position;
+    target = start + event.deltaX * unit / clampNumber(track.clientWidth * 0.24, 230, 360);
+    lastWheelTime = now;
+    velocity = 0;
+    wheelMode = true;
+    if (reducedMotion.matches) { position = target; syncSelection(); paint(); return; }
+    wake();
+  }, { passive: false });
+  window.addEventListener("blur", () => finish(null, true));
+  window.addEventListener("resize", reset);
 }
 
 function syncCarouselItemPositions(carousel, items) {
+  if (carousel.classList.contains("is-spatial")) {
+    spatialCarouselControllers.get(carousel)?.paint();
+    return;
+  }
   const itemsByOffset = new Map();
 
   items.forEach((item) => {
@@ -2053,7 +2095,10 @@ function syncCarouselItemPositions(carousel, items) {
   items.forEach((item) => {
     const offset = Number(item.dataset.carouselOffset || 0);
     const position = positions.get(offset) || 0;
+    item.dataset.carouselLinearX = String(position);
     item.style.setProperty("--carousel-translate-x", `${position.toFixed(2)}px`);
+    item.style.removeProperty("--carousel-depth");
+    item.style.removeProperty("--carousel-rotate-y");
   });
 }
 
@@ -2067,12 +2112,22 @@ function renderCarousel(carousel) {
     return;
   }
 
+  const wasSpatial = carousel.classList.contains("is-spatial");
+  carousel.classList.toggle("is-spatial", !isMobileCarouselLayout()
+    && window.matchMedia("(min-width: 861px) and (hover: hover) and (pointer: fine)").matches
+    && logicalCount > 1 && !carousel.classList.contains("is-expanded"));
+  const spatial = carousel.classList.contains("is-spatial");
+  if (spatial && !wasSpatial) spatialCarouselControllers.get(carousel)?.reset();
+
   items.forEach((item, index) => {
     const offset = continuousMode
       ? index - activeIndex
       : getCarouselCircularOffset(index, activeIndex, items.length);
     const isActive = offset === 0;
-    const isNear = isMobileCarouselLayout() || Math.abs(offset) <= 2;
+    // One representative of each medium occupies the full ring; extra strip copies stay hidden.
+    const isNear = spatial
+      ? !continuousMode || (offset >= -Math.floor(logicalCount / 2) && offset < Math.ceil(logicalCount / 2))
+      : isMobileCarouselLayout() || Math.abs(offset) <= 2;
     const logicalIndex = continuousMode
       ? getCarouselLogicalIndexForItem(item, index)
       : index;
@@ -2082,7 +2137,7 @@ function renderCarousel(carousel) {
     item.dataset.carouselOffset = String(offset);
     item.style.setProperty("--carousel-offset", String(offset));
     item.classList.toggle("is-active", isActive);
-    item.tabIndex = isActive || Math.abs(offset) === 1 ? 0 : -1;
+    item.tabIndex = spatial ? (isNear ? 0 : -1) : (isActive || Math.abs(offset) === 1 ? 0 : -1);
     item.setAttribute("aria-hidden", String(!isNear));
 
     if (isActive) {
@@ -2103,6 +2158,7 @@ function renderCarousel(carousel) {
     : normalizeCarouselIndex(activeIndex, logicalCount);
 
   carousel.dataset.carouselIndex = String(normalizeCarouselIndex(activeLogicalIndex, logicalCount));
+  if (!spatial) spatialCarouselControllers.get(carousel)?.reset();
 
   if (carousel.dataset.carouselPriming !== "true") {
     carousel.classList.add("is-ready");
@@ -2182,6 +2238,10 @@ function requestCarouselScroll(carousel, direction, options = {}) {
   if (!carousel) {
     return;
   }
+  if (carousel.classList.contains("is-spatial")) {
+    spatialCarouselControllers.get(carousel)?.step(direction > 0 ? 1 : -1, Math.abs(options.steps || 1));
+    return;
+  }
 
   const normalizedDirection = direction > 0 ? 1 : -1;
   const steps = clampNumber(Math.abs(Math.round(options.steps || 1)) || 1, 1, carouselQueueStepLimit);
@@ -2235,7 +2295,19 @@ function scrollCarousel(carousel, direction, options = {}) {
   track.classList.add("is-animating");
 
   if (continuousMode) {
-    carousel.dataset.carouselPhysicalIndex = String(getCarouselPhysicalIndex(carousel) + (direction > 0 ? 1 : -1));
+    const step = direction > 0 ? 1 : -1;
+    const physicalIndex = getCarouselPhysicalIndex(carousel);
+    // Rapid gestures can postpone the idle recenter; never let the clone strip become an endpoint.
+    if (physicalIndex + step < 0 || physicalIndex + step >= getCarouselItems(carousel).length) {
+      const centeredIndex = getContinuousCarouselCenteredIndex(carousel, getActiveCarouselIndex(carousel));
+      syncContinuousCarouselRecenterMedia(carousel, physicalIndex, centeredIndex);
+      track.classList.add("is-resetting");
+      carousel.dataset.carouselPhysicalIndex = String(centeredIndex);
+      renderCarousel(carousel);
+      track.offsetHeight;
+      track.classList.remove("is-resetting");
+    }
+    carousel.dataset.carouselPhysicalIndex = String(getCarouselPhysicalIndex(carousel) + step);
     renderCarousel(carousel);
   } else {
     setCarouselIndex(carousel, getCarouselVirtualIndex(carousel) + (direction > 0 ? 1 : -1));
@@ -2277,6 +2349,154 @@ function scrollCarousel(carousel, direction, options = {}) {
   }, releaseDelay);
 }
 
+function setupCarouselGestures(carousel, track) {
+  let drag = null;
+  let previewFrame = 0;
+  let suppressClickUntil = 0;
+  let wheelDelta = 0;
+  let wheelDirection = 0;
+  let lastWheelTime = 0;
+  let lastWheelStep = Number.NEGATIVE_INFINITY;
+  const dragProfiles = [
+    { scale: 1, opacity: 1, blur: 0, brightness: 1 },
+    { scale: 0.86, opacity: 0.62, blur: 0.3, brightness: 0.96 },
+    { scale: 0.72, opacity: 0.28, blur: 0.9, brightness: 0.9 },
+    { scale: 0.68, opacity: 0, blur: 1.2, brightness: 0.85 }
+  ];
+  const canNavigate = () => !isMobileCarouselLayout() && !carousel.classList.contains("is-spatial")
+    && !carousel.classList.contains("is-expanded")
+    && getCarouselItemCount(carousel) > 1;
+
+  function renderDragPreview() {
+    previewFrame = 0;
+    if (!drag?.horizontal) return;
+    const step = drag.dx < 0 ? drag.nextStep : drag.previousStep;
+    const distance = Math.abs(drag.dx);
+    const travel = Math.sign(drag.dx) * (distance <= step ? distance : step + (distance - step) * 0.16);
+    track.style.setProperty("--carousel-drag-x", `${travel}px`);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const progress = clampNumber(travel / step, -1, 1);
+    const profiles = dragProfiles;
+    drag.items.forEach(({ item, offset }) => {
+      const position = Math.min(3, Math.abs(offset + progress));
+      const index = Math.min(2, Math.floor(position));
+      const fraction = position - index;
+      const a = profiles[index];
+      const b = profiles[index + 1];
+      for (const property of ["scale", "opacity", "blur", "brightness"]) {
+        const value = a[property] + (b[property] - a[property]) * fraction;
+        item.style.setProperty(`--carousel-${property}`, `${value}${property === "blur" ? "px" : ""}`);
+      }
+    });
+  }
+
+  function finishDrag(event, cancelled = false) {
+    if (!drag || (event?.pointerId !== undefined && event.pointerId !== drag.id)) return;
+    const gesture = drag;
+    drag = null;
+    cancelAnimationFrame(previewFrame);
+    previewFrame = 0;
+    track.classList.remove("is-pointer-dragging");
+    track.style.removeProperty("--carousel-drag-x");
+    gesture.items?.forEach(({ item }) => {
+      for (const property of ["scale", "opacity", "blur", "brightness"]) item.style.removeProperty(`--carousel-${property}`);
+    });
+    if (track.hasPointerCapture(gesture.id)) track.releasePointerCapture(gesture.id);
+    if (!gesture.horizontal) return;
+
+    suppressClickUntil = performance.now() + 450;
+    const threshold = Math.min(60, Math.max(32, track.clientWidth * 0.04));
+    const recentSpeed = performance.now() - gesture.lastTime < 100 ? gesture.speed : 0;
+    const committed = Math.abs(gesture.dx) >= threshold
+      || (Math.abs(gesture.dx) > 20 && Math.abs(recentSpeed) > 0.40);
+    if (!cancelled && committed && canNavigate()) {
+      requestCarouselScroll(carousel, gesture.dx < 0 ? 1 : -1);
+    }
+  }
+
+  carousel.addEventListener("wheel", (event) => {
+    if (!canNavigate() || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+    // Only an intentional horizontal gesture navigates; vertical page scrolling stays native.
+    if (Math.abs(event.deltaX) < 1 || Math.abs(event.deltaX) <= Math.abs(event.deltaY) * 1.2) return;
+    event.preventDefault();
+    if (drag) return;
+    const now = performance.now();
+    const direction = Math.sign(event.deltaX);
+    if (now - lastWheelTime > 180 || direction !== wheelDirection) {
+      wheelDelta = 0;
+      lastWheelStep = Number.NEGATIVE_INFINITY;
+    }
+    lastWheelTime = now;
+    wheelDirection = direction;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? track.clientWidth : 1;
+    if (now - lastWheelStep < 380) return;
+    wheelDelta += event.deltaX * unit;
+    if (Math.abs(wheelDelta) >= 40) {
+      lastWheelStep = now;
+      wheelDelta = 0;
+      requestCarouselScroll(carousel, direction);
+    }
+  }, { passive: false });
+
+  track.addEventListener("pointerdown", (event) => {
+    if (!canNavigate() || event.pointerType === "touch" || !event.isPrimary || event.button !== 0
+      || carousel.dataset.carouselAnimating === "true"
+      || event.target.closest("button, a, input, select, textarea")
+      || getCarouselSoundToggleAtPoint(carousel, event.clientX, event.clientY)
+      || !getCarouselItemAtPoint(carousel, event.clientX, event.clientY)) return;
+    drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, dx: 0,
+      lastX: event.clientX, lastTime: performance.now(), speed: 0, horizontal: false };
+  });
+
+  track.addEventListener("pointermove", (event) => {
+    if (!drag || event.pointerId !== drag.id) return;
+    if (!canNavigate()) { finishDrag(event, true); return; }
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (!drag.horizontal) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { finishDrag(event, true); return; }
+      if (Math.abs(dx) < 7 || Math.abs(dx) <= Math.abs(dy) * 1.2) return;
+      drag.horizontal = true;
+      clearContinuousCarouselRecenterTimer(carousel);
+      drag.items = getCarouselItems(carousel)
+        .map((item) => ({ item, offset: Number(item.dataset.carouselOffset || 0), position: Number(item.dataset.carouselLinearX || 0) }))
+        .filter(({ offset }) => Math.abs(offset) <= 2);
+      const next = drag.items.find(({ offset }) => offset === 1)?.item;
+      const previous = drag.items.find(({ offset }) => offset === -1)?.item;
+      drag.nextStep = Math.abs(parseCssNumber(next?.style.getPropertyValue("--carousel-translate-x"))) || track.clientWidth * 0.6;
+      drag.previousStep = Math.abs(parseCssNumber(previous?.style.getPropertyValue("--carousel-translate-x"))) || track.clientWidth * 0.6;
+      track.setPointerCapture(drag.id);
+      track.classList.add("is-pointer-dragging");
+    }
+    event.preventDefault();
+    const now = performance.now();
+    drag.speed = (event.clientX - drag.lastX) / Math.max(8, now - drag.lastTime);
+    drag.dx = dx;
+    drag.lastX = event.clientX;
+    drag.lastTime = now;
+    if (!previewFrame) previewFrame = requestAnimationFrame(renderDragPreview);
+  });
+
+  track.addEventListener("pointerup", (event) => finishDrag(event));
+  track.addEventListener("pointerleave", (event) => {
+    if (drag && !drag.horizontal) finishDrag(event, true);
+  });
+  track.addEventListener("pointercancel", (event) => finishDrag(event, true));
+  track.addEventListener("lostpointercapture", (event) => finishDrag(event, true));
+  track.addEventListener("dragstart", (event) => {
+    if (canNavigate()) event.preventDefault();
+  });
+  carousel.addEventListener("click", (event) => {
+    if (event.detail > 0 && performance.now() < suppressClickUntil) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+  track.addEventListener("keydown", () => finishDrag(null, true));
+  window.addEventListener("blur", () => finishDrag(null, true));
+  window.addEventListener("resize", () => finishDrag(null, true));
+}
+
 function setupProjectCarousel(carousel) {
   const track = carousel.querySelector(".project-media-carousel-track");
   expandContinuousCarouselTrack(carousel);
@@ -2286,6 +2506,9 @@ function setupProjectCarousel(carousel) {
   if (!track || !items.length) {
     return;
   }
+
+  setupSpatialCarousel(carousel, track);
+  setupCarouselGestures(carousel, track);
 
   carousel.dataset.carouselIndex = "0";
   carousel.dataset.carouselVirtualIndex = "0";
@@ -2343,6 +2566,10 @@ function setupProjectCarousel(carousel) {
     }
 
     if (offset !== 0) {
+      if (carousel.classList.contains("is-spatial")) {
+        spatialCarouselControllers.get(carousel)?.select(Number(item.dataset.carouselIndex));
+        return;
+      }
       requestCarouselScroll(carousel, offset > 0 ? 1 : -1);
       return;
     }
@@ -2365,6 +2592,10 @@ function setupProjectCarousel(carousel) {
     const offset = Number(item.dataset.carouselOffset || 0);
 
     if (offset !== 0) {
+      if (carousel.classList.contains("is-spatial")) {
+        spatialCarouselControllers.get(carousel)?.select(Number(item.dataset.carouselIndex));
+        return;
+      }
       requestCarouselScroll(carousel, offset > 0 ? 1 : -1);
     } else {
       setCarouselViewer(carousel, !carousel.classList.contains("is-expanded"));
@@ -2583,7 +2814,6 @@ window.addEventListener("scroll", () => {
   unlockMobileProjectPlayback();
   scheduleMobileProjectVideoSync();
 }, { passive: true });
-window.addEventListener("wheel", handleProjectPageBottomWheel, { passive: false });
 window.addEventListener("resize", scheduleMobileProjectVideoSync);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {

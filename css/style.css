@@ -2623,6 +2623,9 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
 }
 
 .project-media-carousel {
+  --carousel-motion-duration: 560ms;
+  --carousel-fade-duration: 360ms;
+  --carousel-motion-ease: cubic-bezier(0.22, 0.8, 0.25, 1);
   grid-column: 1 / -1;
   position: relative;
   width: 100%;
@@ -2655,9 +2658,6 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
 .project-media-carousel-track {
   --carousel-media-height: min(72vh, 760px);
   --carousel-step: min(42vw, 620px);
-  --carousel-motion-duration: 780ms;
-  --carousel-fade-duration: 560ms;
-  --carousel-motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   display: block;
   height: var(--carousel-media-height);
@@ -2674,6 +2674,16 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
 .project-media-carousel-track:has(.project-media-item[data-carousel-offset="0"].project-media-portrait),
 .project-media-carousel-track:has(.project-media-item[data-carousel-offset="0"].project-media-auto-portrait) {
   --carousel-step: min(34vw, 500px);
+}
+
+.project-media-carousel:not(.is-expanded) .project-media-carousel-track.is-pointer-dragging {
+  user-select: none;
+  cursor: grabbing;
+  transition: none;
+}
+
+.project-media-carousel:not(.is-expanded) .project-media-carousel-track {
+  transform: translateX(var(--carousel-drag-x, 0px));
 }
 
 .project-media-carousel-track:has(.project-media-item[data-carousel-offset="0"].project-media-landscape),
@@ -2883,6 +2893,86 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
   --carousel-brightness: 1;
   --carousel-z: 4;
   mix-blend-mode: normal;
+}
+
+@media (min-width: 861px) and (hover: hover) and (pointer: fine) {
+  .project-media-carousel.is-spatial:not(.is-expanded) {
+    overflow: clip;
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track {
+    --carousel-media-height: min(82vh, 1000px);
+    perspective: var(--carousel-perspective, 1400px);
+    perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--carousel-ring-tilt, 0deg));
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track .project-media-item {
+    width: var(--carousel-item-width);
+    height: var(--carousel-item-height);
+    min-width: 0;
+    max-width: none;
+    grid-column: auto;
+    transform: translate(-50%, -50%)
+      translateX(var(--carousel-translate-x, 0px))
+      translateZ(var(--carousel-depth, 0px))
+      rotateY(var(--carousel-rotate-y, 0deg))
+      scale(var(--carousel-ring-scale, 1))
+      skewX(var(--carousel-ring-skew, 0deg))
+      scaleX(var(--carousel-ring-flip, 1));
+    backface-visibility: visible;
+    filter: none;
+    opacity: 1;
+    z-index: auto;
+    transition: none;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track .project-media-item img,
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track .project-media-item video {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-media-item[aria-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .is-ring-moving .project-video-sound-toggle {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track.is-pointer-dragging .project-media-item {
+    filter: none;
+    opacity: 1;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-item[data-carousel-offset="-1"],
+  .project-media-carousel:not(.is-expanded) .project-media-item[data-carousel-offset="1"] {
+    --carousel-scale: 0.86;
+    --carousel-opacity: 0.62;
+    --carousel-blur: 0.3px;
+    --carousel-brightness: 0.96;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-item[data-carousel-offset="-2"],
+  .project-media-carousel:not(.is-expanded) .project-media-item[data-carousel-offset="2"] {
+    --carousel-scale: 0.72;
+    --carousel-opacity: 0.28;
+    --carousel-blur: 0.9px;
+    --carousel-brightness: 0.9;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-carousel-track.is-pointer-dragging .project-media-item {
+    transition: none;
+    filter: blur(var(--carousel-blur)) brightness(var(--carousel-brightness));
+    opacity: var(--carousel-opacity);
+  }
 }
 
 .project-media-carousel-track.is-moving-next .project-media-item[data-carousel-offset="1"],
