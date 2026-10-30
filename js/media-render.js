@@ -206,7 +206,7 @@ const portfolioLazyMedia = (() => {
       return true;
     }
 
-    if (window.matchMedia("(max-width: 860px)").matches) {
+    if (shouldUseMobileVideoAsset()) {
       return true;
     }
 
@@ -283,7 +283,7 @@ const portfolioLazyMedia = (() => {
 window.PORTFOLIO_MEDIA_LAZY = portfolioLazyMedia;
 
 function shouldUseMobileVideoAsset() {
-  return window.matchMedia("(max-width: 860px)").matches;
+  return window.matchMedia("(max-width: 699px), (max-width: 1000px) and (max-height: 600px) and (orientation: landscape)").matches;
 }
 
 function getMobileVideoPath(mediaPath) {

@@ -1,7 +1,7 @@
 const projectGrid = document.querySelector("[data-project-grid]");
 const supportsIndexHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const supportsIndexExpand = !projectGrid?.hasAttribute("data-index-reactive") && window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1181px)").matches;
-const usesDesktopIndexColumns = window.matchMedia("(min-width: 1181px)");
+const usesDesktopIndexColumns = window.matchMedia("(min-width: 1181px) and (hover: hover) and (pointer: fine)");
 const isTouchIndex = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const allIndexVideos = new Set();
 let indexVideoSyncFrame = null;
@@ -600,6 +600,7 @@ if (projectGrid && window.PORTFOLIO_PROJECTS) {
     resizeIndexGrid();
     scheduleIndexVideoSync();
   });
+  usesDesktopIndexColumns.addEventListener("change", resizeIndexGrid);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       resizeIndexGrid();

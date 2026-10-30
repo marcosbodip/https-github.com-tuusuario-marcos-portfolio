@@ -608,49 +608,6 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-@media (min-width: 861px) and (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
-  .project-media-carousel,
-  .project-media-carousel-track {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .project-media-carousel-track {
-    gap: 18px;
-    height: auto;
-    padding-inline: 0;
-    overflow: visible;
-  }
-
-  .project-media-carousel-track .project-media-item {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    max-width: 100%;
-    max-height: none;
-    aspect-ratio: auto;
-    overflow: visible;
-    opacity: 1 !important;
-    filter: none !important;
-    transform: none !important;
-  }
-
-  .project-media-carousel-track .project-media-item img,
-  .project-media-carousel-track .project-media-item video {
-    width: 100%;
-    height: auto;
-    max-height: none;
-    object-fit: contain;
-  }
-
-  .project-media-carousel[data-carousel-loop-mode="continuous"] .project-media-item[data-carousel-copy-index]:not([data-carousel-copy-index="1"]),
-  .project-media-carousel-chrome,
-  .project-media-carousel::before,
-  .project-media-carousel::after {
-    display: none;
-  }
-}
-
 .placeholder-media {
   min-height: auto;
   aspect-ratio: 4 / 5;
@@ -2622,6 +2579,11 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
   flex-basis: min(34vw, 380px);
 }
 
+.project-media-touch-controls,
+.project-media-touch-close {
+  display: none;
+}
+
 .project-media-carousel {
   --carousel-motion-duration: 560ms;
   --carousel-fade-duration: 360ms;
@@ -2895,7 +2857,7 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
   mix-blend-mode: normal;
 }
 
-@media (min-width: 861px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 700px) and (min-height: 601px), (min-width: 1001px) {
   .project-media-carousel.is-spatial:not(.is-expanded) {
     overflow: clip;
   }
@@ -2906,6 +2868,7 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
     perspective-origin: 50% 50%;
     transform-style: preserve-3d;
     transform: rotateX(var(--carousel-ring-tilt, 0deg));
+    touch-action: pan-y pinch-zoom;
   }
 
   .project-media-carousel.is-spatial:not(.is-expanded) .project-media-carousel-track .project-media-item {
@@ -2935,6 +2898,13 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
     width: 100%;
     height: 100%;
     max-height: none;
+    filter: brightness(var(--carousel-ring-brightness, 1));
+    transition: transform 0.45s ease, opacity 0.35s ease;
+  }
+
+  .project-media-carousel.is-spatial:not(.is-expanded) .project-video-poster {
+    filter: brightness(var(--carousel-ring-brightness, 1));
+    transition: opacity 0.24s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.5s ease;
   }
 
   .project-media-carousel.is-spatial:not(.is-expanded) .project-media-item[aria-hidden="true"] {
@@ -3564,7 +3534,7 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
 
 }
 
-@media (max-width: 860px) {
+@media (max-width: 699px), (max-width: 1000px) and (max-height: 600px) and (orientation: landscape) {
   .site-footer,
   .project-card-info,
   .project-cta {
@@ -3842,6 +3812,10 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
     opacity: 1;
     overflow-x: visible;
     padding-inline: 0;
+    perspective: none;
+    transform: none !important;
+    transition: none;
+    touch-action: pan-y pinch-zoom;
   }
 
   .project-media-carousel-chrome {
@@ -3857,14 +3831,16 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
     flex-basis: auto;
     justify-self: center;
     max-height: none;
+    height: auto !important;
     overflow: visible;
     filter: none !important;
     opacity: 1 !important;
     transform: none !important;
+    transition: none;
     cursor: default;
   }
 
-  .project-media-carousel[data-carousel-loop-mode="continuous"] .project-media-carousel-track .project-media-item[data-carousel-copy-index]:not([data-carousel-copy-index="1"]) {
+  .project-media-carousel[data-carousel-loop-mode="continuous"] .project-media-carousel-track .project-media-item[data-carousel-clone="true"] {
     display: none;
   }
 
@@ -3875,6 +3851,7 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
     max-height: none;
     cursor: default;
     object-fit: contain;
+    filter: none !important;
   }
 
   .project-media-carousel-track .project-media-item:not(.is-active):not([data-carousel-offset="0"]) .project-video-sound-toggle,
@@ -4006,5 +3983,168 @@ video[data-desktop-src$="/gucci-altitude/main_optimized.mp4"],
 
   .project-card-info p {
     text-align: left;
+  }
+}
+
+/* Tablet composition: preserve the editorial layout without desktop-only hover controls. */
+@media (min-width: 700px) and (max-width: 1180px) and (min-height: 601px),
+       (min-width: 700px) and (pointer: coarse) and (min-height: 601px) {
+  .project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 22px;
+  }
+
+  .project-grid .project-card.has-index-column {
+    grid-column: auto;
+  }
+
+  .project-card-info {
+    align-items: flex-start;
+    gap: 6px 12px;
+    flex-wrap: wrap;
+  }
+
+  .project-card-info h2,
+  .project-card-info p {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .project-intro-hero {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 48px);
+  }
+
+  .project-intro h1 {
+    font-size: clamp(52px, 7.5vw, 100px);
+    overflow-wrap: anywhere;
+  }
+
+  .project-intro h1.project-title-single-line {
+    white-space: normal;
+    font-size: clamp(48px, 6.5vw, 86px);
+  }
+
+  .project-intro-info-block {
+    padding-top: 12px;
+  }
+
+  .details-list div {
+    grid-template-columns: minmax(64px, 0.45fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .details-list dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .about-copy {
+    max-width: 960px;
+    padding-top: clamp(56px, 8vw, 96px);
+    padding-bottom: clamp(44px, 6vw, 76px);
+  }
+
+  .about-copy .about-heading {
+    font-size: clamp(72px, 12vw, 144px);
+  }
+
+  .about-description {
+    font-size: clamp(17px, 2vw, 20px);
+  }
+}
+
+@media (min-width: 700px) and (max-width: 1180px) and (min-height: 601px),
+       (min-width: 700px) and (pointer: coarse) {
+  .site-header a,
+  .site-footer a,
+  .project-copy-accordion-toggle {
+    min-height: 44px;
+  }
+
+  .project-video-sound-toggle {
+    --project-sound-toggle-size: 44px;
+    --project-sound-toggle-icon-size: 18px;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-touch-controls {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 10px 0;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-carousel-chrome {
+    bottom: calc(64px + clamp(12px, 2.4vw, 28px));
+  }
+
+  .project-media-touch-controls button,
+  .project-media-touch-close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 24px;
+    touch-action: manipulation;
+  }
+
+  .project-media-touch-close {
+    display: none;
+  }
+
+  .project-media-touch-controls button:disabled {
+    opacity: 0.35;
+  }
+
+  .project-media-carousel.is-expanded .project-media-touch-close {
+    display: grid;
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top));
+    right: max(16px, env(safe-area-inset-right));
+    z-index: 10020;
+  }
+}
+
+/* Phone previews must also reset inline desktop sizes after a live viewport change. */
+@media (max-width: 699px), (max-width: 1000px) and (max-height: 600px) and (orientation: landscape) {
+  .site-cursor {
+    display: none;
+  }
+
+  body.has-custom-cursor,
+  body.has-custom-cursor * {
+    cursor: auto !important;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-carousel-track .project-media-item {
+    width: 100% !important;
+    height: auto !important;
+    grid-column: 1 / -1;
+    visibility: visible;
+    transition: none !important;
+  }
+
+  .project-media-carousel:not(.is-expanded) .project-media-carousel-track .project-media-item[data-carousel-clone="true"],
+  .project-media-touch-controls,
+  .project-media-touch-close {
+    display: none !important;
+  }
+
+  .project-video-sound-toggle {
+    --project-sound-toggle-size: 26px;
+    --project-sound-toggle-icon-size: 12px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .site-cursor {
+    display: none;
   }
 }

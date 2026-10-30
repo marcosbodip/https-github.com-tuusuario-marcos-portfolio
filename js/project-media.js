@@ -562,7 +562,7 @@ function requestProjectVideoPosterReveal(video) {
   window.requestAnimationFrame(reveal);
 }
 
-const mobileCarouselLayout = window.matchMedia("(max-width: 860px), (pointer: coarse) and (orientation: landscape) and (max-height: 600px)");
+const mobileCarouselLayout = window.matchMedia("(max-width: 699px), (max-width: 1000px) and (max-height: 600px) and (orientation: landscape)");
 let activeProjectMediaDetail = null;
 
 function isMobileCarouselLayout() {
@@ -885,7 +885,7 @@ function setupMobileProjectMediaDetail() {
 function isElementNearViewport(element, before = 260, after = 420) {
   const rect = element.getBoundingClientRect();
 
-  return rect.bottom >= -before && rect.top <= window.innerHeight + after;
+  return rect.width > 0 && rect.height > 0 && rect.bottom >= -before && rect.top <= window.innerHeight + after;
 }
 
 function getElementVisibleRatio(element) {
@@ -1000,9 +1000,8 @@ function expandContinuousCarouselTrack(carousel) {
     return;
   }
 
-  // Mobile renders the carousel as a vertical stack, so loop clones only add
-  // duplicate media downloads without contributing to the visible layout.
-  if (isMobileCarouselLayout()) {
+  // Phones use a stack; tablets can wrap the logical ring without duplicate media nodes.
+  if (isMobileCarouselLayout() || window.matchMedia("(pointer: coarse)").matches) {
     return;
   }
 
@@ -1464,6 +1463,10 @@ function shouldCarouselItemPlay(item, carousel) {
 
 function syncCarouselPlayback(carousel) {
   getCarouselItems(carousel).forEach((item) => {
+    if (isMobileCarouselLayout() && item.dataset.carouselClone === "true") {
+      item.querySelector("video")?.pause();
+      return;
+    }
     syncCarouselMedia(item, shouldCarouselItemLoad(item), shouldCarouselItemPlay(item, carousel));
   });
 }
@@ -1666,10 +1669,13 @@ function isPointInsideRect(x, y, rect) {
 
 function getCarouselItemAtPoint(carousel, x, y) {
   if (carousel.classList.contains("is-spatial")) {
-    const hit = document.elementsFromPoint(x, y)
+    const hits = document.elementsFromPoint(x, y)
       .map((element) => element.closest(".project-media-item"))
-      .find((item) => item && carousel.contains(item) && item.getAttribute("aria-hidden") !== "true");
-    return hit || null;
+      .filter((item) => item && carousel.contains(item) && item.getAttribute("aria-hidden") !== "true");
+    // Some browsers return back-facing planes first; select the foremost intersected card.
+    const candidates = [...new Set(hits)].sort((a, b) =>
+      parseCssNumber(b.style.getPropertyValue("--carousel-depth")) - parseCssNumber(a.style.getPropertyValue("--carousel-depth")));
+    return candidates[0] || null;
   }
   const candidates = getCarouselItems(carousel)
     .filter((item) => Math.abs(Number(item.dataset.carouselOffset || 0)) <= 1)
@@ -1856,6 +1862,12 @@ function syncCarouselItemFrames(carousel, items) {
   }
 }
 
+function getCarouselDepthProfile(offset) {
+  const distance = Math.min(Math.abs(offset) / 2, 1);
+  const depth = distance * distance * (3 - 2 * distance);
+  return { scale: 1 - depth * 0.12, brightness: 1 - depth * 0.28 };
+}
+
 function setupSpatialCarousel(carousel, track) {
   let position = 0;
   let target = 0;
@@ -1887,6 +1899,7 @@ function setupSpatialCarousel(carousel, track) {
       if (item.getAttribute("aria-hidden") === "true") return;
       const logicalIndex = Number(item.dataset.carouselIndex);
       const offset = getCarouselCircularOffset(logicalIndex, position, count);
+      const emphasis = getCarouselDepthProfile(offset);
       const angle = offset * Math.PI * 2 / count;
       const pose = compactLayout ? getCompactCarouselPose(compactLayout, logicalIndex, position)
         : { x: radius * Math.sin(angle), depth: radius * (Math.cos(angle) - 1),
@@ -1898,7 +1911,8 @@ function setupSpatialCarousel(carousel, track) {
       item.style.setProperty("--carousel-ring-opacity", pose.opacity.toFixed(4));
       item.style.visibility = pose.opacity <= 0.001 ? "hidden" : "";
       item.style.setProperty("--carousel-ring-skew", `${skew.toFixed(3)}deg`);
-      item.style.setProperty("--carousel-ring-scale", scale.toFixed(4));
+      item.style.setProperty("--carousel-ring-scale", (scale * emphasis.scale).toFixed(4));
+      item.style.setProperty("--carousel-ring-brightness", emphasis.brightness.toFixed(4));
     });
   }
 
@@ -2002,7 +2016,7 @@ function setupSpatialCarousel(carousel, track) {
   });
 
   track.addEventListener("pointerdown", (event) => {
-    if (!enabled() || event.pointerType === "touch" || !event.isPrimary || event.button !== 0
+    if (!enabled() || !event.isPrimary || event.button !== 0
       || event.target.closest("button, a, input, select, textarea")
       || getCarouselSoundToggleAtPoint(carousel, event.clientX, event.clientY)
       || !getCarouselItemAtPoint(carousel, event.clientX, event.clientY)) return;
@@ -2162,7 +2176,6 @@ function renderCarousel(carousel) {
 
   const wasSpatial = carousel.classList.contains("is-spatial");
   carousel.classList.toggle("is-spatial", !isMobileCarouselLayout()
-    && window.matchMedia("(min-width: 861px) and (hover: hover) and (pointer: fine)").matches
     && logicalCount > 1 && !carousel.classList.contains("is-expanded"));
   const spatial = carousel.classList.contains("is-spatial");
   if (spatial && !wasSpatial) spatialCarouselControllers.get(carousel)?.reset();
@@ -2184,6 +2197,11 @@ function renderCarousel(carousel) {
     item.dataset.carouselPhysicalIndex = String(index);
     item.dataset.carouselOffset = String(offset);
     if (!spatial) item.style.removeProperty("visibility");
+    if (isMobileCarouselLayout()) {
+      for (const property of ["--carousel-item-width", "--carousel-item-height", "--carousel-ring-brightness"]) {
+        item.style.removeProperty(property);
+      }
+    }
     item.style.setProperty("--carousel-offset", String(offset));
     item.classList.toggle("is-active", isActive);
     item.tabIndex = spatial ? (isNear ? 0 : -1) : (isActive || Math.abs(offset) === 1 ? 0 : -1);
@@ -2559,6 +2577,32 @@ function setupProjectCarousel(carousel) {
   setupSpatialCarousel(carousel, track);
   setupCarouselGestures(carousel, track);
 
+  const touchControls = document.createElement("div");
+  touchControls.className = "project-media-touch-controls";
+  for (const [label, direction, symbol] of [["Previous media", -1, "\u2190"], ["Next media", 1, "\u2192"]]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.setAttribute("aria-label", label);
+    button.textContent = symbol;
+    button.disabled = getCarouselItemCount(carousel) < 2;
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      requestCarouselScroll(carousel, direction);
+    });
+    touchControls.append(button);
+  }
+  carousel.append(touchControls);
+  const touchClose = document.createElement("button");
+  touchClose.type = "button";
+  touchClose.className = "project-media-touch-close";
+  touchClose.setAttribute("aria-label", "Close full screen");
+  touchClose.textContent = "\u00d7";
+  touchClose.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setCarouselViewer(carousel, false);
+  });
+  carousel.append(touchClose);
+
   carousel.dataset.carouselIndex = "0";
   carousel.dataset.carouselVirtualIndex = "0";
   if (continuousMode) {
@@ -2699,7 +2743,14 @@ function setupProjectCarousel(carousel) {
     navigateExpandedCarousel(carousel, event.key === "ArrowRight" ? 1 : -1);
   });
 
+  let previousMobileLayout = isMobileCarouselLayout();
   window.addEventListener("resize", () => {
+    const mobileLayout = isMobileCarouselLayout();
+    if (mobileLayout !== previousMobileLayout) {
+      if (carousel.classList.contains("is-expanded")) setCarouselViewer(carousel, false);
+      if (!mobileLayout && activeProjectMediaDetail) closeProjectMediaDetail();
+      previousMobileLayout = mobileLayout;
+    }
     if (continuousMode && !isMobileCarouselLayout()) {
       carousel.dataset.carouselPhysicalIndex = String(getContinuousCarouselCenteredIndex(carousel, getActiveCarouselIndex(carousel)));
     }

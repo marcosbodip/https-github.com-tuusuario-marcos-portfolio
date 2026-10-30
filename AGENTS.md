@@ -58,6 +58,10 @@ El comando debe ejecutarse desde la raiz del repositorio. No asumir que la ruta 
 - No cambiar el index cuando el encargo se limite a paginas de proyecto.
 - Evitar animaciones bruscas, recortes rectos y transiciones sin fade.
 - Mantener el comportamiento responsive y comprobar siempre escritorio y movil.
+- En telefonos, los proyectos muestran una sola columna vertical, sin carrusel, efectos de profundidad ni scroll horizontal.
+- En tablets, mantener el carrusel con deslizamiento tactil, controles de 44 px y cierre visible de fullscreen; no depender del hover.
+- Mantener sincronizada la deteccion de telefono en CSS, `js/project-media.js` y `js/media-render.js`: ancho hasta 699 px, o paisaje hasta 1000 px de ancho y 600 px de alto.
+- Comprobar tambien el cambio en vivo entre telefono, tablet y escritorio: limpiar tamanos heredados y no mostrar clones del carrusel en la lista movil.
 
 ## Estructura de un proyecto
 
