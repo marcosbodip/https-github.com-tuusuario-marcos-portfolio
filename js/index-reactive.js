@@ -94,11 +94,6 @@
     }
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     const uniforms = Object.fromEntries(["pointer", "crop", "offset", "resolution", "texel", "radius", "strength", "glitch", "time"].map((name) => [name, gl.getUniformLocation(program, name)]));
     canvas.addEventListener("webglcontextlost", (event) => { event.preventDefault(); failed = true; stop(); });
@@ -106,6 +101,7 @@
   }
 
   function release(state) {
+    if (state.texture) renderer.gl.deleteTexture(state.texture);
     state.card.classList.remove("is-reactive-hover", "is-reactive-pointer");
     state.card.style.removeProperty("--caption-x");
     state.card.style.removeProperty("--caption-y");
@@ -140,6 +136,7 @@
     const { gl, rest, uniforms } = renderer;
     const { canvas, context, vertices, velocity } = active;
     const rect = active.frame.getBoundingClientRect();
+    if (rect.bottom <= 0 || rect.top >= innerHeight) { release(active); return false; }
     const radius = clamp(Math.min(rect.width, rect.height) * 0.48, 80, 160);
     const captionTime = dt / 60;
     const captionRate = 8.5;
@@ -153,7 +150,14 @@
     }
     active.card.style.setProperty("--caption-x", `${active.captionX * rect.width}px`);
     active.card.style.setProperty("--caption-y", `${(1 - active.captionY) * rect.height}px`);
-    const ratio = Math.min(devicePixelRatio || 1, 1.5);
+    const fading = !active.inside && time < active.fadeUntil;
+    const media = active.media;
+    // Labels must follow the pointer even while lazy video is still loading.
+    if (media.tagName === "VIDEO" ? media.readyState < 2 : !media.naturalWidth) {
+      if (!active.inside && !fading) { release(active); return false; }
+      return true;
+    }
+    const ratio = Math.min(devicePixelRatio || 1, 1.5, Math.sqrt(800000 / (rect.width * rect.height * 1.16 ** 2)));
     const width = Math.max(1, Math.round(rect.width * 1.16 * ratio));
     const height = Math.max(1, Math.round(rect.height * 1.16 * ratio));
     if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
@@ -184,22 +188,36 @@
       }
     }
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
-    const media = active.media;
     const mediaWidth = media.videoWidth || media.naturalWidth;
     const mediaHeight = media.videoHeight || media.naturalHeight;
-    const style = getComputedStyle(media);
+    const style = active.mediaStyle;
     const fit = style.objectFit === "contain" ? Math.min : Math.max;
-    const scale = fit(rect.width / mediaWidth, rect.height / mediaHeight) * (parseFloat(style.scale) || 1) * (parseFloat(media.style.transform.match(/scale\(([^)]+)\)/)?.[1]) || 1);
+    const scale = fit(rect.width / mediaWidth, rect.height / mediaHeight) * style.scale;
     const cropX = rect.width / (mediaWidth * scale);
     const cropY = rect.height / (mediaHeight * scale);
-    const position = style.objectPosition.split(" ").map((part) => parseFloat(part) / 100);
+    const position = style.position;
     gl.uniform2f(uniforms.crop, cropX, cropY);
     gl.uniform2f(uniforms.resolution, rect.width, rect.height);
     gl.uniform2f(uniforms.texel, 1 / mediaWidth, 1 / mediaHeight);
     gl.uniform1f(uniforms.radius, radius);
     gl.uniform2f(uniforms.offset, 0.5 + (position[0] - 0.5) * (1 - cropX), 0.5 - (position[1] - 0.5) * (1 - cropY));
     try {
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, media);
+      if (!active.texture) {
+        active.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, active.texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      } else gl.bindTexture(gl.TEXTURE_2D, active.texture);
+      const source = media.currentSrc || media.src;
+      const mediaTime = media.tagName === "VIDEO" ? media.currentTime : 0;
+      // Reuse each card's texture; static covers and repeated video frames need no upload.
+      if (active.textureSource !== source || active.textureTime !== mediaTime) {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, media);
+        active.textureSource = source;
+        active.textureTime = mediaTime;
+      }
       active.card.classList.add("is-reactive-hover");
     } catch { failed = true; stop(); return false; }
     gl.uniform2f(uniforms.pointer, active.x, active.y);
@@ -209,10 +227,9 @@
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawElements(gl.TRIANGLES, renderer.count, gl.UNSIGNED_SHORT, 0);
     // Share one GPU context while each departing card keeps its own settling mesh.
-    context.clearRect(0, 0, width, height);
+    context.globalCompositeOperation = "copy";
     context.drawImage(renderer.canvas, 0, 0);
     // Keep the departing label anchored until its full opacity transition finishes.
-    const fading = !active.inside && time < active.fadeUntil;
     if (!active.inside && !fading && active.amount < 0.002 && energy < 0.001) { release(active); return false; }
     const captionEnergy = Math.abs(active.captionVX) + Math.abs(active.captionVY) + Math.abs(active.captionX - active.targetX) + Math.abs(active.captionY - active.targetY);
     return fading || media.tagName === "VIDEO" || energy > 0.001 || captionEnergy > 0.0002 || active.glitch > 0.001 || Math.abs((active.inside ? 1 : 0) - active.amount) > 0.002 || Math.abs(active.x - active.targetX) + Math.abs(active.y - active.targetY) > 0.002;
@@ -223,7 +240,6 @@
       if (!desktop.matches || reducedMotion.matches || failed || event.pointerType === "touch") return;
       const mediaFrame = card.querySelector(".index-media-frame");
       const media = mediaFrame.querySelector("video, img");
-      if (media.tagName === "VIDEO" ? media.readyState < 2 : !media.naturalWidth) return;
       if (active && active.card !== card) {
         active.inside = false;
         active.fadeUntil = performance.now() + 1400;
@@ -240,7 +256,13 @@
         canvas.setAttribute("aria-hidden", "true");
         const context = canvas.getContext("2d");
         if (!context) return;
-        state = { card, frame: mediaFrame, media, canvas, context, vertices: renderer.vertices.slice(), velocity: new Float32Array(renderer.rest.length), amount: 0, x, y, captionX: x, captionY: y, captionVX: 0, captionVY: 0, glitch: 1 };
+        const style = getComputedStyle(media);
+        const mediaStyle = {
+          objectFit: style.objectFit,
+          position: style.objectPosition.split(" ").map((part) => parseFloat(part) / 100),
+          scale: (parseFloat(style.scale) || 1) * (parseFloat(media.style.transform.match(/scale\(([^)]+)\)/)?.[1]) || 1)
+        };
+        state = { card, frame: mediaFrame, media, mediaStyle, canvas, context, vertices: renderer.vertices.slice(), velocity: new Float32Array(renderer.rest.length), amount: 0, x, y, captionX: x, captionY: y, captionVX: 0, captionVY: 0, glitch: 1 };
         states.set(card, state);
         mediaFrame.append(canvas);
         card.style.setProperty("--caption-x", `${x * rect.width}px`);
