@@ -279,6 +279,7 @@ function createProjectSeoHtml(project = {}) {
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <script src="/js/site-theme.js"></script>
   <link rel="stylesheet" href="/css/style.css" />
+  <script src="/js/site-entrance.js"></script>
   ${jsonLdScript(createPersonProfessionalServiceJsonLd())}
   ${jsonLdScript(createProjectJsonLd(project))}
 </head>
