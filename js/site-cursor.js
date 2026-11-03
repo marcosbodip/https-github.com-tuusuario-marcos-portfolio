@@ -3,15 +3,16 @@ const canUseCustomCursor = window.matchMedia("(hover: hover) and (pointer: fine)
 if (canUseCustomCursor) {
   const cursor = document.createElement("div");
   const interactiveSelector = [
-    "a",
-    "button",
-    "[role='button']",
-    ".project-card",
-    ".title-brush",
+    "a[href]",
+    "button:not(:disabled)",
+    "input:not(:disabled)",
+    "select:not(:disabled)",
+    "textarea:not(:disabled)",
+    "summary",
+    "[role='button']:not([aria-disabled='true'])",
     ".project-media-item img",
     ".project-media-item video",
-    ".about-pointcloud-shell",
-    "[data-next-project-link]"
+    ".project-media-detail-asset"
   ].join(", ");
   const mediaInvertSelector = [
     ".project-media-item img",
@@ -34,7 +35,8 @@ if (canUseCustomCursor) {
 
   const updateCursorState = (event) => {
     const target = event.target instanceof Element ? event.target : null;
-    const isInteractive = Boolean(target?.closest(interactiveSelector));
+    const isInteractive = Boolean(target?.closest(interactiveSelector))
+      && !target?.closest("[inert], [aria-disabled='true'], :disabled");
     const isMediaHover = Boolean(target?.closest(mediaInvertSelector));
     const carouselItem = target?.closest(".project-media-carousel .project-media-item");
     const carousel = carouselItem?.closest(".project-media-carousel");

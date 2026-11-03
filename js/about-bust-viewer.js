@@ -23,12 +23,13 @@
     getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#f2eee7"
   );
   let isLightMode = document.documentElement.dataset.theme === "light";
-  const gl = canvas.getContext("webgl", {
+  const contextOptions = {
     alpha: true,
     antialias: true,
     depth: true,
     powerPreference: "high-performance"
-  });
+  };
+  const gl = canvas.getContext("webgl2", contextOptions) || canvas.getContext("webgl", contextOptions);
 
   if (!gl) {
     return;
@@ -40,7 +41,9 @@
     x: 0,
     y: 0,
     targetX: 0,
-    targetY: 0
+    targetY: 0,
+    clientX: null,
+    clientY: null
   };
   const rotation = {
     x: -0.08,
@@ -61,7 +64,6 @@
     lastY: 0
   };
   const baseRotationY = 0.38;
-  const hoverRotationRangeY = Math.PI * 0.72;
   const buffers = {
     positions: null,
     normals: null,
@@ -78,11 +80,14 @@
     center: [0, 0, 0]
   };
   let frame = null;
-  let startTime = performance.now();
+  let previousTime = 0;
+  let elapsedTime = 0;
+  let onScreen = true;
   let program = null;
   let texture = null;
   let hasTexture = false;
   let pointBudget = null;
+  let dynamics = null;
 
   function syncAccentColor() {
     isLightMode = document.documentElement.dataset.theme === "light";
@@ -93,6 +98,7 @@
       getComputedStyle(document.documentElement).getPropertyValue("--bust-accent").trim()
         || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff3b30"
     );
+    requestDraw();
   }
 
   window.addEventListener("portfolio:themechange", syncAccentColor);
@@ -104,10 +110,13 @@
     attribute vec2 aUv;
     attribute float aCavity;
     attribute float aRandom;
+    attribute vec3 aDisplacement;
+    attribute vec3 aVelocity;
     uniform mat4 uMatrix;
     uniform float uTime;
     uniform float uHover;
-    uniform vec2 uPointer;
+    uniform float uMotion;
+    uniform float uDynamics;
     uniform float uPixelRatio;
     uniform float uPointScale;
     uniform float uRotationX;
@@ -122,19 +131,18 @@
 
     void main() {
       vec3 position = aPosition;
-      position += aNormal * (sin(uTime * 0.0016 + aRandom * 11.0) * 0.004);
+      float time = uTime * 0.00065;
+      // Coherent surface currents keep the portrait alive without losing its silhouette.
+      vec3 flow = vec3(
+        sin(position.y * 10.0 + position.z * 6.0 + time),
+        sin(position.z * 9.0 - position.x * 7.0 + time * 0.83),
+        cos(position.x * 10.0 + position.y * 5.0 - time * 0.72)
+      );
+      position += mix(flow * 0.009 * uHover, aDisplacement, uDynamics) * uMotion;
       vec4 projected = uMatrix * vec4(position, 1.0);
-      vec2 screenPosition = projected.xy / projected.w;
-      vec2 pointerDelta = screenPosition - uPointer;
-      float pointerDistance = length(pointerDelta);
-      float influence = smoothstep(0.58, 0.0, pointerDistance) * uHover;
-      vec2 direction = normalize(pointerDelta + vec2(0.0001));
-      position += aNormal * influence * influence * (0.01 + aRandom * 0.012);
-      projected = uMatrix * vec4(position, 1.0);
-      projected.xy += direction * influence * influence * 0.006 * projected.w;
-      projected.z += influence * 0.01 * projected.w;
+      float influence = smoothstep(0.001, 0.006, length(aVelocity)) * uDynamics * uMotion;
       gl_Position = projected;
-      gl_PointSize = clamp((0.42 + aRandom * 0.24 + influence * 0.24) * uPixelRatio * uPointScale / max(projected.w * 0.42, 0.72), 0.56, 3.1);
+      gl_PointSize = clamp((0.42 + aRandom * 0.24 + influence * 0.1) * uPixelRatio * uPointScale / max(projected.w * 0.42, 0.72), 0.56, 3.1);
 
       float cosY = cos(uRotationY);
       float sinY = sin(uRotationY);
@@ -192,8 +200,8 @@
       float frontalDetail = smoothstep(0.22, 0.9, vFacing);
       float cavity = pow(smoothstep(0.035, 0.62, vCavity), 0.72);
       float form = vLight * 1.26 + depthShade * 0.24 + frontalDetail * 0.12;
-      float scan = 0.035 + form + detail * 0.58 - textureShadow * 0.68 - cavity * 0.86 + vRandom * 0.035 + uHover * 0.1;
-      float darkInfluence = smoothstep(0.02, 0.86, vInfluence) + smoothstep(0.35, 1.0, uHover) * 0.22;
+      float scan = 0.035 + form + detail * 0.58 - textureShadow * 0.68 - cavity * 0.86 + vRandom * 0.035 + vInfluence * 0.1;
+      float darkInfluence = smoothstep(0.02, 0.86, vInfluence);
       float lightInfluence = smoothstep(0.02, 0.7, vInfluence);
       float colorInfluence = mix(darkInfluence, lightInfluence, uLightMode);
       vec3 color = mix(uBase, uAccent, clamp(colorInfluence, 0.0, 1.0));
@@ -225,6 +233,16 @@
   }
 
   function compileShader(type, sourceCode) {
+    if (gl.createTransformFeedback) {
+      sourceCode = "#version 300 es\n" + sourceCode
+        .replace(/attribute /g, "in ")
+        .replace(/varying /g, type === gl.VERTEX_SHADER ? "out " : "in ")
+        .replace(/texture2D\(/g, "texture(");
+      if (type === gl.FRAGMENT_SHADER) {
+        sourceCode = sourceCode.replace("precision mediump float;", "precision mediump float;\nout vec4 fragmentColor;")
+          .replace(/gl_FragColor/g, "fragmentColor");
+      }
+    }
     const shader = gl.createShader(type);
     gl.shaderSource(shader, sourceCode);
     gl.compileShader(shader);
@@ -810,30 +828,33 @@
   }
 
   function draw(time = performance.now()) {
-    if (!buffers.count) {
+    frame = null;
+    if (!buffers.count || document.hidden || !onScreen || compactViewport.matches) {
+      previousTime = 0;
       return;
     }
+    const dt = previousTime ? Math.min(3, Math.max(0, (time - previousTime) / 16.67)) : 1;
+    previousTime = time;
+    const ease = (rate) => 1 - Math.pow(1 - rate, dt);
+    if (!reduceMotion.matches) elapsedTime += dt * 16.67;
+    const motionTime = elapsedTime;
+    touchRotation.x += (touchRotation.targetX - touchRotation.x) * ease(0.16);
+    touchRotation.y += (touchRotation.targetY - touchRotation.y) * ease(0.16);
+    mouse.x += (mouse.targetX - mouse.x) * ease(0.14);
+    mouse.y += (mouse.targetY - mouse.y) * ease(0.14);
+    const pointerDistance = Math.hypot(
+      (mouse.targetX - view.width * 0.5) / (view.width * 0.3),
+      (mouse.targetY - view.height * 0.5) / (view.height * 0.38)
+    );
+    const proximity = mouse.active ? 1 / (1 + Math.max(0, pointerDistance - 1) ** 2 * 1.8) : 0;
+    mouse.hover += (proximity - mouse.hover) * ease(mouse.active ? 0.085 : 0.045);
 
-    touchRotation.x += (touchRotation.targetX - touchRotation.x) * 0.16;
-    touchRotation.y += (touchRotation.targetY - touchRotation.y) * 0.16;
-    mouse.x += (mouse.targetX - mouse.x) * 0.11;
-    mouse.y += (mouse.targetY - mouse.y) * 0.11;
-    mouse.hover += ((mouse.active ? 1 : 0) - mouse.hover) * 0.12;
+    // Keep the original pose at rest; only an explicit drag may change its orientation.
+    rotation.targetY = baseRotationY + (mouse.active ? touchRotation.y : 0);
+    rotation.targetX = -0.08 + (mouse.active ? touchRotation.x : 0);
 
-    if (drag.active) {
-      rotation.targetY = baseRotationY + touchRotation.y;
-      rotation.targetX = -0.08 + touchRotation.x;
-    } else {
-      rotation.targetY = mouse.active
-        ? baseRotationY + touchRotation.y + (mouse.x / Math.max(view.width, 1) - 0.5) * hoverRotationRangeY
-        : baseRotationY + touchRotation.y + Math.sin(time * 0.00034) * 0.16;
-      rotation.targetX = mouse.active
-        ? -0.08 + touchRotation.x - (mouse.y / Math.max(view.height, 1) - 0.5) * 0.92
-        : -0.08 + touchRotation.x + Math.cos(time * 0.00028) * 0.08;
-    }
-
-    rotation.x += (rotation.targetX - rotation.x) * 0.09;
-    rotation.y += (rotation.targetY - rotation.y) * 0.09;
+    rotation.x += (rotation.targetX - rotation.x) * ease(0.06);
+    rotation.y += (rotation.targetY - rotation.y) * ease(0.06);
 
     const aspect = view.width / Math.max(view.height, 1);
     const matrix = multiply(
@@ -841,22 +862,25 @@
       multiply(translate(-2.08), multiply(rotateX(rotation.x), multiply(rotateY(rotation.y), scale(aspect < 0.82 ? 2.05 : 1))))
     );
 
+    if (dynamics && !reduceMotion.matches) {
+      dynamics.step({dt, time:motionTime, matrix,
+        pointer:{x:mouse.targetX / view.width, y:1 - mouse.targetY / view.height, active:mouse.active, aspect, proximity},
+        rotationX:rotation.x, rotationY:rotation.y});
+    }
+
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.depthMask(false);
     gl.useProgram(program);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "uMatrix"), false, matrix);
-    gl.uniform1f(gl.getUniformLocation(program, "uTime"), time - startTime);
+    gl.uniform1f(gl.getUniformLocation(program, "uTime"), motionTime);
+    gl.uniform1f(gl.getUniformLocation(program, "uMotion"), reduceMotion.matches ? 0 : 1);
+    gl.uniform1f(gl.getUniformLocation(program, "uDynamics"), dynamics ? 1 : 0);
     gl.uniform1f(gl.getUniformLocation(program, "uHover"), mouse.hover);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationX"), rotation.x);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationY"), rotation.y);
     gl.uniform1f(gl.getUniformLocation(program, "uPointScale"), (pointBudget?.pointScale || 1) * (isLightMode ? 1.08 : 1));
-    gl.uniform2f(
-      gl.getUniformLocation(program, "uPointer"),
-      (mouse.x / Math.max(view.width, 1)) * 2 - 1,
-      1 - (mouse.y / Math.max(view.height, 1)) * 2
-    );
     gl.uniform1f(gl.getUniformLocation(program, "uPixelRatio"), view.dpr);
     gl.uniform3fv(gl.getUniformLocation(program, "uBase"), baseRgb);
     gl.uniform3fv(gl.getUniformLocation(program, "uAccent"), accentRgb);
@@ -871,12 +895,26 @@
     setAttribute("aUv", buffers.uvs, 2);
     setAttribute("aCavity", buffers.cavities, 1);
     setAttribute("aRandom", buffers.randoms, 1);
+    if (dynamics) dynamics.bind(program);
     gl.drawArrays(gl.POINTS, 0, buffers.count);
     gl.depthMask(true);
 
     if (!reduceMotion.matches) {
       frame = requestAnimationFrame(draw);
     }
+  }
+
+  function requestDraw() {
+    if (!frame && buffers.count && !document.hidden && onScreen && !compactViewport.matches) {
+      frame = requestAnimationFrame(draw);
+    }
+  }
+
+  function syncAnimation() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = null;
+    previousTime = 0;
+    requestDraw();
   }
 
   async function init() {
@@ -899,12 +937,17 @@
     buffers.randoms = makeBuffer(pointCloud.randoms);
     buffers.count = pointCloud.count;
 
+    dynamics = window.PORTFOLIO_ABOUT_DYNAMICS?.create(gl, buffers) || null;
+    canvas.dataset.dynamics = dynamics ? "fluid" : "ambient";
+
     draw();
 
     if (pointBudget.useTexture) {
       createGlbTexture(glb)
         .then((nextTexture) => {
+          gl.deleteTexture(texture);
           texture = nextTexture;
+          requestDraw();
         })
         .catch(() => {
           hasTexture = false;
@@ -913,8 +956,11 @@
   }
 
   function updatePointer(event) {
+    if (event.pointerType === "touch") return;
     const rect = shell.getBoundingClientRect();
     mouse.active = true;
+    mouse.clientX = event.clientX;
+    mouse.clientY = event.clientY;
     mouse.targetX = event.clientX - rect.left;
     mouse.targetY = event.clientY - rect.top;
   }
@@ -955,35 +1001,33 @@
 
     drag.active = false;
     drag.pointerId = null;
-    mouse.active = false;
-    mouse.targetX = view.width / 2;
-    mouse.targetY = view.height / 2;
+    touchRotation.targetX = touchRotation.targetY = 0;
+    updatePointer(event);
     shell.releasePointerCapture?.(event.pointerId);
   }
 
-  shell.addEventListener("pointerenter", (event) => {
-    updatePointer(event);
-  });
-
-  shell.addEventListener("pointermove", (event) => {
-    moveDrag(event);
-
-    if (drag.active) {
-      return;
-    }
-
-    updatePointer(event);
-  });
+  shell.addEventListener("pointermove", moveDrag);
+  window.addEventListener("pointermove", updatePointer, { passive: true });
 
   shell.addEventListener("pointerleave", () => {
     if (drag.active) {
       return;
     }
 
-    mouse.active = false;
-    mouse.targetX = view.width / 2;
-    mouse.targetY = view.height / 2;
+    touchRotation.targetX = touchRotation.targetY = 0;
   });
+
+  function releasePointer() {
+    mouse.active = false;
+    touchRotation.targetX = touchRotation.targetY = 0;
+  }
+  window.addEventListener("blur", releasePointer);
+  window.addEventListener("pointerout", (event) => {
+    if (!event.relatedTarget) releasePointer();
+  });
+  window.addEventListener("scroll", () => {
+    if (mouse.active) updatePointer(mouse);
+  }, { passive: true });
 
   shell.addEventListener("pointerdown", beginDrag);
   shell.addEventListener("pointerup", endDrag);
@@ -991,10 +1035,16 @@
 
   window.addEventListener("resize", () => {
     resize();
-    if (reduceMotion.matches) {
-      draw();
-    }
+    syncAnimation();
   });
+  reduceMotion.addEventListener("change", syncAnimation);
+  document.addEventListener("visibilitychange", syncAnimation);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      syncAnimation();
+    }).observe(shell);
+  }
   init().catch((error) => {
     console.error("About bust viewer failed:", error);
     canvas.dataset.error = error.message || "unknown";

@@ -137,6 +137,10 @@
     const { canvas, context, vertices, velocity } = active;
     const rect = active.frame.getBoundingClientRect();
     if (rect.bottom <= 0 || rect.top >= innerHeight) { release(active); return false; }
+    if (active.inside) {
+      active.targetX = clamp((active.lastX - rect.left) / rect.width, 0, 1);
+      active.targetY = 1 - clamp((active.lastY - rect.top) / rect.height, 0, 1);
+    }
     const radius = clamp(Math.min(rect.width, rect.height) * 0.48, 80, 160);
     const captionTime = dt / 60;
     const captionRate = 8.5;

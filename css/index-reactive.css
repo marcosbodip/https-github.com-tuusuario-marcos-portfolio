@@ -4,6 +4,16 @@
     isolation: isolate;
   }
 
+  [data-index-reactive].has-column-motion {
+    overflow: clip;
+    height: var(--column-grid-height);
+  }
+
+  [data-index-reactive].has-column-motion .project-card {
+    transform: translate3d(var(--column-motion-x, 0px), var(--column-motion-y, 0px), 0);
+    transition: none;
+  }
+
   [data-index-reactive] .index-media-frame {
     transform: none;
     transition: none;
