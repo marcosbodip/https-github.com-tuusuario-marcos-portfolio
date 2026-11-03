@@ -8,7 +8,7 @@
   --line: rgba(242, 238, 231, 0.16);
   --card: #151412;
   --accent: #ff3b30;
-  --max-width: 1920px;
+  --max-width: none;
   --side-padding: clamp(20px, 2.5vw, 48px);
 }
 
