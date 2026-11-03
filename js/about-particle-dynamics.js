@@ -9,7 +9,7 @@
       this.pressure = this.x.slice();
       this.nextPressure = this.x.slice();
       this.divergence = this.x.slice();
-      this.pixels = new Uint8Array(size * size * 4);
+      this.pixels = new Float32Array(size * size * 4);
       this.previous = null;
     }
     sample(field, x, y) {
@@ -68,9 +68,9 @@
           this.x[i] -= (this.pressure[i + 1] - this.pressure[i - 1]) * 0.5;
           this.y[i] -= (this.pressure[i + n] - this.pressure[i - n]) * 0.5;
         }
-        this.pixels[i * 4] = Math.round(128 + Math.max(-1, Math.min(1, this.x[i])) * 127);
-        this.pixels[i * 4 + 1] = Math.round(128 + Math.max(-1, Math.min(1, this.y[i])) * 127);
-        this.pixels[i * 4 + 3] = 255;
+        this.pixels[i * 4] = Math.max(-1, Math.min(1, this.x[i]));
+        this.pixels[i * 4 + 1] = Math.max(-1, Math.min(1, this.y[i]));
+        this.pixels[i * 4 + 3] = 1;
       }
       return this.pixels;
     }
@@ -91,6 +91,18 @@
       uniform float uStep, uTime, uActivation, uProximity;
       out vec3 nextOffset;
       out vec3 nextVelocity;
+      // Float samples retain distant gestures that were rounded away in the byte texture.
+      vec2 sampleFlow(vec2 uv) {
+        ivec2 size = textureSize(uFlow, 0);
+        vec2 p = clamp(uv * vec2(size) - 0.5, vec2(0.0), vec2(size - 1));
+        ivec2 low = ivec2(floor(p));
+        ivec2 high = min(low + 1, size - 1);
+        vec2 f = fract(p);
+        return mix(mix(texelFetch(uFlow, low, 0).rg,
+                       texelFetch(uFlow, ivec2(high.x, low.y), 0).rg, f.x),
+                   mix(texelFetch(uFlow, ivec2(low.x, high.y), 0).rg,
+                       texelFetch(uFlow, high, 0).rg, f.x), f.y);
+      }
       vec3 curl(vec3 p, float t) {
         return vec3(
           sin(p.x + t) * cos(p.y - t * 0.6) - cos(p.z - t) * sin(p.x + 0.7),
@@ -102,7 +114,7 @@
         vec3 position = aOrigin + aOffset;
         vec4 screen = uMatrix * vec4(position, 1.0);
         vec2 uv = screen.xy / screen.w * 0.5 + 0.5;
-        vec2 flow = (texture(uFlow, clamp(uv, 0.0, 1.0)).rg * 255.0 - 128.0) / 127.0;
+        vec2 flow = sampleFlow(uv);
         float agitation = min(length(flow), 1.0);
         vec3 current = uRight * flow.x + uUp * flow.y;
         // Decorrelated currents give neighbouring grains independent flight, not a rubber sheet.
@@ -157,11 +169,11 @@
     const flow = new SurfaceFlow();
     const flowTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, flowTexture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, flow.size, flow.size, 0, gl.RGBA, gl.UNSIGNED_BYTE, flow.update({x:0.5,y:0.5,active:false}, 1));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, flow.size, flow.size, 0, gl.RGBA, gl.FLOAT, flow.update({x:0.5,y:0.5,active:false}, 1));
     let current = 0;
     function attribute(location, buffer, size, stride = 0, offset = 0) {
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -174,7 +186,7 @@
         gl.useProgram(program);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, flowTexture);
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, flow.size, flow.size, gl.RGBA, gl.UNSIGNED_BYTE, flow.update(pointer, dt));
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, flow.size, flow.size, gl.RGBA, gl.FLOAT, flow.update(pointer, dt));
         gl.uniform1i(uniforms.uFlow, 0);
         gl.uniformMatrix4fv(uniforms.uMatrix, false, matrix);
         gl.uniform1f(uniforms.uStep, Math.min(dt, 2));

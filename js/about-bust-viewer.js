@@ -6,6 +6,7 @@
   }
 
   const shell = canvas.closest(".about-pointcloud-shell") || canvas;
+  const excludedPointerRegions = document.querySelectorAll(".site-header, .site-footer");
   const compactViewport = window.matchMedia("(max-width: 1180px), (hover: none) and (pointer: coarse)");
 
   if (compactViewport.matches) {
@@ -76,6 +77,8 @@
     width: 0,
     height: 0,
     dpr: 1,
+    pointScale: 1,
+    coverageScale: 1,
     scale: 1,
     center: [0, 0, 0]
   };
@@ -743,6 +746,10 @@
     view.dpr = Math.min(window.devicePixelRatio || 1, 2);
     view.width = Math.max(1, Math.floor(rect.width));
     view.height = Math.max(1, Math.floor(rect.height));
+    const largeViewport = Math.max(window.innerWidth / 1920, window.innerHeight / 1080);
+    const largeScreenAmount = Math.min(1, Math.max(0, largeViewport - 1));
+    view.pointScale = 1 + largeScreenAmount * 0.5;
+    view.coverageScale = 1 + largeScreenAmount * 0.15;
     canvas.width = Math.floor(view.width * view.dpr);
     canvas.height = Math.floor(view.height * view.dpr);
     canvas.style.width = `${view.width}px`;
@@ -880,12 +887,12 @@
     gl.uniform1f(gl.getUniformLocation(program, "uHover"), mouse.hover);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationX"), rotation.x);
     gl.uniform1f(gl.getUniformLocation(program, "uRotationY"), rotation.y);
-    gl.uniform1f(gl.getUniformLocation(program, "uPointScale"), (pointBudget?.pointScale || 1) * (isLightMode ? 1.08 : 1));
+    gl.uniform1f(gl.getUniformLocation(program, "uPointScale"), (pointBudget?.pointScale || 1) * view.pointScale * (isLightMode ? 1.08 : 1));
     gl.uniform1f(gl.getUniformLocation(program, "uPixelRatio"), view.dpr);
     gl.uniform3fv(gl.getUniformLocation(program, "uBase"), baseRgb);
     gl.uniform3fv(gl.getUniformLocation(program, "uAccent"), accentRgb);
     gl.uniform1f(gl.getUniformLocation(program, "uHasTexture"), hasTexture ? 1 : 0);
-    gl.uniform1f(gl.getUniformLocation(program, "uAlphaScale"), pointBudget?.alphaScale || 1);
+    gl.uniform1f(gl.getUniformLocation(program, "uAlphaScale"), (pointBudget?.alphaScale || 1) * view.coverageScale);
     gl.uniform1f(gl.getUniformLocation(program, "uLightMode"), isLightMode ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture || createFallbackTexture());
@@ -958,11 +965,16 @@
   function updatePointer(event) {
     if (event.pointerType === "touch") return;
     const rect = shell.getBoundingClientRect();
-    mouse.active = true;
     mouse.clientX = event.clientX;
     mouse.clientY = event.clientY;
     mouse.targetX = event.clientX - rect.left;
     mouse.targetY = event.clientY - rect.top;
+    mouse.active = !Array.from(excludedPointerRegions).some((region) => {
+      const bounds = region.getBoundingClientRect();
+      return event.clientX >= bounds.left && event.clientX <= bounds.right
+        && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+    });
+    if (!mouse.active) touchRotation.targetX = touchRotation.targetY = 0;
   }
 
   function clamp(value, min, max) {
@@ -1007,7 +1019,7 @@
   }
 
   shell.addEventListener("pointermove", moveDrag);
-  window.addEventListener("pointermove", updatePointer, { passive: true });
+  window.addEventListener("pointermove", updatePointer, { passive: true, capture: true });
 
   shell.addEventListener("pointerleave", () => {
     if (drag.active) {
