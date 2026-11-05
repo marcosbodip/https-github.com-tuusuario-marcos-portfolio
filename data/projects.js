@@ -698,7 +698,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "ambar-beer",
-    "indexColumn": 3,
+    "indexColumn": 1,
     "title": "Ambar Beer Motion",
     "category": "CGI",
     "summary": "A CGI product motion piece created for Ambar’s “Morena” beer campaign, bringing a dynamic and crafted visual approach to the product.",
@@ -1512,7 +1512,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "space",
-    "indexColumn": 1,
+    "indexColumn": 2,
     "title": "3D Space RnD",
     "category": "CGI / Compositing",
     "summary": "A CGI visual exploring space-inspired environments, atmospheric motion and immersive digital imagery for a next-generation club experience.",
