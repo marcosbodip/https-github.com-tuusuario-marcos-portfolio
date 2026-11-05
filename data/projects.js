@@ -1644,5 +1644,64 @@ window.PORTFOLIO_PROJECTS = [
         }
       ]
     }
+  },
+  {
+    "slug": "vidriera",
+    "title": "VIDRIERA",
+    "category": "AI / Compositing",
+    "summary": "A reflection on faith and digital devotion, where technology becomes a new object of hope.",
+    "description": "VIDRIERA, a personal film by Marcos Bodí reflecting on faith, technology and the search for hope through AI imagery and compositing in Nuke.",
+    "cardCategory": "AI / Compositing",
+    "cardType": "ai-compositing",
+    "layout": "auto",
+    "mainAudioEnabled": true,
+    "mediaLayout": {
+      "composition": "carousel"
+    },
+    "details": {
+      "Role": "Direction / AI Artist",
+      "Type": "Personal Project",
+      "Tools": "AI / Nuke"
+    },
+    "concept": [
+      "VIDRIERA imagines technology and AI as new places to seek hope and answers. Inside a concrete church, sacred figures become absorbed by screens, blurring devotion and digital dependence.",
+      "AI-generated imagery, restrained animation and compositing in Nuke shape the film. Custom procedural typography completes the piece."
+    ],
+    "teamEnabled": true,
+    "creditsTitle": "Credits",
+    "credits": [
+      "Direction / AI Artist - Marcos Bodí",
+      "Sound Design - Mario Ramírez / @thankyourami"
+    ],
+    "creditLinks": [
+      {
+        "label": "@thankyourami",
+        "url": "https://www.instagram.com/thankyourami/"
+      }
+    ],
+    "media": {
+      "cover": {
+        "file": "cover_optimized.mp4",
+        "type": "video",
+        "ratio": "portrait",
+        "indexAspectRatio": "213 / 266",
+        "alt": "VIDRIERA animated cover"
+      },
+      "main": {
+        "file": "main_optimized.mp4",
+        "type": "video",
+        "ratio": "portrait",
+        "mobileAudio": true,
+        "alt": "VIDRIERA final film"
+      },
+      "secondary": [
+        { "file": "still-01.jpg", "type": "image", "ratio": "portrait", "alt": "Concrete church exterior with stained-glass windows in VIDRIERA" },
+        { "file": "still-02.jpg", "type": "image", "ratio": "portrait", "alt": "Stained-glass angel wearing a VR headset" },
+        { "file": "still-03.jpg", "type": "image", "ratio": "portrait", "alt": "Stained-glass saint taking a selfie" },
+        { "file": "still-04.jpg", "type": "image", "ratio": "portrait", "alt": "Madonna looking at her phone beneath an illuminated halo" },
+        { "file": "still-05.jpg", "type": "image", "ratio": "portrait", "alt": "Tear on the Madonna statue illuminated by coloured light" },
+        { "file": "still-06.jpg", "type": "image", "ratio": "portrait", "alt": "Coloured stained-glass light inside the concrete church" }
+      ]
+    }
   }
 ];
