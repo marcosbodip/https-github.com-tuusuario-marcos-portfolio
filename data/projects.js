@@ -85,7 +85,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "pattern-of-thought",
-    "indexOrder": 4,
+    "indexOrder": 5,
     "indexColumn": 1,
     "title": "Pattern of Thought",
     "cardTitle": "Claude x Atlassian Williams",
@@ -154,7 +154,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "ponds-bright-miracle-serum",
-    "indexOrder": 5,
+    "indexOrder": 6,
     "indexColumn": 3,
     "title": "POND'S Jellyfish",
     "titleLayout": "single-line",
@@ -460,7 +460,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "brunch-electronik-rocambolesc",
-    "indexOrder": 6,
+    "indexOrder": 7,
     "indexColumn": 2,
     "title": "Brunch! Reset Experience",
     "cardTitle": "Brunch Electronik x Rocambolesc",
@@ -541,7 +541,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "procedural-lamps",
-    "indexOrder": 7,
+    "indexOrder": 8,
     "indexColumn": 1,
     "title": "Procedural Lamps",
     "category": "CGI",
@@ -1647,12 +1647,14 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     "slug": "vidriera",
+    "indexOrder": 4,
+    "indexColumn": 1,
     "title": "VIDRIERA",
-    "category": "AI / Compositing",
+    "category": "AI",
     "summary": "A reflection on faith and digital devotion, where technology becomes a new object of hope.",
     "description": "VIDRIERA, a personal film by Marcos Bodí reflecting on faith, technology and the search for hope through AI imagery and compositing in Nuke.",
-    "cardCategory": "AI / Compositing",
-    "cardType": "ai-compositing",
+    "cardCategory": "AI",
+    "cardType": "ai",
     "layout": "auto",
     "mainAudioEnabled": true,
     "mediaLayout": {
