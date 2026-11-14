@@ -11,9 +11,9 @@ async function loadEncrypted(name) {
 
 function decrypt(file, key) {
   return crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: file.subarray(16, 28) },
+    { name: 'AES-GCM', iv: file.subarray(0, 12) },
     key,
-    file.subarray(28)
+    file.subarray(12)
   );
 }
 
@@ -22,23 +22,22 @@ form.addEventListener('submit', async (event) => {
   button.disabled = true;
   status.textContent = 'Abriendo la propuesta…';
   try {
-    const page = await loadEncrypted('instronic.html');
-    const material = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode(password.value.trim()), 'PBKDF2', false, ['deriveKey']
-    );
-    const key = await crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: page.subarray(0, 16), iterations: 600000, hash: 'SHA-256' },
-      material, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
-    );
-    let html;
-    try {
-      html = new TextDecoder().decode(await decrypt(page, key));
-    } catch (error) {
-      if (error.name !== 'OperationError') throw error;
+    const response = await fetch('/api/instronic-access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password.value.trim() })
+    });
+    if (response.status === 401) {
       status.textContent = 'Contraseña incorrecta.';
       password.select();
       return;
     }
+    if (!response.ok) throw new Error('Access service unavailable');
+    const { key: hex } = await response.json();
+    if (!/^[0-9a-f]{64}$/i.test(hex)) throw new Error('Invalid decryption key');
+    const bytes = Uint8Array.from(hex.match(/../g), (pair) => Number.parseInt(pair, 16));
+    const key = await crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['decrypt']);
+    const html = new TextDecoder().decode(await decrypt(await loadEncrypted('instronic.html'), key));
 
     status.textContent = 'Cargando la animática…';
     const video = await decrypt(await loadEncrypted('instronic-animatica.mp4'), key);
