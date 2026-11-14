@@ -12,6 +12,7 @@ if (magneticProjectRoot) {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const introSection = magneticProjectRoot.querySelector(".project-intro");
   const gallerySection = magneticProjectRoot.querySelector(".project-gallery");
+  const fullPageWave = magneticProjectRoot.hasAttribute("data-full-page-dot-wave");
   let dots = [];
   let width = 0;
   let height = 0;
@@ -85,7 +86,7 @@ if (magneticProjectRoot) {
   }
 
   function getMediaRects() {
-    return Array.from(document.querySelectorAll(".project-page .project-media-item img, .project-page .project-media-item video"))
+    return Array.from(magneticProjectRoot.querySelectorAll(".project-media-item img, .project-media-item video, [data-dot-mask]"))
       .map((media) => media.getBoundingClientRect())
       .filter((rect) => {
         return rect.width > 0 &&
@@ -108,24 +109,25 @@ if (magneticProjectRoot) {
       return null;
     }
 
-    const introRect = introSection.getBoundingClientRect();
-    const galleryRect = gallerySection.getBoundingClientRect();
+    const introRect = (fullPageWave ? magneticProjectRoot : introSection).getBoundingClientRect();
 
     if (introRect.bottom <= 0 || introRect.top >= height) {
       return null;
     }
 
-    const bandSize = Math.max(92, Math.min(introRect.height * 0.18, 210));
+    const bandSize = Math.max(92, Math.min((fullPageWave ? height : introRect.height) * 0.18, 210));
     const travel = introRect.height + bandSize * 3.1;
-    const motionDuration = 3240;
+    const motionDuration = fullPageWave ? Math.max(3240, travel * 4) : 3240;
     const pauseDuration = 1040;
     const cycleDuration = motionDuration + pauseDuration;
     const cyclePosition = now % cycleDuration;
     const exitFadeStart = Math.min(height * 0.1, 96);
     const exitFadeEnd = Math.min(height * 0.48, 520);
     const introBottomFade = smoothstep(exitFadeStart, exitFadeEnd, introRect.bottom);
-    const galleryTopFade = smoothstep(exitFadeStart, exitFadeEnd, galleryRect.top);
-    const viewportFade = Math.min(introBottomFade, galleryTopFade);
+    const viewportFade = fullPageWave ? 1 : Math.min(
+      introBottomFade,
+      smoothstep(exitFadeStart, exitFadeEnd, gallerySection.getBoundingClientRect().top)
+    );
 
     if (viewportFade <= 0.001) {
       return null;
@@ -144,7 +146,9 @@ if (magneticProjectRoot) {
     }
 
     const progress = cyclePosition / motionDuration;
-    const strength = Math.pow(Math.sin(progress * Math.PI), 1.08) * viewportFade;
+    const strength = fullPageWave
+      ? smoothstep(0, 0.14, progress) * (1 - smoothstep(0.9, 1, progress))
+      : Math.pow(Math.sin(progress * Math.PI), 1.08) * viewportFade;
 
     return {
       active: true,

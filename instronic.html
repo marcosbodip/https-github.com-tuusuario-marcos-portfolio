@@ -1,18 +1,19 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme-default="light" data-theme-session="instronic">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Instronic · Marcos Bodí</title>
+  <title>Instronic Screens · Marcos Bodí</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="/js/site-theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .access-panel { max-width: 28rem; }
+    .site-header.proposal-header { display: grid; grid-template-columns: 1fr; place-items: center; }
+    .access-panel { max-width: 28rem; margin-inline: auto; text-align: center; }
     .access-panel h1 { font-size: clamp(2.75rem, 12vw, 4rem); letter-spacing: -.07em; margin: 0 0 1.5rem; }
-    #access { display: grid; gap: .65rem; }
-    input, button { box-sizing: border-box; min-height: 44px; border-radius: .25rem; padding: .65rem .85rem; font: inherit; }
+    #access:not([hidden]) { display: grid; gap: .65rem; }
+    #access input, #access button { box-sizing: border-box; min-height: 44px; border-radius: .25rem; padding: .65rem .85rem; font: inherit; }
     input { background: var(--card); color: var(--text); border: 1px solid var(--muted); }
     #access button { background: var(--text); border: 0; color: var(--bg); cursor: pointer; }
     #access button:hover { background: var(--accent); color: #fff; }
@@ -24,12 +25,12 @@
   <script src="/js/instronic-access.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="logo" href="/" aria-label="Portfolio de Marcos Bodí">MB</a>
+  <header class="site-header proposal-header">
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
   </header>
   <main class="project-page">
     <div class="access-panel">
-      <h1>Instronic</h1>
+      <h1>Instronic Screens</h1>
       <form id="access" method="post">
         <label for="password">Contraseña de la propuesta</label>
         <input id="password" type="password" autocomplete="current-password" required maxlength="128" spellcheck="false">
