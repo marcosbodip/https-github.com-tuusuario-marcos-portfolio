@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Instronic · Marcos Bodí</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; min-height: 100svh; display: grid; place-items: center; background: #080807; color: #f2eee7; font: 1rem/1.5 Arial, sans-serif; }
+    main { width: min(24rem, calc(100% - 3rem)); }
+    h1 { font-size: clamp(2.75rem, 12vw, 4rem); letter-spacing: -.07em; margin: 0 0 1.5rem; }
+    form { display: grid; gap: .65rem; }
+    input, button { box-sizing: border-box; min-height: 44px; border-radius: .25rem; padding: .65rem .85rem; font: inherit; }
+    input { background: #151412; border: 1px solid #77716a; }
+    button { background: #f2eee7; border: 0; color: #080807; cursor: pointer; }
+    #status { min-height: 1.5em; color: #f2aaa4; }
+  </style>
+  <script src="/js/instronic-access.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Instronic</h1>
+    <form id="access" method="post">
+      <label for="password">Contraseña de la propuesta</label>
+      <input id="password" type="password" autocomplete="current-password" required maxlength="128" spellcheck="false">
+      <button>Ver propuesta</button>
+      <p id="status" role="status"></p>
+    </form>
+    <noscript>Activa JavaScript para abrir la propuesta.</noscript>
+  </main>
+</body>
+</html>
