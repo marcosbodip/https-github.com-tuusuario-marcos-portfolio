@@ -90,6 +90,15 @@ form.addEventListener('submit', async (event) => {
     }
     if (!response.ok) throw new Error('Access service unavailable');
     const { key: hex } = await response.json();
+    if (typeof hex !== 'string' || !/^[0-9a-f]{64}$/i.test(hex)) throw new Error('Invalid decryption key');
+    // Open through the same document-load path as a refresh after authentication.
+    try {
+      sessionStorage.setItem(sessionKeyName, hex);
+      window.location.reload();
+      return;
+    } catch {
+      // Browsers with storage disabled can still open the proposal directly.
+    }
     await openProposal(hex);
   } catch {
     status.textContent = 'No se pudo abrir la propuesta. Vuelve a intentarlo.';
