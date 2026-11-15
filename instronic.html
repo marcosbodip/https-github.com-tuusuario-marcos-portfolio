@@ -13,10 +13,6 @@
     .project-page.access-page { min-height: 100svh; display: grid; place-items: center; padding-block: 76px; }
     .access-panel { width: min(100%, 23rem); text-align: center; }
     .access-logo { --logo-unit: clamp(1.5px, .32vw, 1.8px); margin: 0 0 2rem; perspective: 760px; }
-    .access-wordmark {
-      display: block; width: 8.75rem; aspect-ratio: 250 / 54; margin: .9rem auto 0;
-      background: var(--text); mask: url('/assets/instronic-wordmark.png') center / contain no-repeat;
-    }
     .access-logo-model {
       display: block;
       position: relative;
@@ -79,7 +75,6 @@
     <div class="access-panel">
       <h1 class="access-logo" aria-label="Instronic">
         <span class="access-logo-model" aria-hidden="true"></span>
-        <span class="access-wordmark" aria-hidden="true"></span>
       </h1>
       <form id="access" method="post">
         <input id="password" type="password" aria-label="Password" placeholder="Password" autocomplete="current-password" required maxlength="128" spellcheck="false">
