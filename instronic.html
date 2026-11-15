@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-theme-default="light" data-theme-session="instronic">
+<html lang="es" data-theme="dark" data-theme-default="dark" data-theme-session="instronic-access">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,18 +9,65 @@
   <script src="/js/site-theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .site-header.proposal-header { display: grid; grid-template-columns: 1fr; place-items: center; }
-    .access-panel { max-width: 28rem; margin-inline: auto; text-align: center; }
-    .access-panel h1 { font-size: clamp(2.75rem, 12vw, 4rem); letter-spacing: -.07em; margin: 0 0 1.5rem; }
-    #access:not([hidden]) { display: grid; gap: .65rem; }
+    .site-header.proposal-header { position: absolute; inset: 0 0 auto; display: grid; grid-template-columns: 1fr; place-items: center; }
+    .project-page.access-page { min-height: 100svh; display: grid; place-items: center; padding-block: 76px; }
+    .access-panel { width: min(100%, 23rem); text-align: center; }
+    .access-logo { --logo-unit: clamp(1.5px, .32vw, 1.8px); margin: 0 0 2rem; perspective: 760px; }
+    .access-wordmark {
+      display: block; width: 8.75rem; aspect-ratio: 250 / 54; margin: .9rem auto 0;
+      background: var(--text); mask: url('/assets/instronic-wordmark.png') center / contain no-repeat;
+    }
+    .access-logo-model {
+      display: block;
+      position: relative;
+      width: calc(68 * var(--logo-unit));
+      height: calc(68 * var(--logo-unit));
+      margin: 0 auto;
+      transform-style: preserve-3d;
+      transform: rotateX(-12deg) rotateY(-26deg);
+    }
+    .logo-solid { position: absolute; display: block; transform-style: preserve-3d; --depth: calc(13 * var(--logo-unit)); }
+    .logo-face { position: absolute; display: block; inset: 0; background: var(--text); backface-visibility: hidden; }
+    .logo-front { transform: translateZ(calc(var(--depth) / 2)); }
+    .logo-back { transform: rotateY(180deg) translateZ(calc(var(--depth) / 2)); }
+    .logo-top, .logo-bottom { height: var(--depth); top: 50%; background: color-mix(in srgb, var(--text) 76%, var(--bg)); }
+    .logo-top { transform: translateY(-50%) rotateX(90deg) translateZ(calc(var(--piece-h) / 2)); }
+    .logo-bottom { transform: translateY(-50%) rotateX(-90deg) translateZ(calc(var(--piece-h) / 2)); }
+    .logo-left, .logo-right { width: var(--depth); left: 50%; background: color-mix(in srgb, var(--text) 58%, var(--bg)); }
+    .logo-left { transform: translateX(-50%) rotateY(-90deg) translateZ(calc(var(--piece-w) / 2)); }
+    .logo-right { transform: translateX(-50%) rotateY(90deg) translateZ(calc(var(--piece-w) / 2)); }
+    .logo-frame { --rim: calc(15 * var(--logo-unit)); }
+    .logo-frame .logo-front, .logo-frame .logo-back { background: transparent; border: var(--rim) solid var(--text); }
+    .logo-inner-top, .logo-inner-bottom {
+      inset: 50% var(--rim) auto; height: var(--depth);
+      background: color-mix(in srgb, var(--text) 76%, var(--bg));
+    }
+    .logo-inner-top { transform: translateY(-50%) rotateX(-90deg) translateZ(calc(var(--piece-h) / -2 + var(--rim))); }
+    .logo-inner-bottom { transform: translateY(-50%) rotateX(90deg) translateZ(calc(var(--piece-h) / -2 + var(--rim))); }
+    .logo-inner-left, .logo-inner-right {
+      inset: var(--rim) auto var(--rim) 50%; width: var(--depth);
+      background: color-mix(in srgb, var(--text) 58%, var(--bg));
+    }
+    .logo-inner-left { transform: translateX(-50%) rotateY(90deg) translateZ(calc(var(--piece-w) / -2 + var(--rim))); }
+    .logo-inner-right { transform: translateX(-50%) rotateY(-90deg) translateZ(calc(var(--piece-w) / -2 + var(--rim))); }
+    @media (prefers-reduced-motion: no-preference) {
+      .access-logo-model { animation: instronic-turn 11s linear infinite; }
+      @keyframes instronic-turn {
+        from { transform: rotateX(-12deg) rotateY(-26deg); }
+        to { transform: rotateX(-12deg) rotateY(334deg); }
+      }
+    }
+    #access:not([hidden]) { display: grid; gap: .65rem; position: relative; }
     #access input, #access button { box-sizing: border-box; min-height: 44px; border-radius: .25rem; padding: .65rem .85rem; font: inherit; }
     input { background: var(--card); color: var(--text); border: 1px solid var(--muted); }
+    #password::placeholder { color: var(--muted); opacity: .65; }
+    #password:focus::placeholder { opacity: 0; }
     #access button { background: var(--text); border: 0; color: var(--bg); cursor: pointer; }
     #access button:hover { background: var(--accent); color: #fff; }
     @media (prefers-reduced-motion: no-preference) {
       #access button { transition: background-color .22s ease, color .22s ease; }
     }
-    #status { min-height: 1.5em; color: var(--muted); }
+    #status { position: absolute; inset: 100% 0 auto; margin: .65rem 0 0; color: var(--muted); }
   </style>
   <script src="/js/instronic-access.js" defer></script>
 </head>
@@ -28,17 +75,44 @@
   <header class="site-header proposal-header">
     <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"></button>
   </header>
-  <main class="project-page">
+  <main class="project-page access-page">
     <div class="access-panel">
-      <h1>Instronic Screens</h1>
+      <h1 class="access-logo" aria-label="Instronic">
+        <span class="access-logo-model" aria-hidden="true"></span>
+        <span class="access-wordmark" aria-hidden="true"></span>
+      </h1>
       <form id="access" method="post">
-        <label for="password">Contraseña de la propuesta</label>
-        <input id="password" type="password" autocomplete="current-password" required maxlength="128" spellcheck="false">
+        <input id="password" type="password" aria-label="Password" placeholder="Password" autocomplete="current-password" required maxlength="128" spellcheck="false">
         <button>Ver propuesta</button>
         <p id="status" role="status"></p>
       </form>
       <noscript>Activa JavaScript para abrir la propuesta.</noscript>
     </div>
   </main>
+  <script>
+    (() => {
+      const logo = document.querySelector('.access-logo-model');
+      const pieces = [[0, 68, 15, false], [21, 68, 47, true]];
+      const faces = ['front', 'back', 'top', 'bottom', 'left', 'right'];
+      const innerFaces = ['inner-top', 'inner-bottom', 'inner-left', 'inner-right'];
+      const size = (value) => `calc(${value} * var(--logo-unit))`;
+      for (const [y, width, height, hollow] of pieces) {
+        const solid = document.createElement('span');
+        solid.className = hollow ? 'logo-solid logo-frame' : 'logo-solid';
+        solid.style.left = '0';
+        solid.style.top = size(y);
+        solid.style.width = 'var(--piece-w)';
+        solid.style.height = 'var(--piece-h)';
+        solid.style.setProperty('--piece-w', size(width));
+        solid.style.setProperty('--piece-h', size(height));
+        for (const side of hollow ? [...faces, ...innerFaces] : faces) {
+          const face = document.createElement('span');
+          face.className = `logo-face logo-${side}`;
+          solid.append(face);
+        }
+        logo.append(solid);
+      }
+    })();
+  </script>
 </body>
 </html>
