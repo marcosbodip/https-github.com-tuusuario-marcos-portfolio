@@ -70,7 +70,9 @@
     }
     #status { position: absolute; inset: 100% 0 auto; margin: .65rem 0 0; color: var(--muted); }
   </style>
-  <script src="/js/instronic-access.js" defer></script>
+  <script src="/js/instronic-access.js?v=entrega-01-stream" defer></script>
+  <link rel="preload" href="/js/title-brush.js" as="script">
+  <link rel="preload" href="/js/site-cursor.js" as="script">
 </head>
 <body>
   <header class="site-header proposal-header">
@@ -83,10 +85,10 @@
       </h1>
       <form id="access" method="post">
         <input id="password" type="password" aria-label="Password" placeholder="Password" autocomplete="current-password" required maxlength="128" spellcheck="false">
-        <button>Ver propuesta</button>
+        <button>Ver entrega</button>
         <p id="status" role="status"></p>
       </form>
-      <noscript>Activa JavaScript para abrir la propuesta.</noscript>
+      <noscript>Activa JavaScript para abrir la entrega.</noscript>
     </div>
   </main>
   <script>
